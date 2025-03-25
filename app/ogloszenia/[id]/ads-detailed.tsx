@@ -13,147 +13,178 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Heart, Share2, Flag, MapPin, Phone, Mail, Calendar, Clock, ArrowLeft, Eye } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Share2, Flag, MapPin, Phone, Mail, Calendar, Clock, ArrowLeft, Eye, ShieldCheck } from "lucide-react"
 import { PageLayout } from "@/components/page-layout"
-
-// Mock data dla ogłoszenia
-const mockAd = {
-  id: 1,
-  title: "Sprzedam samochód Toyota Corolla 2018",
-  content:
-    "Samochód w idealnym stanie, pierwszy właściciel, serwisowany w ASO, przebieg 45000 km. Silnik 1.6 benzyna, automatyczna skrzynia biegów. Wyposażenie: klimatyzacja, nawigacja, kamera cofania, podgrzewane fotele, czujniki parkowania. Możliwość sprawdzenia w dowolnym serwisie. Cena do negocjacji.",
-  category: "Motoryzacja",
-  subcategory: "Samochody osobowe",
-  price: 55000,
-  currency: "PLN",
-  location: "Warszawa, Mazowieckie",
-  images: [
-    "/placeholder.svg?height=600&width=800",
-    "/placeholder.svg?height=600&width=800&text=Toyota+Corolla+2",
-    "/placeholder.svg?height=600&width=800&text=Toyota+Corolla+3",
-  ],
-  createdAt: new Date(2023, 2, 15),
-  promoted: true,
-  views: 245,
-  author: {
-    id: 1,
-    name: "Jan Kowalski",
-    avatar: "/placeholder.svg?height=40&width=40",
-    type: "individual",
-    verified: false,
-    phone: "+48 123 456 789",
-    email: "jan.kowalski@example.com",
-    joinedAt: new Date(2022, 5, 15),
-  },
-  likes: 12,
-  comments: [
-    {
-      id: 1,
-      author: {
-        name: "Anna Nowak",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      content: "Czy możliwa jest jazda próbna?",
-      createdAt: new Date(2023, 2, 16),
-    },
-    {
-      id: 2,
-      author: {
-        name: "Piotr Wiśniewski",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      content: "Jaki jest dokładny przebieg?",
-      createdAt: new Date(2023, 2, 17),
-    },
-    {
-      id: 3,
-      author: {
-        name: "Jan Kowalski",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      content: "Dokładny przebieg to 45320 km. Jazda próbna jak najbardziej możliwa po wcześniejszym umówieniu się.",
-      createdAt: new Date(2023, 2, 17),
-      isAuthor: true,
-    },
-  ],
-  parameters: [
-    { name: "Marka", value: "Toyota" },
-    { name: "Model", value: "Corolla" },
-    { name: "Rok produkcji", value: "2018" },
-    { name: "Przebieg", value: "45000 km" },
-    { name: "Pojemność silnika", value: "1.6" },
-    { name: "Rodzaj paliwa", value: "Benzyna" },
-    { name: "Skrzynia biegów", value: "Automatyczna" },
-    { name: "Kolor", value: "Srebrny" },
-    { name: "Stan", value: "Używany" },
-  ],
-}
+import { LikeButton } from "@/components/like-button"
+import { useToast } from "@/hooks/use-toast"
 
 export default function AdDetailsClient({ id }: { id: string }) {
   const [ad, setAd] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [commentText, setCommentText] = useState("")
+  const [similarAds, setSimilarAds] = useState<any[]>([])
+  const [isSimilarAdsLoading, setIsSimilarAdsLoading] = useState(true)
+  const { toast } = useToast()
 
   useEffect(() => {
-    // Próba pobrania danych z API
+    // Pobieranie danych ogłoszenia
     const fetchAd = async () => {
       try {
         setIsLoading(true)
-        // W rzeczywistej aplikacji tutaj byłoby zapytanie do API
-        // const response = await fetch(`/api/ads/${id}`);
-        // const data = await response.json();
+        const response = await fetch(`/api/ads/${id}`)
+        const data = await response.json()
+        console.log(data)
 
-        // Symulacja opóźnienia sieciowego
-        await new Promise((resolve) => setTimeout(resolve, 500))
+        if (data.error) {
+          throw new Error(data.error)
+        }
 
-        // Używamy mock data
-        setAd(mockAd)
+        setAd(data)
       } catch (error) {
         console.error("Błąd podczas pobierania ogłoszenia:", error)
-        // W przypadku błędu również używamy mock data
-        setAd(mockAd)
+        toast({
+          title: "Błąd",
+          description: "Nie udało się pobrać ogłoszenia. Spróbuj ponownie później.",
+          variant: "destructive",
+        })
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchAd()
-  }, [id])
+  }, [id, toast])
 
-  const handleLike = () => {
-    if (ad) {
-      setAd({ ...ad, likes: ad.likes + 1 })
+
+  // Pobieranie podobnych ogłoszeń z niższym priorytetem
+  useEffect(() => {
+    if (ad && !isLoading) {
+      const fetchSimilarAds = async () => {
+        try {
+          setIsSimilarAdsLoading(true)
+          const response = await fetch(`/api/ads/similar?id=${ad.id}&category=${ad.category}`)
+          const data = await response.json()
+
+          if (data.error) {
+            throw new Error(data.error)
+          }
+
+          setSimilarAds(data)
+        } catch (error) {
+          console.error("Błąd podczas pobierania podobnych ogłoszeń:", error)
+        } finally {
+          setIsSimilarAdsLoading(false)
+        }
+      }
+
+      fetchSimilarAds()
     }
-  }
+  }, [ad, isLoading])
 
-  const handleComment = (e: React.FormEvent) => {
+  const handleComment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!commentText.trim()) return
 
-    const newComment = {
-      id: Date.now(),
-      author: {
-        name: "Ty",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      content: commentText,
-      createdAt: new Date(),
-    }
+    try {
+      const response = await fetch(`/api/ads/${id}/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: commentText }),
+      })
 
-    setAd({
-      ...ad,
-      comments: [...ad.comments, newComment],
-    })
-    setCommentText("")
+      const data = await response.json()
+
+      if (data.error) {
+        throw new Error(data.error)
+      }
+
+      // Dodanie nowego komentarza do listy
+      setAd({
+        ...ad,
+        comments: [data, ...ad.comments],
+      })
+
+      setCommentText("")
+
+      toast({
+        title: "Komentarz dodany",
+        description: "Twój komentarz został pomyślnie dodany.",
+      })
+    } catch (error) {
+      console.error("Błąd podczas dodawania komentarza:", error)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się dodać komentarza. Spróbuj ponownie później.",
+        variant: "destructive",
+      })
+    }
   }
 
+  // Skeleton loading dla całej strony
   if (isLoading) {
     return (
       <PageLayout>
-        <div className="container py-8">
-          <div className="flex items-center justify-center h-[60vh]">
-            <div className="animate-pulse text-xl">Ładowanie ogłoszenia...</div>
+        <div className="h-full w-full absolute bg-black/10">
+          <span className="sr-only">Ładowanie...</span>
+        </div>
+        <div className="container py-6">
+          <div className="mb-6">
+            <div className="flex items-center text-muted-foreground">
+              <Skeleton className="h-4 w-4 mr-1" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {/* Lewa kolumna - skeleton zdjęcia */}
+            <div className="space-y-4">
+              <Skeleton className="aspect-video w-full rounded-lg" />
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {[1, 2, 3].map((_, index) => (
+                  <Skeleton key={index} className="w-24 h-24 rounded-md" />
+                ))}
+              </div>
+            </div>
+
+            {/* Prawa kolumna - skeleton informacji */}
+            <div>
+              <Skeleton className="h-10 w-3/4 mb-2" />
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-6 w-24" />
+              </div>
+              <div className="flex items-center gap-2 mb-4">
+                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-4 w-40" />
+              </div>
+              <Skeleton className="h-10 w-1/3 mb-4" />
+
+              {/* Skeleton karty autora */}
+              <Skeleton className="w-full h-48 rounded-lg mb-4" />
+
+              {/* Skeleton akcji */}
+              <div className="flex gap-2">
+                <Skeleton className="h-10 flex-1" />
+                <Skeleton className="h-10 flex-1" />
+                <Skeleton className="h-10 flex-1" />
+              </div>
+            </div>
+          </div>
+
+          {/* Skeleton zakładek */}
+          <Skeleton className="h-10 w-full mb-4" />
+          <Skeleton className="h-40 w-full mb-8" />
+
+          {/* Skeleton podobnych ogłoszeń */}
+          <Skeleton className="h-8 w-48 mb-4" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-60 w-full" />
+            ))}
           </div>
         </div>
       </PageLayout>
@@ -185,21 +216,22 @@ export default function AdDetailsClient({ id }: { id: string }) {
           </Link>
         </div>
 
-        {/* Nowy układ: zdjęcie po lewej, informacje po prawej */}
+        {/* Układ: zdjęcie po lewej, informacje po prawej */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Lewa kolumna - zdjęcie */}
           <div className="space-y-4">
             <div className="relative aspect-video overflow-hidden rounded-lg">
               <Image
-                src={ad.images[activeImageIndex] || "/placeholder.svg"}
+                src={ad.images[activeImageIndex].image_url}
                 alt={ad.title}
                 fill
                 className="object-cover"
+                priority
               />
             </div>
             {ad.images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
-                {ad.images.map((image: string, index: number) => (
+                {ad.images.map((imageObj: { image_url: string }, index: number) => (
                   <div
                     key={index}
                     className={`relative w-24 h-24 rounded-md overflow-hidden cursor-pointer border-2 ${
@@ -208,7 +240,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
                     onClick={() => setActiveImageIndex(index)}
                   >
                     <Image
-                      src={image || "/placeholder.svg"}
+                      src={imageObj.image_url} // 🔥 Zmiana tutaj!
                       alt={`${ad.title} - zdjęcie ${index + 1}`}
                       fill
                       className="object-cover"
@@ -232,7 +264,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
               )}
               <span className="text-muted-foreground text-sm">
                 <Clock className="h-4 w-4 inline mr-1" />
-                {formatDistanceToNow(ad.createdAt, {
+                {formatDistanceToNow(new Date(ad.created_at), {
                   addSuffix: true,
                   locale: pl,
                 })}
@@ -247,22 +279,26 @@ export default function AdDetailsClient({ id }: { id: string }) {
               <span>{ad.location}</span>
             </div>
             <div className="text-3xl font-bold text-primary mb-4">
-              {ad.price.toLocaleString()} {ad.currency}
+              {typeof ad.price === "number" ? ad.price.toLocaleString() : ad.price} {ad.currency}
             </div>
 
             {/* Informacje o sprzedającym */}
             <Card className="p-4 mb-4">
               <div className="flex items-center gap-3 mb-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={ad.author.avatar} alt={ad.author.name} />
-                  <AvatarFallback>{ad.author.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
+                <Link href={`/profil/${ad.author.id}`}>
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={ad.author.avatar} alt={ad.author.name} />
+                    <AvatarFallback>{ad.author.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </Link>
                 <div>
                   <div className="flex items-center gap-1">
-                    <h3 className="font-semibold">{ad.author.name}</h3>
+                    <Link href={`/profil/${ad.author.id}`} className="hover:underline">
+                      <h3 className="font-semibold">{ad.author.name}</h3>
+                    </Link>
                     {ad.author.verified && (
                       <span className="text-primary" title="Zweryfikowany">
-                        ✓
+                        <ShieldCheck />
                       </span>
                     )}
                   </div>
@@ -271,34 +307,37 @@ export default function AdDetailsClient({ id }: { id: string }) {
                   </p>
                   <p className="text-xs text-muted-foreground">
                     <Calendar className="h-3 w-3 inline mr-1" />
-                    Na Gotpage od {ad.author.joinedAt.toLocaleDateString()}
+                    Na Gotpage od {new Date(ad.author.joinedAt).toLocaleDateString()}
                   </p>
                 </div>
               </div>
               <Separator className="my-4" />
-              <div className="space-y-3">
-                <Button className="w-full" variant="default">
-                  <Phone className="h-4 w-4 mr-2" />
-                  {ad.author.phone}
-                </Button>
-                <Button className="w-full" variant="outline">
-                  <Mail className="h-4 w-4 mr-2" />
-                  Wyślij wiadomość
-                </Button>
+              <div className="flex flex-col gap-3">
+                <a href={`tel:${ad.author.phone}`}>
+                  <Button className="w-full" variant="default">
+                    <Phone className="h-4 w-4 mr-2" />
+                    {ad.author.phone}
+                  </Button>
+                </a>
+                <a href={`sms:${ad.author.phone}?body=Witam! Mam pytanie odnośnie ogłoszenia: ${ad.title}`}>
+                  <Button className="w-full" variant="outline">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Wyślij wiadomość SMS
+                  </Button>
+                </a>
               </div>
             </Card>
 
             {/* Akcje */}
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={handleLike}>
-                <Heart className="h-4 w-4 mr-2" />
-                Polub ({ad.likes})
-              </Button>
+              <div className="flex-1 items-center justify-center rounded-md px-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground">
+                <LikeButton adId={ad.id} initialLikes={ad.likes || 0} className="flex-1" showCount={true} size="lg" />
+              </div>
               <Button variant="outline" className="flex-1">
                 <Share2 className="h-4 w-4 mr-2" />
                 Udostępnij
               </Button>
-              <Button variant="outline" className="flex-1 text-destructive">
+              <Button variant="outline" className="flex-1 text-red-500 hover:text-red-500 hover:font-bold">
                 <Flag className="h-4 w-4 mr-2" />
                 Zgłoś
               </Button>
@@ -321,45 +360,148 @@ export default function AdDetailsClient({ id }: { id: string }) {
           </TabsList>
           <TabsContent value="description" className="mt-4">
             <Card className="p-4">
-              <div className="whitespace-pre-line">{ad.content}</div>
+              <div className="whitespace-pre-line">{ad.content || ad.description}</div>
             </Card>
           </TabsContent>
           <TabsContent value="parameters" className="mt-4">
             <Card className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {ad.parameters.map((param: any, index: number) => (
-                  <div key={index} className="flex justify-between p-2 border-b">
-                    <span className="text-muted-foreground">{param.name}:</span>
-                    <span className="font-medium">{param.value}</span>
-                  </div>
-                ))}
+                {ad.parameters &&
+                  ad.parameters.map((param: any, index: number) => (
+                    <div key={index} className="flex justify-between p-2 border-b">
+                      <span className="text-muted-foreground">{param.name}:</span>
+                      <span className="font-medium">{param.value}</span>
+                    </div>
+                  ))}
+
+                {/* Wyświetlanie pól specyficznych dla kategorii */}
+                {ad.category === "Nieruchomości" && (
+                  <>
+                    {ad.square_meters && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Powierzchnia:</span>
+                        <span className="font-medium">{ad.square_meters} m²</span>
+                      </div>
+                    )}
+                    {ad.rooms && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Liczba pokoi:</span>
+                        <span className="font-medium">{ad.rooms}</span>
+                      </div>
+                    )}
+                    {ad.floor && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Piętro:</span>
+                        <span className="font-medium">
+                          {ad.floor} <span className="text-muted-foreground">/{ad.total_floors || "?"}</span>
+                        </span>
+                      </div>
+                    )}
+                    {ad.year_built && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Rok budowy:</span>
+                        <span className="font-medium">{ad.year_built}</span>
+                      </div>
+                    )}
+                    {ad.heating_type && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Ogrzewanie:</span>
+                        <span className="font-medium">{ad.heating_type}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between p-2 border-b">
+                      <span className="text-muted-foreground">Balkon:</span>
+                      <span className="font-medium">{ad.has_balcony ? "Tak" : "Nie"}</span>
+                    </div>
+                    <div className="flex justify-between p-2 border-b">
+                      <span className="text-muted-foreground">Garaż:</span>
+                      <span className="font-medium">{ad.has_garage ? "Tak" : "Nie"}</span>
+                    </div>
+                  </>
+                )}
+
+                {ad.category === "Motoryzacja" && (
+                  <>
+                    {ad.make && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Marka:</span>
+                        <span className="font-medium">{ad.make}</span>
+                      </div>
+                    )}
+                    {ad.model && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Model:</span>
+                        <span className="font-medium">{ad.model}</span>
+                      </div>
+                    )}
+                    {ad.year && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Rok produkcji:</span>
+                        <span className="font-medium">{ad.year}</span>
+                      </div>
+                    )}
+                    {ad.mileage && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Przebieg:</span>
+                        <span className="font-medium">{ad.mileage.toLocaleString()} km</span>
+                      </div>
+                    )}
+                    {ad.fuel_type && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Rodzaj paliwa:</span>
+                        <span className="font-medium">{ad.fuel_type}</span>
+                      </div>
+                    )}
+                    {ad.transmission && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Skrzynia biegów:</span>
+                        <span className="font-medium">{ad.transmission}</span>
+                      </div>
+                    )}
+                    {ad.engine_size && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Pojemność silnika:</span>
+                        <span className="font-medium">{ad.engine_size} cm³</span>
+                      </div>
+                    )}
+                    {ad.color && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Kolor:</span>
+                        <span className="font-medium">{ad.color}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {ad.category === "Elektronika" && (
+                  <>
+                    {ad.brand && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Marka:</span>
+                        <span className="font-medium">{ad.brand}</span>
+                      </div>
+                    )}
+                    {ad.condition_type && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Stan:</span>
+                        <span className="font-medium">{ad.condition_type}</span>
+                      </div>
+                    )}
+                    {ad.warranty_months && (
+                      <div className="flex justify-between p-2 border-b">
+                        <span className="text-muted-foreground">Gwarancja:</span>
+                        <span className="font-medium">{ad.warranty_months} miesięcy</span>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </Card>
           </TabsContent>
           <TabsContent value="comments" className="mt-4">
             <Card className="p-4">
               <div className="space-y-4">
-                {ad.comments.map((comment: any) => (
-                  <div key={comment.id} className={`p-3 rounded-lg ${comment.isAuthor ? "bg-primary/10" : "bg-muted"}`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={comment.author.avatar} alt={comment.author.name} />
-                        <AvatarFallback>{comment.author.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium text-sm">{comment.author.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(comment.createdAt, {
-                            addSuffix: true,
-                            locale: pl,
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                    <p>{comment.content}</p>
-                  </div>
-                ))}
-                <form onSubmit={handleComment} className="mt-4">
+                <form onSubmit={handleComment} className="mb-6">
                   <div className="flex gap-2">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback>TY</AvatarFallback>
@@ -376,6 +518,40 @@ export default function AdDetailsClient({ id }: { id: string }) {
                     </Button>
                   </div>
                 </form>
+
+                {ad.comments.length > 0 ? (
+                  ad.comments.map((comment: any) => (
+                    <div
+                      key={comment.id}
+                      className={`p-3 rounded-lg ${comment.isAuthor ? "bg-primary/10" : "bg-muted"}`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <Link href={`/profil/${comment.author.id}`}>
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={comment.author.avatar} alt={comment.author.name} />
+                            <AvatarFallback>{comment.author.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                        </Link>
+                        <div>
+                          <Link href={`/profil/${comment.author.id}`} className="hover:underline">
+                            <div className="font-medium text-sm">{comment.author.name}</div>
+                          </Link>
+                          <div className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(comment.created_at), {
+                              addSuffix: true,
+                              locale: pl,
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                      <p>{comment.content}</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-muted-foreground">
+                    <p>Brak komentarzy. Bądź pierwszy!</p>
+                  </div>
+                )}
               </div>
             </Card>
           </TabsContent>
@@ -384,38 +560,47 @@ export default function AdDetailsClient({ id }: { id: string }) {
         {/* Podobne ogłoszenia */}
         <div className="mb-8">
           <h2 className="text-xl font-bold mb-4">Podobne ogłoszenia</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Link href={`/ogloszenia/${i + 1}`} key={i} className="block">
-                <Card className="overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="relative h-40">
-                    <Image
-                      src={`/placeholder.svg?height=200&width=300&text=Ad+${i}`}
-                      alt={`Podobne ogłoszenie ${i}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="p-3">
-                    <h4 className="font-medium text-sm line-clamp-2">
-                      {i === 1
-                        ? "Toyota Avensis 2016, stan idealny"
-                        : i === 2
-                          ? "Honda Civic 2019, niski przebieg"
-                          : i === 3
-                            ? "Mazda 3 2017, pierwszy właściciel"
-                            : "Volkswagen Golf 2020, jak nowy"}
-                    </h4>
-                    <p className="text-primary font-semibold text-sm mt-1">{(45000 + i * 5000).toLocaleString()} PLN</p>
-                    <div className="flex items-center text-xs text-muted-foreground mt-1">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      {i === 1 ? "Warszawa" : i === 2 ? "Kraków" : i === 3 ? "Poznań" : "Wrocław"}
+
+          {isSimilarAdsLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-60 w-full" />
+              ))}
+            </div>
+          ) : similarAds.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {similarAds.map((similarAd) => (
+                <Link href={`/ogloszenia/${similarAd.id}`} key={similarAd.id} className="block">
+                  <Card className="overflow-hidden hover:shadow-md transition-shadow">
+                    <div className="relative h-40">
+                      <Image
+                        src={similarAd.image || "/placeholder.svg?height=200&width=300"}
+                        alt={similarAd.title}
+                        fill
+                        className="object-cover"
+                      />
                     </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
+                    <div className="p-3">
+                      <h4 className="font-medium text-sm line-clamp-2">{similarAd.title}</h4>
+                      <p className="text-primary font-semibold text-sm mt-1">
+                        {similarAd.price
+                          ? `${similarAd.price.toLocaleString()} ${similarAd.currency || "PLN"}`
+                          : "Cena do negocjacji"}
+                      </p>
+                      <div className="flex items-center text-xs text-muted-foreground mt-1">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        {similarAd.location}
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Brak podobnych ogłoszeń</p>
+            </div>
+          )}
         </div>
       </div>
     </PageLayout>

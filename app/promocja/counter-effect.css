@@ -1,0 +1,27 @@
+/* Efekt licznika */
+.counter-effect {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .counter-effect::after {
+    /* border-radius: 15px; */
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 24%), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 2s infinite;
+}
+  
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  
+  

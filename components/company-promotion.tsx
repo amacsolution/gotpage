@@ -3,172 +3,163 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { CheckCircle, Rocket, Sparkles, Crown } from "lucide-react"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
+import { Loader2 } from "lucide-react"
 
 interface CompanyPromotionProps {
-  isPromoted: boolean
+  isPromoted?: boolean
   promotionEndDate?: string
   promotionPlan?: string
 }
 
 export function CompanyPromotion({ isPromoted = false, promotionEndDate, promotionPlan }: CompanyPromotionProps) {
+  const [selectedPlan, setSelectedPlan] = useState<string>("standard")
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
-  const handlePromotionPurchase = async (plan: string) => {
+  const plans = [
+    {
+      id: "standard",
+      name: "Standard",
+      price: 49.99,
+      features: ["Wyróżnienie firmy w katalogu", "Priorytetowe wyświetlanie ogłoszeń", "30 dni promocji"],
+    },
+    {
+      id: "premium",
+      name: "Premium",
+      price: 99.99,
+      features: [
+        "Wszystkie funkcje planu Standard",
+        "Oznaczenie jako Zweryfikowana Firma",
+        "Wyświetlanie w sekcji polecanych",
+        "60 dni promocji",
+      ],
+    },
+    {
+      id: "vip",
+      name: "VIP",
+      price: 199.99,
+      features: [
+        "Wszystkie funkcje planu Premium",
+        "Dedykowany baner na stronie głównej",
+        "Priorytetowa obsługa klienta",
+        "90 dni promocji",
+      ],
+    },
+  ]
+
+  const handlePromotion = async () => {
     setIsLoading(true)
 
-    // Symulacja opóźnienia
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    try {
+      // Tutaj będzie integracja z systemem płatności Stripe
+      toast({
+        title: "Przekierowanie do płatności",
+        description: "Za chwilę zostaniesz przekierowany do systemu płatności",
+      })
 
-    toast({
-      title: "Promocja zakupiona",
-      description: `Twój profil będzie promowany przez 30 dni w planie ${plan}`,
-    })
+      // Symulacja opóźnienia
+      await new Promise((resolve) => setTimeout(resolve, 1500))
 
-    setIsLoading(false)
+      // Przekierowanie do Stripe (w rzeczywistej implementacji)
+      window.location.href = `/api/stripe/create-checkout?plan=${selectedPlan}`
+    } catch (error) {
+      toast({
+        title: "Błąd",
+        description: "Wystąpił błąd podczas przetwarzania płatności",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <>
-      <h2 className="text-xl font-semibold mb-4">Promowanie profilu firmy</h2>
-
-      {isPromoted ? (
-        <div className="bg-primary/10 p-4 rounded-lg mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <CheckCircle className="h-5 w-5 text-primary" />
-            <h3 className="font-semibold">Twój profil jest promowany</h3>
-          </div>
-          <p className="text-muted-foreground mb-2">
-            Twój profil jest promowany do {promotionEndDate} w planie {promotionPlan}.
-          </p>
-          <Button variant="outline" size="sm">
-            Przedłuż promocję
-          </Button>
-        </div>
-      ) : (
-        <p className="text-muted-foreground mb-6">
-          Promuj swój profil, aby zwiększyć widoczność i przyciągnąć więcej klientów. Promowane profile są wyświetlane
-          na stronie głównej oraz na górze wyników wyszukiwania.
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold mb-2">Promowanie firmy</h2>
+        <p className="text-muted-foreground">
+          Promuj swoją firmę, aby zwiększyć widoczność i przyciągnąć więcej klientów.
         </p>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Plan Standard */}
-        <Card>
-          <CardHeader>
-            <div className="p-2 rounded-full bg-blue-100 text-blue-500 w-fit">
-              <Rocket className="h-6 w-6" />
-            </div>
-            <CardTitle>Standard</CardTitle>
-            <CardDescription>Podstawowa promocja profilu firmy na 30 dni</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold mb-4">50 PLN</p>
-            <ul className="space-y-2">
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                <span className="text-sm">Wyróżnienie w katalogu firm</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                <span className="text-sm">Wyższa pozycja w wynikach wyszukiwania</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                <span className="text-sm">30 dni promocji</span>
-              </li>
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full" onClick={() => handlePromotionPurchase("Standard")} disabled={isLoading}>
-              {isLoading ? "Przetwarzanie..." : "Wybierz"}
-            </Button>
-          </CardFooter>
-        </Card>
-
-        {/* Plan Premium */}
-        <Card className="border-primary">
-          <CardHeader>
-            <div className="p-2 rounded-full bg-purple-100 text-purple-500 w-fit">
-              <Sparkles className="h-6 w-6" />
-            </div>
-            <div className="flex items-center gap-2">
-              <CardTitle>Premium</CardTitle>
-              <Badge variant="outline" className="text-primary border-primary/30">
-                Popularne
-              </Badge>
-            </div>
-            <CardDescription>Rozszerzona promocja profilu firmy na 30 dni</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold mb-4">100 PLN</p>
-            <ul className="space-y-2">
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                <span className="text-sm">Wszystko co w Standard</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                <span className="text-sm">Wyświetlanie na stronie głównej</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                <span className="text-sm">Większe logo firmy</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                <span className="text-sm">Oznaczenie "Premium"</span>
-              </li>
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full" onClick={() => handlePromotionPurchase("Premium")} disabled={isLoading}>
-              {isLoading ? "Przetwarzanie..." : "Wybierz"}
-            </Button>
-          </CardFooter>
-        </Card>
-
-        {/* Plan VIP */}
-        <Card>
-          <CardHeader>
-            <div className="p-2 rounded-full bg-amber-100 text-amber-500 w-fit">
-              <Crown className="h-6 w-6" />
-            </div>
-            <CardTitle>VIP</CardTitle>
-            <CardDescription>Maksymalna promocja profilu firmy na 30 dni</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold mb-4">200 PLN</p>
-            <ul className="space-y-2">
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                <span className="text-sm">Wszystko co w Premium</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                <span className="text-sm">Najwyższa pozycja w wynikach</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                <span className="text-sm">Oznaczenie "VIP"</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                <span className="text-sm">Priorytetowe wsparcie</span>
-              </li>
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full" onClick={() => handlePromotionPurchase("VIP")} disabled={isLoading}>
-              {isLoading ? "Przetwarzanie..." : "Wybierz"}
-            </Button>
-          </CardFooter>
-        </Card>
       </div>
-    </>
+
+      {isPromoted && promotionEndDate ? (
+        <Card className="bg-primary/5 border-primary/20">
+          <CardHeader>
+            <CardTitle>Aktywna promocja</CardTitle>
+            <CardDescription>
+              Twoja firma jest obecnie promowana w planie <strong>{promotionPlan || "Standard"}</strong>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>
+              Promocja aktywna do: <strong>{new Date(promotionEndDate).toLocaleDateString()}</strong>
+            </p>
+            <p className="mt-4">
+              Dzięki promocji Twoja firma jest wyróżniona w katalogu firm, a Twoje ogłoszenia mają wyższy priorytet
+              wyświetlania.
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" onClick={() => (window.location.href = "/firmy")}>
+              Zobacz swój profil w katalogu
+            </Button>
+          </CardFooter>
+        </Card>
+      ) : (
+        <>
+          <div className="grid gap-6 md:grid-cols-3">
+            {plans.map((plan) => (
+              <Card
+                key={plan.id}
+                className={`${
+                  selectedPlan === plan.id ? "border-primary" : ""
+                } cursor-pointer hover:border-primary/50 transition-colors`}
+                onClick={() => setSelectedPlan(plan.id)}
+              >
+                <CardHeader>
+                  <CardTitle>{plan.name}</CardTitle>
+                  <CardDescription>
+                    <span className="text-xl font-bold">{plan.price} PLN</span> / miesiąc
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <RadioGroup value={selectedPlan} onValueChange={setSelectedPlan}>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value={plan.id} id={plan.id} />
+                      <Label htmlFor={plan.id}>Wybierz plan {plan.name}</Label>
+                    </div>
+                  </RadioGroup>
+                  <ul className="mt-4 space-y-2 text-sm">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-center">
+                        <span className="mr-2 text-primary">✓</span>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="flex justify-end">
+            <Button onClick={handlePromotion} disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Przetwarzanie...
+                </>
+              ) : (
+                "Promuj firmę"
+              )}
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
   )
 }
 

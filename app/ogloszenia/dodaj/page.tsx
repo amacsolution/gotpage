@@ -24,17 +24,18 @@ const categories = [
     name: "Motoryzacja",
     subcategories: ["Samochody osobowe", "Motocykle", "Części", "Przyczepy", "Ciężarowe", "Inne pojazdy"],
     fields: [
-      { name: "marka", label: "Marka", type: "text", required: true },
-      { name: "model", label: "Model", type: "text", required: true },
-      { name: "rok", label: "Rok produkcji", type: "number", required: true },
-      { name: "przebieg", label: "Przebieg (km)", type: "number", required: false },
-      { name: "pojemnosc", label: "Pojemność silnika (cm³)", type: "number", required: false },
+      { name: "marka", label: "Marka", type: "text", required: true, dbField: "make" },
+      { name: "model", label: "Model", type: "text", required: true, dbField: "model" },
+      { name: "rok", label: "Rok produkcji", type: "number", required: true, dbField: "year" },
+      { name: "przebieg", label: "Przebieg (km)", type: "number", required: false, dbField: "mileage" },
+      { name: "pojemnosc", label: "Pojemność silnika (cm³)", type: "number", required: false, dbField: "engine_size" },
       {
         name: "paliwo",
         label: "Rodzaj paliwa",
         type: "select",
         options: ["Benzyna", "Diesel", "LPG", "Elektryczny", "Hybryda"],
         required: false,
+        dbField: "fuel_type",
       },
       {
         name: "skrzynia",
@@ -42,6 +43,7 @@ const categories = [
         type: "select",
         options: ["Manualna", "Automatyczna"],
         required: false,
+        dbField: "transmission",
       },
     ],
   },
@@ -50,18 +52,19 @@ const categories = [
     name: "Nieruchomości",
     subcategories: ["Mieszkania", "Domy", "Działki", "Biura", "Garaże", "Pokoje"],
     fields: [
-      { name: "powierzchnia", label: "Powierzchnia (m²)", type: "number", required: true },
-      { name: "liczba_pokoi", label: "Liczba pokoi", type: "number", required: false },
-      { name: "pietro", label: "Piętro", type: "number", required: false },
-      { name: "rok_budowy", label: "Rok budowy", type: "number", required: false },
+      { name: "powierzchnia", label: "Powierzchnia (m²)", type: "number", required: true, dbField: "square_meters" },
+      { name: "liczba_pokoi", label: "Liczba pokoi", type: "number", required: false, dbField: "rooms" },
+      { name: "pietro", label: "Piętro", type: "number", required: false, dbField: "floor" },
+      { name: "rok_budowy", label: "Rok budowy", type: "number", required: false, dbField: "year_built" },
       {
         name: "stan",
         label: "Stan",
         type: "select",
         options: ["Nowy", "Bardzo dobry", "Dobry", "Do remontu"],
         required: false,
+        dbField: "heating_type", // Używamy heating_type do przechowywania stanu
       },
-      { name: "umeblowane", label: "Umeblowane", type: "checkbox", required: false },
+      { name: "umeblowane", label: "Umeblowane", type: "checkbox", required: false, dbField: "has_balcony" }, // Używamy has_balcony do przechowywania informacji o umeblowaniu
     ],
   },
   {
@@ -69,16 +72,17 @@ const categories = [
     name: "Elektronika",
     subcategories: ["Telefony", "Komputery", "RTV", "Konsole", "Fotografia", "Akcesoria"],
     fields: [
-      { name: "marka", label: "Marka", type: "text", required: true },
-      { name: "model", label: "Model", type: "text", required: true },
+      { name: "marka", label: "Marka", type: "text", required: true, dbField: "brand" },
+      { name: "model", label: "Model", type: "text", required: true, dbField: "model" },
       {
         name: "stan",
         label: "Stan",
         type: "select",
         options: ["Nowy", "Używany - jak nowy", "Używany - dobry", "Używany - widoczne ślady użytkowania"],
         required: false,
+        dbField: "condition_type",
       },
-      { name: "gwarancja", label: "Gwarancja", type: "checkbox", required: false },
+      { name: "gwarancja", label: "Gwarancja", type: "checkbox", required: false, dbField: "warranty_months" },
     ],
   },
   {
@@ -86,17 +90,18 @@ const categories = [
     name: "Moda",
     subcategories: ["Ubrania", "Buty", "Dodatki", "Biżuteria", "Torebki", "Zegarki"],
     fields: [
-      { name: "marka", label: "Marka", type: "text", required: false },
-      { name: "rozmiar", label: "Rozmiar", type: "text", required: true },
+      { name: "marka", label: "Marka", type: "text", required: false, dbField: "brand" },
+      { name: "rozmiar", label: "Rozmiar", type: "text", required: true, dbField: "size" },
       {
         name: "stan",
         label: "Stan",
         type: "select",
         options: ["Nowy", "Używany - jak nowy", "Używany - dobry", "Używany - widoczne ślady użytkowania"],
         required: false,
+        dbField: "condition_type",
       },
-      { name: "kolor", label: "Kolor", type: "text", required: false },
-      { name: "material", label: "Materiał", type: "text", required: false },
+      { name: "kolor", label: "Kolor", type: "text", required: false, dbField: "color" },
+      { name: "material", label: "Materiał", type: "text", required: false, dbField: "material" },
     ],
   },
   {
@@ -104,9 +109,9 @@ const categories = [
     name: "Usługi",
     subcategories: ["Remonty", "Transport", "Korepetycje", "Sprzątanie", "Ogrodnicze", "Finansowe"],
     fields: [
-      { name: "doswiadczenie", label: "Doświadczenie (lata)", type: "number", required: false },
-      { name: "dostepnosc", label: "Dostępność", type: "text", required: false },
-      { name: "dojazd", label: "Możliwość dojazdu", type: "checkbox", required: false },
+      { name: "doswiadczenie", label: "Doświadczenie (lata)", type: "number", required: false, dbField: "job_type" },
+      { name: "dostepnosc", label: "Dostępność", type: "text", required: false, dbField: "availability" },
+      { name: "dojazd", label: "Możliwość dojazdu", type: "checkbox", required: false, dbField: "has_garage" }, // Używamy has_garage do przechowywania informacji o możliwości dojazdu
     ],
   },
 ]
@@ -136,6 +141,9 @@ const createFormSchema = (selectedCategory: string, selectedSubcategory: string)
     }),
     subcategory: z.string().optional(),
     price: z.string().optional(),
+    location: z.string().min(2, {
+      message: "Lokalizacja musi mieć co najmniej 2 znaki",
+    }),
     isPromoted: z.boolean().default(false),
   })
 
@@ -185,6 +193,7 @@ export default function AddAdPage() {
   const [categoryFields, setCategoryFields] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isDataLoading, setIsDataLoading] = useState(true)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
 
   // Dynamicznie tworzymy schemat formularza
   const formSchema = createFormSchema(selectedCategory, selectedSubcategory)
@@ -198,6 +207,7 @@ export default function AddAdPage() {
       category: "",
       subcategory: "",
       price: "",
+      location: "",
       isPromoted: false,
     },
   })
@@ -259,18 +269,92 @@ export default function AddAdPage() {
     form.setValue("subcategory", value)
   }
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files)
-      setSelectedImages((prev) => [...prev, ...files])
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      // Sprawdzenie limitu zdjęć
+      if (selectedImages.length + e.target.files.length > 5) {
+        toast({
+          title: "Limit zdjęć",
+          description: "Możesz dodać maksymalnie 5 zdjęć",
+          variant: "destructive",
+        })
+        return
+      }
 
-      // Create URLs for preview
-      const newUrls = files.map((file) => URL.createObjectURL(file))
-      setImageUrls((prev) => [...prev, ...newUrls])
+      setIsUploadingImage(true)
+
+      try {
+        const files = Array.from(e.target.files)
+
+        // Przesyłanie zdjęć pojedynczo
+        for (const file of files) {
+          // Sprawdzenie typu pliku
+          if (!file.type.startsWith("image/")) {
+            toast({
+              title: "Nieprawidłowy format",
+              description: "Akceptowane są tylko obrazy",
+              variant: "destructive",
+            })
+            continue
+          }
+
+          // Sprawdzenie rozmiaru pliku
+          if (file.size > 5 * 1024 * 1024) {
+            // 5MB
+            toast({
+              title: "Plik zbyt duży",
+              description: "Maksymalny rozmiar pliku to 5MB",
+              variant: "destructive",
+            })
+            continue
+          }
+
+          // Przesłanie zdjęcia na serwer
+          const formData = new FormData()
+          formData.append("file", file)
+
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          })
+
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error || "Nie udało się przesłać zdjęcia")
+          }
+
+          const data = await response.json()
+
+          // Dodanie zdjęcia do stanu
+          setSelectedImages((prev) => [...prev, file])
+          setImageUrls((prev) => [...prev, data.url])
+        }
+
+        toast({
+          title: "Sukces",
+          description: "Zdjęcia zostały przesłane",
+        })
+      } catch (error) {
+        console.error("Błąd podczas przesyłania zdjęć:", error)
+        toast({
+          title: "Błąd",
+          description: error instanceof Error ? error.message : "Nie udało się przesłać zdjęć",
+          variant: "destructive",
+        })
+      } finally {
+        setIsUploadingImage(false)
+      }
     }
   }
 
   const removeImage = (index: number) => {
+    // Usunięcie zdjęcia z serwera
+    const imageUrl = imageUrls[index]
+    fetch(`/api/upload?url=${encodeURIComponent(imageUrl)}`, {
+      method: "DELETE",
+    })
+
+    // Usunięcie zdjęcia ze stanu
     setSelectedImages((prev) => prev.filter((_, i) => i !== index))
 
     // Revoke the URL to avoid memory leaks
@@ -279,29 +363,74 @@ export default function AddAdPage() {
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    // Sprawdzenie, czy dodano zdjęcia
+    if (selectedImages.length === 0) {
+      toast({
+        title: "Brak zdjęć",
+        description: "Dodaj przynajmniej jedno zdjęcie",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      // Tutaj byłaby rzeczywista logika dodawania ogłoszenia
-      console.log(values)
-      console.log("Selected images:", selectedImages)
+      // Przygotowanie danych formularza
+      const formData = new FormData()
 
-      // Symulacja op��źnienia
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      // Dodanie podstawowych pól
+      formData.append("title", values.title)
+      formData.append("content", values.content)
+      formData.append("category", values.category)
+      if (values.subcategory) formData.append("subcategory", values.subcategory)
+      if (values.price) formData.append("price", values.price)
+      formData.append("location", values.location)
+      formData.append("isPromoted", values.isPromoted.toString())
 
-      toast({
-        title: "Ogłoszenie dodane pomyślnie",
-        description: "Twoje ogłoszenie zostało opublikowane",
+      // Dodanie pól specyficznych dla kategorii
+      const category = categories.find((c) => c.name === selectedCategory)
+      if (category) {
+        category.fields.forEach((field) => {
+          const fieldValue = form.getValues(field.name as any)
+          if (fieldValue !== undefined && fieldValue !== "") {
+            // Używamy nazwy pola z formularza, a nie nazwy kolumny w bazie danych
+            // Backend zajmie się mapowaniem na odpowiednie kolumny
+            formData.append(field.name, fieldValue.toString())
+          }
+        })
+      }
+
+      // Dodanie zdjęć
+      selectedImages.forEach((image) => {
+        formData.append("images", image)
       })
 
-      // Przekierowanie na stronę ogłoszeń
-      setTimeout(() => {
-        router.push("/ogloszenia")
-      }, 2000)
+      // Wysłanie formularza
+      const response = await fetch("/api/ads", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Nie udało się dodać ogłoszenia")
+      }
+
+      const data = await response.json()
+
+      toast({
+        title: "Sukces",
+        description: "Ogłoszenie zostało dodane pomyślnie",
+      })
+
+      // Przekierowanie na stronę ogłoszenia
+      router.push(`/ogloszenia/${data.adId}`)
     } catch (error) {
+      console.error("Błąd podczas dodawania ogłoszenia:", error)
       toast({
         title: "Błąd",
-        description: "Nie udało się dodać ogłoszenia. Spróbuj ponownie później.",
+        description: error instanceof Error ? error.message : "Nie udało się dodać ogłoszenia",
         variant: "destructive",
       })
     } finally {
@@ -412,6 +541,21 @@ export default function AddAdPage() {
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Lokalizacja</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Np. Warszawa, Mazowieckie" {...field} />
+                    </FormControl>
+                    <FormDescription>Podaj miasto i województwo</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Dynamiczne pola dla wybranej kategorii */}
               {categoryFields.length > 0 && (
@@ -552,9 +696,22 @@ export default function AddAdPage() {
                       </div>
                     ))}
                     <label className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed rounded-md border-muted-foreground/25 cursor-pointer hover:border-primary/50 transition-colors">
-                      <ImagePlus className="h-6 w-6 text-muted-foreground" />
-                      <span className="mt-2 text-xs text-muted-foreground">Dodaj zdjęcie</span>
-                      <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} multiple />
+                      {isUploadingImage ? (
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      ) : (
+                        <>
+                          <ImagePlus className="h-6 w-6 text-muted-foreground" />
+                          <span className="mt-2 text-xs text-muted-foreground">Dodaj zdjęcie</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageChange}
+                        multiple
+                        disabled={isUploadingImage || selectedImages.length >= 5}
+                      />
                     </label>
                   </div>
                   <FormDescription>Możesz dodać do 5 zdjęć. Maksymalny rozmiar: 5MB.</FormDescription>
@@ -602,4 +759,3 @@ export default function AddAdPage() {
     </PageLayout>
   )
 }
-

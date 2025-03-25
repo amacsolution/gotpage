@@ -1,0 +1,103 @@
+import { NextResponse } from "next/server"
+import { query } from "@/lib/db"
+import { auth } from "@/lib/auth"
+
+export async function GET(request: Request) {
+  try {
+    // Sprawdzenie, czy użytkownik jest zalogowany
+    const user = await auth(request)
+    if (!user) {
+      return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
+    }
+
+    // Pobranie podstawowych danych użytkownika - optymalizacja zapytania
+    const users = await query(
+      `SELECT 
+        u.id, 
+        u.name, 
+        u.email, 
+        u.phone, 
+        u.bio, 
+        u.avatar, 
+        u.type, 
+        u.verified, 
+        u.created_at as joinedAt, 
+        u.location, 
+        u.categories,
+        (SELECT COUNT(*) FROM ads WHERE user_id = u.id) as ads_count,
+        (SELECT SUM(views) FROM ads WHERE user_id = u.id) as views_count,
+        (SELECT COUNT(*) FROM ad_likes WHERE ad_id IN (SELECT id FROM ads WHERE user_id = u.id)) as likes_count,
+        (SELECT COUNT(*) FROM user_reviews WHERE user_id = u.id) as reviews_count,
+        (SELECT AVG(rating) FROM user_reviews WHERE user_id = u.id) as rating_avg
+      FROM users u
+      WHERE u.id = ?
+      LIMIT 1`,
+      [user.id],
+    )
+
+    if (!Array.isArray(users) || users.length === 0) {
+      return NextResponse.json({ error: "Nie znaleziono użytkownika" }, { status: 404 })
+    }
+
+    const userData = users[0]
+
+    // Sprawdzenie czy użytkownik ma aktywną promocję (tylko dla firm)
+    let promotionData = null
+    if (userData.type === "business") {
+      try {
+        // Sprawdzamy czy tabela user_promotions istnieje
+        const promotions = await query(
+          `SELECT 
+            plan, 
+            active, 
+            end_date as endDate 
+          FROM user_promotions 
+          WHERE user_id = ? AND active = 1 AND end_date > NOW() 
+          ORDER BY end_date DESC 
+          LIMIT 1`,
+          [user.id],
+        )
+
+        if (Array.isArray(promotions) && promotions.length > 0) {
+          promotionData = {
+            active: true,
+            plan: promotions[0].plan,
+            endDate: promotions[0].endDate,
+          }
+        }
+      } catch (error) {
+        // Jeśli tabela nie istnieje lub wystąpił inny błąd, ignorujemy go
+        console.error("Błąd podczas pobierania danych promocji:", error)
+      }
+    }
+
+    // Formatowanie danych
+    const formattedUser = {
+      id: userData.id,
+      name: userData.name,
+      email: userData.email,
+      phone: userData.phone || "",
+      bio: userData.bio || "",
+      avatar: userData.avatar,
+      type: userData.type,
+      verified: userData.verified === 1,
+      joinedAt: userData.joinedAt,
+      location: userData.location || "",
+      categories: userData.categories ? JSON.parse(userData.categories) : [],
+      stats: {
+        ads: userData.ads_count || 0,
+        views: userData.views_count || 0,
+        likes: userData.likes_count || 0,
+        reviews: userData.reviews_count || 0,
+        rating: userData.rating_avg || 0,
+      },
+      promotion: promotionData,
+    }
+
+    return NextResponse.json(formattedUser)
+  } catch (error) {
+    console.error("Błąd podczas pobierania danych profilu:", error)
+    return NextResponse.json({ error: "Wystąpił błąd podczas pobierania danych profilu" }, { status: 500 })
+  }
+}
+

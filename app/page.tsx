@@ -155,7 +155,7 @@ const featuredCompanies = [
 export default function HomePage() {
   return (
     <PageLayout>
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-visible ">
         <div className="container grid items-center gap-6 pb-8 pt-6 md:py-10 relative">
           <HeroAnimation />
           <div className="flex max-w-[980px] flex-col items-start gap-2 z-10">
@@ -167,7 +167,7 @@ export default function HomePage() {
               Publikuj ogłoszenia, przeglądaj oferty i nawiązuj kontakty w nowoczesnym i przejrzystym interfejsie.
             </p>
           </div>
-          <div className="flex gap-4 z-10">
+          <div className="flex gap-4 z-10 flex-wrap">
             <Link href="/ogloszenia/dodaj">
               <Button size="lg">Dodaj ogłoszenie</Button>
             </Link>

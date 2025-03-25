@@ -1,65 +1,71 @@
 import { NextResponse } from "next/server"
-import bcryptjs from "bcryptjs" // Changed from bcrypt to bcryptjs
-import jwt from "jsonwebtoken"
 import { cookies } from "next/headers"
-import { getUserByEmail } from "@/lib/db"
-import { RowDataPacket } from "mysql2"
+import { query } from "@/lib/db"
+import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
 
-export async function POST(req: Request) {
-try {
-  const body = await req.json()
-  const { email, password } = body
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    const { email, password } = body
 
-  // Sprawdzenie, czy wszystkie wymagane pola są wypełnione
-  if (!email || !password) {
-    return NextResponse.json({ error: "Email i hasło są wymagane" }, { status: 400 })
-  }
+    // Walidacja danych wejściowych
+    if (!email || !password) {
+      return NextResponse.json({ error: "Email i hasło są wymagane" }, { status: 400 })
+    }
 
-  // Sprawdzenie, czy użytkownik istnieje
-  const users = await getUserByEmail(email)
-  const user = Array.isArray(users) && users.length > 0 ? (users[0] as RowDataPacket & { password: string, id: number, email: string, name: string, type: string, verified: boolean }) : null
+    // Sprawdzenie czy użytkownik istnieje
+    const users = await query("SELECT id, name, email, password, type, verified FROM users WHERE email = ?", [email])
 
-  if (!user) {
-    return NextResponse.json({ error: "Nieprawidłowy email lub hasło" }, { status: 401 })
-  }
+    if (!Array.isArray(users) || users.length === 0) {
+      return NextResponse.json({ error: "Nieprawidłowy email lub hasło" }, { status: 401 })
+    }
 
-  // Sprawdzenie hasła
-  const passwordMatch = await bcryptjs.compare(password, user.password) // Changed from bcrypt to bcryptjs
-  if (!passwordMatch) {
-    return NextResponse.json({ error: "Nieprawidłowy email lub hasło" }, { status: 401 })
-  }
+    const user = users[0]
 
-  // Tworzenie tokenu JWT
-  const token = jwt.sign(
-    {
+    // Weryfikacja hasła
+    const isPasswordValid = await bcrypt.compare(password, user.password)
+
+    if (!isPasswordValid) {
+      return NextResponse.json({ error: "Nieprawidłowy email lub hasło" }, { status: 401 })
+    }
+
+    // Generowanie tokenu JWT
+    const token = jwt.sign(
+      {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        type: user.type,
+        verified: user.verified,
+      },
+      process.env.JWT_SECRET || "default_secret",
+      { expiresIn: "7d" },
+    )
+
+    // Ustawienie ciasteczka z tokenem
+    cookies().set({
+      name: "auth_token",
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7, // 7 dni
+    })
+
+    // Zwrócenie podstawowych informacji o użytkowniku (bez hasła)
+    return NextResponse.json({
       id: user.id,
-      email: user.email,
       name: user.name,
+      email: user.email,
       type: user.type,
       verified: user.verified,
-    },
-    process.env.JWT_SECRET || "secret",
-    { expiresIn: "7d" },
-  )
-
-  const cookieStore = await cookies()
-  cookieStore.set({
-    name: "auth_token",
-    value: token,
-    httpOnly: true,
-    path: "/",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 7, // 7 dni
-  })
-
-  // Zwrócenie danych użytkownika (bez hasła)
-  const { password: userPassword, ...userWithoutPassword } = user
-  return NextResponse.json({
-    message: "Zalogowano pomyślnie",
-    user: userWithoutPassword,
-  })
-} catch (error) {
-  console.error("Błąd podczas logowania:", error)
-  return NextResponse.json({ error: "Wystąpił błąd podczas logowania" }, { status: 500 })
+      authChange: true, // Dodanie flagi dla klienta
+    })
+  } catch (error) {
+    console.error("Błąd podczas logowania:", error)
+    return NextResponse.json({ error: "Wystąpił błąd podczas logowania" }, { status: 500 })
+  }
 }
-}
+

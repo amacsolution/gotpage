@@ -1,56 +1,75 @@
 import { NextResponse } from "next/server"
+import { query } from "@/lib/db"
 import bcrypt from "bcryptjs"
-import { createUser, getUserByEmail } from "@/lib/db"
-import { validateNIP } from "@/lib/utils"
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const body = await req.json()
-    const { name, email, password, type, bio, phone, nip } = body
+    const body = await request.json()
+    const { name, email, password, type, bio, phone, nip, location, categories } = body
 
-    // Sprawdzenie, czy wszystkie wymagane pola są wypełnione
-    if (!name || !email || !password) {
-      return NextResponse.json({ error: "Brakujące wymagane pola" }, { status: 400 })
+    // Walidacja danych wejściowych
+    if (!name || !email || !password || !type) {
+      return NextResponse.json({ error: "Wszystkie wymagane pola muszą być wypełnione" }, { status: 400 })
     }
 
-    // Sprawdzenie, czy email jest już zajęty
-    const existingUser = await getUserByEmail(email)
-    if (Array.isArray(existingUser) && existingUser.length > 0) {
-      return NextResponse.json({ error: "Email jest już zajęty" }, { status: 400 })
-    }
+    // Sprawdzenie czy email jest już zajęty
+    const existingUsers = await query("SELECT id FROM users WHERE email = ?", [email])
 
-    // Sprawdzenie NIP dla firm
-    if (type === "business") {
-      if (!nip) {
-        return NextResponse.json({ error: "NIP jest wymagany dla firm" }, { status: 400 })
-      }
-
-      if (!validateNIP(nip)) {
-        return NextResponse.json({ error: "Nieprawidłowy format NIP" }, { status: 400 })
-      }
-
-      if (!phone) {
-        return NextResponse.json({ error: "Numer telefonu jest wymagany dla firm" }, { status: 400 })
-      }
+    if (Array.isArray(existingUsers) && existingUsers.length > 0) {
+      return NextResponse.json({ error: "Użytkownik z tym adresem email już istnieje" }, { status: 409 })
     }
 
     // Hashowanie hasła
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Tworzenie użytkownika
-    const userData = {
-      name,
-      email,
-      password: hashedPassword,
-      type: type || "individual",
-      bio: bio || null,
-      phone: phone || null,
-      nip: type === "business" ? nip : null,
+    // Domyślny avatar
+    const avatar = `/placeholder.svg?height=100&width=100&text=${encodeURIComponent(name.substring(0, 2).toUpperCase())}`
+
+    // Wstawienie nowego użytkownika do bazy danych
+    const result = await query(
+      `INSERT INTO users (
+        name, 
+        email, 
+        phone, 
+        password, 
+        type, 
+        verified, 
+        avatar, 
+        created_at, 
+        bio, 
+        location, 
+        categories
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)`,
+      [
+        name,
+        email,
+        phone || "",
+        hashedPassword,
+        type,
+        0, // verified = false
+        avatar,
+        bio || (type === "individual" ? "Zwykły użytkownik platformy." : "Firma korzystająca z platformy."),
+        location || "",
+        JSON.stringify(categories || []),
+      ],
+    )
+
+    if (!result || !result.insertId) {
+      throw new Error("Nie udało się utworzyć użytkownika")
     }
 
-    const result = await createUser(userData)
+    // Jeśli to firma, dodaj dodatkowe informacje
+    if (type === "business" && nip) {
+      await query("INSERT INTO business_details (user_id, nip, created_at) VALUES (?, ?, NOW())", [
+        result.insertId,
+        nip,
+      ])
+    }
 
-    return NextResponse.json({ message: "Użytkownik został zarejestrowany pomyślnie" }, { status: 201 })
+    return NextResponse.json({
+      id: result.insertId,
+      message: "Użytkownik został pomyślnie zarejestrowany",
+    })
   } catch (error) {
     console.error("Błąd podczas rejestracji:", error)
     return NextResponse.json({ error: "Wystąpił błąd podczas rejestracji" }, { status: 500 })

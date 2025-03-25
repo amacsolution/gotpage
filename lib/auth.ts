@@ -1,23 +1,33 @@
 import { cookies } from "next/headers"
 import jwt from "jsonwebtoken"
-import { getUserById } from "@/lib/db"
+import { query } from "@/lib/db"
 
-export async function auth(req?: Request) {
+export interface User {
+  id: number
+  name: string
+  email: string
+  type: string
+  verified: boolean
+}
+
+export async function auth(request?: Request): Promise<User | null> {
   try {
-    // Pobieranie tokenu z ciasteczek lub nagłówka Authorization
-    let token
+    // Pobranie tokenu z ciasteczka
+    let token: string | undefined
 
-    if (req) {
-      // Dla API Routes
-      const authHeader = req.headers.get("Authorization")
+    if (request) {
+      // Jeśli mamy request, pobierz token z nagłówka Authorization
+      const authHeader = request.headers.get("Authorization")
       if (authHeader && authHeader.startsWith("Bearer ")) {
         token = authHeader.substring(7)
+      } else {
+        // Jeśli nie ma tokenu w nagłówku, spróbuj pobrać z ciasteczek
+        const cookieStore =await cookies()
+        token = cookieStore.get("auth_token")?.value
       }
-    }
-
-    if (!token) {
-      // Dla Server Components
-      const cookieStore = cookies()
+    } else {
+      // Jeśli nie mamy requestu, pobierz token z ciasteczek
+      const cookieStore = await cookies()
       token = cookieStore.get("auth_token")?.value
     }
 
@@ -26,30 +36,18 @@ export async function auth(req?: Request) {
     }
 
     // Weryfikacja tokenu
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret") as any
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_secret") as User
 
-    // Pobieranie użytkownika z bazy danych
-    const users = await getUserById(decoded.id)
-    const user = Array.isArray(users) && users.length > 0 ? users[0] : null
+    // Opcjonalnie: sprawdzenie czy użytkownik nadal istnieje w bazie danych
+    const users = await query("SELECT id, name, email, type, verified FROM users WHERE id = ?", [decoded.id])
 
-    if (!user) {
+    if (!Array.isArray(users) || users.length === 0) {
       return null
     }
 
-    // Zwrócenie danych użytkownika (bez hasła)
-    const { password, ...userWithoutPassword } = user
-    return userWithoutPassword
+    return users[0] as User
   } catch (error) {
-    console.error("Błąd autoryzacji:", error)
-    return null
-  }
-}
-
-export async function getServerSession() {
-  try {
-    return await auth()
-  } catch (error) {
-    console.error("Błąd podczas pobierania sesji:", error)
+    console.error("Błąd autentykacji:", error)
     return null
   }
 }
