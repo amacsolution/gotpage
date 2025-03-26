@@ -73,7 +73,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
       return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
     }
 
-    const postId = Number.parseInt(params.id)
+    const postId = Number.parseInt(await params.id)
     if (isNaN(postId)) {
       return NextResponse.json({ error: "Nieprawidłowe ID wpisu" }, { status: 400 })
     }

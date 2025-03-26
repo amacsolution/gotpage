@@ -176,7 +176,7 @@ export function NotificationsPanel() {
     return (
       <>
         <div className="flex justify-between items-center p-2">
-          <span className="text-sm font-medium">{notifications.filter((n) => !n.isRead).length} nieprzeczytanych</span>
+          <span className="text-sm font-medium pl-2">{notifications.filter((n) => !n.isRead).length} nieprzeczytanych</span>
           <Button
             variant="ghost"
             size="sm"
@@ -184,7 +184,7 @@ export function NotificationsPanel() {
             disabled={isMarkingAllRead || notifications.every((n) => n.isRead)}
           >
             {isMarkingAllRead ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Check className="h-3 w-3 mr-1" />}
-            <span>Oznacz wszystkie jako przeczytane</span>
+            <span>Odznacz wszystkie</span>
           </Button>
         </div>
         <Separator />

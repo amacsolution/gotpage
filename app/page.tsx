@@ -1,7 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { AdFeed } from "@/components/ad-feed"
-import { CompanyCard } from "@/components/company-card"
 import { PageLayout } from "@/components/page-layout"
 import { HeroAnimation } from "@/components/hero-animations"
 import {
@@ -17,6 +16,7 @@ import {
   Rocket,
 } from "lucide-react"
 import type { Metadata } from "next"
+import CompaniesFeedLimit from "@/components/companies-feed"
 
 // Dodajemy metadane dla SEO
 export const metadata: Metadata = {
@@ -153,6 +153,8 @@ const featuredCompanies = [
 ]
 
 export default function HomePage() {
+
+
   return (
     <PageLayout>
       <div className="relative overflow-visible ">
@@ -259,19 +261,7 @@ export default function HomePage() {
         <AdFeed />
       </div>
 
-      <div className="container py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Polecane firmy</h2>
-          <Link href="/firmy" className="text-primary hover:underline flex items-center">
-            Zobacz wszystkie <ArrowRight className="ml-1 h-4 w-4" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {featuredCompanies.map((company) => (
-            <CompanyCard key={company.id} company={company} />
-          ))}
-        </div>
-      </div>
+      <CompaniesFeedLimit />
     </PageLayout>
   )
 }

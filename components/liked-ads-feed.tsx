@@ -26,7 +26,7 @@ export function LikedAdsFeed({ userId }: LikedAdsFeedProps) {
   const fetchLikedAds = async (pageNum: number) => {
     try {
       setIsLoading(true)
-      const response = await fetch(`/api/users/${userId}/liked?page=${pageNum}&limit=12`)
+      const response = await fetch(`/api/users/${userId}/liked?page=${pageNum}&limit=6`)
 
       if (!response.ok) {
         throw new Error("Nie udało się pobrać polubionych ogłoszeń")
@@ -98,7 +98,7 @@ export function LikedAdsFeed({ userId }: LikedAdsFeedProps) {
       </div>
 
       {/* Siatka ogłoszeń */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {ads.map((ad) => (
           <AdCard key={ad.id} ad={ad} image={ad.images[0]} />
         ))}

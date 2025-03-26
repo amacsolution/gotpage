@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
+import { RowDataPacket } from "mysql2"
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { searchParams } = new URL(request.url)
-    const userId = Number.parseInt(params.id)
+    const userId = Number.parseInt(await params.id)
     const page = Number.parseInt(searchParams.get("page") || "1")
     const limit = Number.parseInt(searchParams.get("limit") || "10")
     const offset = (page - 1) * limit
@@ -27,6 +28,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         a.created_at as createdAt, 
         a.promoted, 
         a.likes,
+        (SELECT image_url FROM ad_images WHERE ad_id = a.id ORDER BY id ASC LIMIT 1) as image,
         u.id as author_id, 
         u.name as author_name, 
         u.avatar as author_avatar, 
@@ -48,25 +50,25 @@ export async function GET(request: Request, { params }: { params: { id: string }
     // Pobranie całkowitej liczby ogłoszeń użytkownika
     const totalResult = await query("SELECT COUNT(*) as count FROM ads WHERE user_id = ?", [userId])
 
-    const total = Array.isArray(totalResult) && totalResult[0]?.count ? Number.parseInt(totalResult[0].count) : 0
+    const total = Array.isArray(totalResult) && (totalResult as RowDataPacket[])[0]?.count ? Number.parseInt((totalResult as RowDataPacket[])[0].count) : 0
 
     // Formatowanie danych
-    const formattedAds = ads.map((ad) => {
+    const formattedAds = ads.map((ad: any) => {
       // Bezpieczne parsowanie pola images
-      let images = []
-      if (ad.images) {
+      let image = []
+      if (ad.image) {
         try {
           // Próba parsowania jako JSON
-          images = JSON.parse(ad.images)
+          image = JSON.parse(ad.image)
         } catch (e) {
           // Jeśli nie jest prawidłowym JSON, traktuj jako pojedynczy string
-          images = [ad.images]
+          image = [ad.image]
         }
       }
 
       return {
         ...ad,
-        images,
+        image,
         author: {
           id: ad.author_id,
           name: ad.author_name,

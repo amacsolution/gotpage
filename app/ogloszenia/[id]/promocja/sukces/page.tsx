@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import Image from "next/image"
+import Image from "next/legacy/image"
 import { MainNav } from "@/components/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"

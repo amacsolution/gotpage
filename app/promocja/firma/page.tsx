@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Image from "next/image"
+import Image from "next/legacy/image"
 import { PageLayout } from "@/components/page-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"

@@ -1,7 +1,7 @@
 import type React from "react"
 import Link from "next/link"
 import { Card, CardHeader } from "@/components/ui/card"
-import Image from "next/image"
+import Image from "next/legacy/image"
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (

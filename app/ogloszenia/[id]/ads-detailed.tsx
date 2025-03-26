@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import Image from "next/image"
+import Image from "next/legacy/image"
 import { formatDistanceToNow } from "date-fns"
 import { pl } from "date-fns/locale"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -224,8 +224,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
               <Image
                 src={ad.images[activeImageIndex].image_url}
                 alt={ad.title}
-                fill
-                className="object-cover"
+                className="object-fill"
                 priority
               />
             </div>
@@ -242,8 +241,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
                     <Image
                       src={imageObj.image_url} // 🔥 Zmiana tutaj!
                       alt={`${ad.title} - zdjęcie ${index + 1}`}
-                      fill
-                      className="object-cover"
+                      className="object-fill"
                     />
                   </div>
                 ))}
@@ -576,8 +574,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
                       <Image
                         src={similarAd.image || "/placeholder.svg?height=200&width=300"}
                         alt={similarAd.title}
-                        fill
-                        className="object-cover"
+                        className="object-fill"
                       />
                     </div>
                     <div className="p-3">

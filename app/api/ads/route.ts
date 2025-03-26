@@ -156,8 +156,7 @@ export async function GET(request: Request) {
     // Formatowanie danych
     const formattedAds = ads.map((ad) => {
       return {
-        ...ad,
-        images: ad.image ? [ad.image] : [], // Konwersja pojedynczego zdjęcia na tablicę dla kompatybilności
+        ...ad, // Konwersja pojedynczego zdjęcia na tablicę dla kompatybilności
         author: {
           id: ad.author_id,
           name: ad.author_name,

@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
+import Image from "next/legacy/image"
 import { MainNav } from "@/components/main-nav"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -285,8 +285,7 @@ export default function CompaniesClientPage() {
                             <Image
                               src={company.logo || "/placeholder.svg"}
                               alt={company.name}
-                              fill
-                              className="object-cover"
+                              className="object-fill"
                             />
                           </div>
                         </div>

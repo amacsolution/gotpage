@@ -22,6 +22,9 @@ import { LikedAdsFeed } from "@/components/liked-ads-feed"
 import { CompanyPromotion } from "@/components/company-promotion"
 import { Star, Edit, Loader2 } from "lucide-react"
 import { ProfileImageUpload } from "@/components/profile-image-upload"
+import { UserReviews } from "@/components/user-reviews"
+import { NewsPostForm } from "@/components/news-post-form"
+import { NewsPost } from "@/components/news-post"
 
 interface UserData {
   id: number
@@ -73,41 +76,44 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
   const [user, setUser] = useState<UserData | null>(null)
+  const [posts, setPosts] = useState<any[]>([])
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
 
   // Pobieranie danych użytkownika - teraz z zoptymalizowanego endpointu
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        setIsFetching(true)
+  const fetchUserData = async () => {
+    try {
+      setIsFetching(true)
 
-        const response = await fetch("/api/profile", {
-          // Dodanie cache: 'no-store' zapewnia, że dane będą zawsze aktualne
-          cache: "no-store",
-        })
+      const response = await fetch("/api/profile", {
+        // Dodanie cache: 'no-store' zapewnia, że dane będą zawsze aktualne
+        cache: "no-store",
+      })
 
-        if (!response.ok) {
-          if (response.status === 401) {
-            // Jeśli użytkownik nie jest zalogowany, przekieruj do strony logowania
-            router.push("/login")
-            return
-          }
-          throw new Error("Nie udało się pobrać danych profilu")
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Jeśli użytkownik nie jest zalogowany, przekieruj do strony logowania
+          router.push("/login")
+          return
         }
-
-        const userData = await response.json()
-        setUser(userData)
-      } catch (error) {
-        console.error("Błąd podczas pobierania danych profilu:", error)
-        toast({
-          title: "Błąd",
-          description: "Nie udało się pobrać danych profilu",
-          variant: "destructive",
-        })
-      } finally {
-        setIsFetching(false)
+        throw new Error("Nie udało się pobrać danych profilu")
       }
-    }
 
+      const userData = await response.json()
+      setUser(userData)
+    } catch (error) {
+      console.error("Błąd podczas pobierania danych profilu:", error)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się pobrać danych profilu",
+        variant: "destructive",
+      })
+    } finally {
+      setIsFetching(false)
+    }
+  }
+
+  useEffect(() => {
     fetchUserData()
   }, [router, toast])
 
@@ -123,6 +129,7 @@ export default function ProfilePage() {
     },
   })
 
+  
   // Aktualizacja wartości formularza po pobraniu danych
   useEffect(() => {
     if (user) {
@@ -179,6 +186,57 @@ export default function ProfilePage() {
       setIsLoading(false)
     }
   }
+
+  // Pobieranie aktualności
+  useEffect(() => {
+    fetchPosts(1)
+  }, [])
+
+  const fetchPosts = async (pageNum: number) => {
+    try {
+      setIsLoading(true)
+
+      const user = JSON.parse(localStorage.getItem("userData") || "{}")
+      const response = await fetch(`/api/news?page=${pageNum}&limit=10&userId=${user.id}`)
+
+      if (!response.ok) {
+        throw new Error("Nie udało się pobrać aktualności")
+      }
+
+      const data = await response.json()
+
+      console.log(data)
+
+      if (pageNum === 1) {
+        setPosts(data.posts)
+      } else {
+        setPosts((prev) => [...prev, ...data.posts])
+      }
+
+      console.log(data)
+      setHasMore(pageNum < data.totalPages)
+      setPage(pageNum)
+    } catch (error) {
+      console.error("Error fetching posts:", error)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się pobrać aktualności",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handlePostCreated = (newPost: any) => {
+    setPosts((prev) => [newPost, ...prev])
+  }
+
+  const loadMore = () => {
+    const nextPage = page + 1
+    fetchPosts(nextPage)
+  }
+
 
   // Skeleton loading dla całej strony
   if (isFetching) {
@@ -440,16 +498,16 @@ export default function ProfilePage() {
           </div>
 
           <div className="md:col-span-2">
-            <Tabs defaultValue="ads">
+            <Tabs defaultValue="tablica">
               <TabsList className="w-full">
+              <TabsTrigger value="tablica" className="flex-1">
+                  Tablica
+                </TabsTrigger>
                 <TabsTrigger value="ads" className="flex-1">
                   Moje ogłoszenia
                 </TabsTrigger>
                 <TabsTrigger value="liked" className="flex-1">
                   Polubione
-                </TabsTrigger>
-                <TabsTrigger value="saved" className="flex-1">
-                  Zapisane
                 </TabsTrigger>
                 {user.type === "business" && (
                   <>
@@ -462,6 +520,60 @@ export default function ProfilePage() {
                   </>
                 )}
               </TabsList>
+              <TabsContent value="tablica" className="mt-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">Wpisy</h2>
+                  <Link href="/aktualnosci">
+                    <Button>Dodaj wpis</Button>
+                  </Link>
+                </div>
+                {user && (
+                  <NewsPostForm
+                    user={{
+                      id: user.id,
+                      name: user.name,
+                      avatar:
+                        user.avatar ||
+                        `/placeholder.svg?height=40&width=40&text=${user.name.substring(0, 2).toUpperCase()}`,
+                    }}
+                    onPostCreated={handlePostCreated}
+                  />
+                )}
+    
+                {isLoading && posts.length === 0 ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-40 w-full rounded-lg" />
+                    ))}
+                  </div>
+                ) : posts.length > 0 ? (
+                  <>
+                    {posts.map((post) => (
+                      <NewsPost key={post.id} post={post} />
+                    ))}
+    
+                    {hasMore && (
+                      <div className="flex justify-center mt-6">
+                        <Button variant="outline" onClick={loadMore} disabled={isLoading}>
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Ładowanie...
+                            </>
+                          ) : (
+                            "Załaduj więcej"
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-12 bg-muted/30 rounded-lg">
+                    <h3 className="text-lg font-medium mb-2">Brak aktualności</h3>
+                    <p className="text-muted-foreground">Dodaj nowy wpis i daj się poznać!</p>
+                  </div>
+                )}
+              </TabsContent>
               <TabsContent value="ads" className="mt-4">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold">Moje ogłoszenia</h2>
@@ -474,12 +586,6 @@ export default function ProfilePage() {
               <TabsContent value="liked" className="mt-4">
                 <h2 className="text-xl font-semibold mb-4">Polubione ogłoszenia</h2>
                 <LikedAdsFeed userId={user.id} />
-              </TabsContent>
-              <TabsContent value="saved" className="mt-4">
-                <h2 className="text-xl font-semibold mb-4">Zapisane ogłoszenia</h2>
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>Funkcja zapisanych ogłoszeń będzie dostępna wkrótce</p>
-                </div>
               </TabsContent>
               {user.type === "business" && (
                 <TabsContent value="reviews" className="mt-4">
@@ -499,28 +605,7 @@ export default function ProfilePage() {
                         <span className="font-bold">{Number(user.stats.rating)?.toFixed(1)}</span>
                         <span className="text-muted-foreground">({user.stats.reviews} opinii)</span>
                       </div>
-                      <div className="space-y-4">
-                        {/* Tutaj można dodać pobieranie opinii z API */}
-                        <div className="p-4 border rounded-lg">
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-8 w-8">
-                                <AvatarFallback>AK</AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="font-medium">Anna Kowalska</p>
-                                <p className="text-xs text-muted-foreground">2 tygodnie temu</p>
-                              </div>
-                            </div>
-                            <div className="flex">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star key={star} className="h-4 w-4" fill={star <= 5 ? "currentColor" : "none"} />
-                              ))}
-                            </div>
-                          </div>
-                          <p>Świetna obsługa, szybka realizacja, polecam!</p>
-                        </div>
-                      </div>
+                      <UserReviews userId={user.id} />
                     </>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">

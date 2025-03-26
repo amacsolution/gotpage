@@ -34,13 +34,79 @@ function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: numbe
   )
 }
 
+// Funkcja pomocnicza do generowania przyciętego obrazu w wysokiej jakości
+function getCroppedImg(image: HTMLImageElement, crop: PixelCrop, scale = 1, rotate = 0): Promise<Blob> {
+  const canvas = document.createElement("canvas")
+  const ctx = canvas.getContext("2d")
+
+  if (!ctx) {
+    throw new Error("No 2d context")
+  }
+
+  // Obliczenie wymiarów przyciętego obrazu
+  const scaleX = image.naturalWidth / image.width
+  const scaleY = image.naturalHeight / image.height
+
+  // Ustawienie wymiarów canvas na wymiary przyciętego obszaru
+  // Używamy większego rozmiaru dla lepszej jakości
+  const pixelRatio = window.devicePixelRatio || 1
+
+  // Obliczamy szerokość i wysokość z uwzględnieniem skali i pixel ratio
+  const width = Math.floor(crop.width * scaleX)
+  const height = Math.floor(crop.height * scaleY)
+
+  canvas.width = width * pixelRatio
+  canvas.height = height * pixelRatio
+
+  // Skalowanie kontekstu zgodnie z pixel ratio
+  ctx.scale(pixelRatio, pixelRatio)
+  ctx.imageSmoothingQuality = "high"
+  ctx.imageSmoothingEnabled = true
+
+  // Obliczenie środka canvas
+  const centerX = width / 2
+  const centerY = height / 2
+
+  // Zapisanie stanu kontekstu
+  ctx.save()
+
+  // Przesunięcie do środka, obrót i skalowanie
+  ctx.translate(centerX, centerY)
+  ctx.rotate((rotate * Math.PI) / 180)
+  ctx.scale(scale, scale)
+  ctx.translate(-centerX, -centerY)
+
+  // Narysowanie przyciętego obrazu
+  const cropX = crop.x * scaleX
+  const cropY = crop.y * scaleY
+
+  ctx.drawImage(image, cropX, cropY, width, height, 0, 0, width, height)
+
+  // Przywrócenie stanu kontekstu
+  ctx.restore()
+
+  // Konwersja canvas do Blob z wysoką jakością
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error("Canvas is empty"))
+          return
+        }
+        resolve(blob)
+      },
+      "image/jpeg",
+      1.0, // Maksymalna jakość (1.0 zamiast 0.95)
+    )
+  })
+}
+
 export function ImageCropper({ imageUrl, aspectRatio = 1, onCropComplete, onCancel, open }: ImageCropperProps) {
   const [crop, setCrop] = useState<Crop>()
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>()
   const [scale, setScale] = useState(1)
   const [rotate, setRotate] = useState(0)
   const imgRef = useRef<HTMLImageElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const onImageLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -66,62 +132,17 @@ export function ImageCropper({ imageUrl, aspectRatio = 1, onCropComplete, onCanc
     setScale(value[0])
   }
 
-  const handleComplete = useCallback(() => {
-    if (!completedCrop || !canvasRef.current || !imgRef.current) {
+  const handleComplete = useCallback(async () => {
+    if (!completedCrop || !imgRef.current) {
       return
     }
 
-    const image = imgRef.current
-    const canvas = canvasRef.current
-    const crop = completedCrop
-
-    const scaleX = image.naturalWidth / image.width
-    const scaleY = image.naturalHeight / image.height
-    const ctx = canvas.getContext("2d")
-
-    const pixelRatio = window.devicePixelRatio
-    canvas.width = crop.width * pixelRatio * scaleX
-    canvas.height = crop.height * pixelRatio * scaleY
-
-    if (!ctx) {
-      return
+    try {
+      const croppedImageBlob = await getCroppedImg(imgRef.current, completedCrop, scale, rotate)
+      onCropComplete(croppedImageBlob)
+    } catch (error) {
+      console.error("Error generating cropped image:", error)
     }
-
-    ctx.scale(pixelRatio, pixelRatio)
-    ctx.imageSmoothingQuality = "high"
-
-    const cropX = crop.x * scaleX
-    const cropY = crop.y * scaleY
-    const centerX = image.naturalWidth / 2
-    const centerY = image.naturalHeight / 2
-
-    ctx.save()
-
-    // Przesunięcie do środka obrazu
-    ctx.translate(canvas.width / (2 * pixelRatio), canvas.height / (2 * pixelRatio))
-    // Obrót
-    ctx.rotate((rotate * Math.PI) / 180)
-    // Skalowanie
-    ctx.scale(scale, scale)
-    // Przesunięcie z powrotem
-    ctx.translate(-canvas.width / (2 * pixelRatio), -canvas.height / (2 * pixelRatio))
-
-    // Rysowanie obrazu z uwzględnieniem przycięcia
-    ctx.drawImage(image, cropX, cropY, crop.width * scaleX, crop.height * scaleY, 0, 0, crop.width, crop.height)
-
-    ctx.restore()
-
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          console.error("Canvas is empty")
-          return
-        }
-        onCropComplete(blob)
-      },
-      "image/jpeg",
-      0.95,
-    )
   }, [completedCrop, scale, rotate, onCropComplete])
 
   return (
@@ -150,6 +171,7 @@ export function ImageCropper({ imageUrl, aspectRatio = 1, onCropComplete, onCanc
                   maxWidth: "100%",
                 }}
                 onLoad={onImageLoad}
+                crossOrigin="anonymous"
               />
             </ReactCrop>
           </div>
@@ -194,15 +216,6 @@ export function ImageCropper({ imageUrl, aspectRatio = 1, onCropComplete, onCanc
             </div>
           </div>
         </div>
-
-        <canvas
-          ref={canvasRef}
-          style={{
-            display: "none",
-            width: completedCrop?.width ?? 0,
-            height: completedCrop?.height ?? 0,
-          }}
-        />
 
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>

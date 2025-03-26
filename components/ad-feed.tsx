@@ -64,6 +64,8 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       const response = await fetch(url)
       const data = await response.json()
 
+      console.log(data)
+
       if (data.error) {
         throw new Error(data.error)
       }
@@ -182,7 +184,7 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       {/* Siatka ogłoszeń */}
       <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
         {ads.map((ad) => (
-          <AdCard key={ad.id} ad={ad} image={ad?.images[0]?.image_url}/>
+          <AdCard key={ad.id} ad={ad} image={ad.image}/>
         ))}
       </div>
       

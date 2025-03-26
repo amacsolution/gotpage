@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { query } from "@/lib/db"
-import { writeFile, mkdir } from "fs/promises"
+import { writeFile, mkdir, unlink } from "fs/promises"
+import { existsSync } from "fs"
 import path from "path"
 import { v4 as uuidv4 } from "uuid"
 import sharp from "sharp"
@@ -37,20 +38,44 @@ export async function POST(request: Request, { params }: { params: { id: string 
       return NextResponse.json({ error: "Nieprawidłowy format pliku. Akceptowane są tylko obrazy." }, { status: 400 })
     }
 
-    // Sprawdzenie rozmiaru pliku (max 5MB)
-    const maxSize = 5 * 1024 * 1024 // 5MB
+    // Sprawdzenie rozmiaru pliku (max 10MB)
+    const maxSize = 10 * 1024 * 1024 // 10MB
     if (avatarFile.size > maxSize) {
-      return NextResponse.json({ error: "Plik jest zbyt duży. Maksymalny rozmiar to 5MB." }, { status: 400 })
+      return NextResponse.json({ error: "Plik jest zbyt duży. Maksymalny rozmiar to 10MB." }, { status: 400 })
     }
+
+    // Pobranie aktualnego avatara użytkownika
+    const [currentAvatarResult] = await query("SELECT avatar FROM users WHERE id = ?", [userId]) as any[]
+    const currentAvatar = currentAvatarResult?.avatar
 
     // Utworzenie ścieżki do folderu z avatarami
     const uploadDir = path.join(process.cwd(), "public", "avatars")
-
+    
     // Sprawdzenie, czy folder istnieje, jeśli nie - utworzenie go
     try {
       await mkdir(uploadDir, { recursive: true })
     } catch (error) {
       console.error("Błąd podczas tworzenia folderu:", error)
+    }
+
+    // Usunięcie starego avatara, jeśli istnieje i nie jest domyślnym avatarem
+    if (currentAvatar && !currentAvatar.startsWith('/placeholder') && !currentAvatar.includes('default')) {
+      try {
+        // Wyciągnięcie nazwy pliku z ścieżki URL
+        const currentAvatarFilename = currentAvatar.split('/').pop()
+        if (currentAvatarFilename) {
+          const currentAvatarPath = path.join(uploadDir, currentAvatarFilename)
+          
+          // Sprawdzenie, czy plik istnieje przed próbą usunięcia
+          if (existsSync(currentAvatarPath)) {
+            await unlink(currentAvatarPath)
+            console.log(`Usunięto stary avatar: ${currentAvatarPath}`)
+          }
+        }
+      } catch (error) {
+        console.error("Błąd podczas usuwania starego avatara:", error)
+        // Kontynuujemy proces mimo błędu usuwania starego pliku
+      }
     }
 
     // Generowanie unikalnej nazwy pliku
@@ -61,20 +86,43 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const arrayBuffer = await avatarFile.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    // Przetwarzanie obrazu za pomocą sharp
-    const processedImage = await sharp(buffer).resize(256, 256, { fit: "cover" }).jpeg({ quality: 90 }).toBuffer()
+    try {
+      // Przetwarzanie obrazu za pomocą sharp w wysokiej jakości
+      // Zwiększamy rozmiar do 512x512 i ustawiamy wysoką jakość
+      const processedImage = await sharp(buffer)
+        .resize(512, 512, { 
+          fit: 'cover',
+          withoutEnlargement: true, // Nie powiększaj obrazów mniejszych niż docelowy rozmiar
+          kernel: sharp.kernel.lanczos3 // Lepszy algorytm skalowania
+        })
+        .jpeg({ 
+          quality: 100, // Maksymalna jakość
+          progressive: true, // Progresywne JPEG dla lepszego ładowania
+          chromaSubsampling: '4:4:4' // Najlepsza jakość kolorów
+        })
+        .toBuffer()
 
-    // Zapisanie pliku
-    await writeFile(filePath, processedImage)
+      // Zapisanie pliku
+      await writeFile(filePath, processedImage)
 
-    // Ścieżka URL do avatara
-    const avatarUrl = `/avatars/${fileName}`
+      // Ścieżka URL do avatara
+      const avatarUrl = `/avatars/${fileName}`
 
-    // Aktualizacja avatara w bazie danych
-    await query("UPDATE users SET avatar = ? WHERE id = ?", [avatarUrl, userId])
+      // Aktualizacja avatara w bazie danych
+      await query("UPDATE users SET avatar = ? WHERE id = ?", [avatarUrl, userId])
 
-    // Zwrócenie URL nowego avatara
-    return NextResponse.json({ avatarUrl })
+      // Zwrócenie URL nowego avatara
+      return NextResponse.json({ avatarUrl })
+    } catch (error) {
+      console.error("Błąd podczas przetwarzania obrazu:", error)
+      return NextResponse.json(
+        {
+          error: "Wystąpił błąd podczas przetwarzania obrazu",
+          details: error instanceof Error ? error.message : "Nieznany błąd",
+        },
+        { status: 500 }
+      )
+    }
   } catch (error) {
     console.error("Błąd podczas przesyłania avatara:", error)
     return NextResponse.json(
@@ -82,8 +130,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         error: "Wystąpił błąd podczas przesyłania avatara",
         details: error instanceof Error ? error.message : "Nieznany błąd",
       },
-      { status: 500 },
+      { status: 500 }
     )
   }
 }
-

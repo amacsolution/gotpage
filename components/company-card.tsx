@@ -12,6 +12,7 @@ interface CompanyCardProps {
     name: string
     logo: string
     description: string
+    phone: string
     categories: string[]
     location: string
     rating: number
@@ -20,7 +21,6 @@ interface CompanyCardProps {
   }
   featured?: boolean
 }
-
 
 
 export function CompanyCard({ company, featured = false }: CompanyCardProps) {
@@ -87,12 +87,16 @@ const categories = Array.isArray(company.categories) ? company.categories : [];
           <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{company.description}</p>
 
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <Button variant="outline" size="sm" className="w-full">
-              <Phone className="h-3 w-3 mr-2" /> Zadzwoń
-            </Button>
-            <Button variant="outline" size="sm" className="w-full">
-              <Mail className="h-3 w-3 mr-2" /> Napisz
-            </Button>
+            <a href={`tel:${company.phone}`}>
+              <Button variant="outline" size="sm" className="w-full">
+                <Phone className="h-3 w-3 mr-2" /> Zadzwoń
+              </Button>
+            </a>
+            <a href={`sms:${company.phone}?body=Witam! Chciałbym zapytać o ofertę Państwa firmy.`}>
+              <Button variant="outline" size="sm" className="w-full">
+                <Mail className="h-3 w-3 mr-2" /> Napisz
+              </Button>
+            </a>
           </div>
         </div>
 

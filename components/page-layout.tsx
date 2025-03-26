@@ -1,6 +1,6 @@
 import type React from "react"
 import Link from "next/link"
-import Image from "next/image"
+import Image from "next/legacy/image"
 import { MainNav } from "@/components/main-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
 

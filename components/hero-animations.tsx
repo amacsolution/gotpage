@@ -27,7 +27,7 @@ export function HeroAnimation() {
     // Parametry animacji
     const particlesArray: Particle[] = []
     const numberOfParticles = 50
-    const colors = ["#f0338c", "#f0338c33", "#f0338c22", "#6e6e6e"]
+    const colors = ["#f0338c", "#f0338c33", "#f0338c22", '#333']
 
     // Klasa cząsteczki
     class Particle {
@@ -85,7 +85,7 @@ export function HeroAnimation() {
 
           if (distance < 100) {
             opacityValue = 1 - distance / 100
-            ctx.strokeStyle = `rgba(240, 51, 140, ${opacityValue * 0.2})`
+            ctx.strokeStyle = `rgba(255, 255, 255, ${opacityValue * 0.6})`
             ctx.lineWidth = 1
             ctx.beginPath()
             ctx.moveTo(particlesArray[a].x, particlesArray[a].y)
