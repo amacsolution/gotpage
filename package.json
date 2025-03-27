@@ -55,6 +55,7 @@
     "lucide-react": "^0.454.0",
     "mysql2": "latest",
     "next": "^15.2.2",
+    "next-auth": "^4.24.11",
     "next-themes": "latest",
     "open-graph-scraper": "^6.9.0",
     "react": "^18.2.0",

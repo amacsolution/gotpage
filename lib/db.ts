@@ -61,6 +61,62 @@ export async function query(sql: string, params: any[] = []) {
   }
 }
 
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT ? Number.parseInt(process.env.DB_PORT) : 3306,
+  ssl:
+    process.env.DB_SSL === "true"
+      ? {
+          rejectUnauthorized: false,
+        }
+      : undefined,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+})
+
+export const db = {
+  async query(sql: string, params?: any[]) {
+    try {
+      const [results] = await pool.execute(sql, params)
+      return [results, null]
+    } catch (error) {
+      console.error("Database error:", error)
+      return [null, error]
+    }
+  },
+
+  async transaction(callback: (connection: mysql.PoolConnection) => Promise<any>) {
+    const connection = await pool.getConnection()
+    try {
+      await connection.beginTransaction()
+      const result = await callback(connection)
+      await connection.commit()
+      return [result, null]
+    } catch (error) {
+      await connection.rollback()
+      console.error("Transaction error:", error)
+      return [null, error]
+    } finally {
+      connection.release()
+    }
+  },
+}
+
+// Funkcja do sprawdzenia połączenia z bazą danych
+export async function testConnection() {
+  try {
+    const [result] = await pool.execute("SELECT 1 as test")
+    return { connected: true, result }
+  } catch (error) {
+    console.error("Database connection error:", error)
+    return { connected: false, error }
+  }
+}
+
 // Funkcja do pobierania użytkownika po ID
 export async function getUserById(id: number) {
   try {
