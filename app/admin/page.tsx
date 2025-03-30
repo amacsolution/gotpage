@@ -4,84 +4,90 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Users, FileText, MessageSquare, AlertTriangle, Activity } from "lucide-react"
+import { Users, FileText, MessageSquare, AlertTriangle, RefreshCw } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function AdminPage() {
   const [stats, setStats] = useState({
-    users: 0,
-    ads: 0,
-    comments: 0,
-    reports: 0,
-    pendingReports: 0,
-    newUsersToday: 0,
-    newAdsToday: 0,
+    users: { total: 0, today: 0 },
+    ads: { total: 0, today: 0 },
+    comments: { total: 0, today: 0 },
+    reports: { total: 0, pending: 0, today: 0 },
   })
   const [recentActivity, setRecentActivity] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [period, setPeriod] = useState("all")
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchDashboardData()
-  }, [])
+  }, [period])
 
   const fetchDashboardData = async () => {
     setIsLoading(true)
     try {
-      // W rzeczywistej aplikacji, pobieralibyśmy dane z API
-      // Tutaj symulujemy dane dla demonstracji
-      setTimeout(() => {
-        setStats({
-          users: 1245,
-          ads: 3782,
-          comments: 9431,
-          reports: 87,
-          pendingReports: 23,
-          newUsersToday: 15,
-          newAdsToday: 42,
-        })
+      const response = await fetch(`/api/admin/dashboard?period=${period}`, {
+        credentials: "include",
+      })
 
-        setRecentActivity([
-          { type: "user", action: "registered", user: "jan.kowalski", time: "10 minut temu" },
-          { type: "ad", action: "created", user: "anna.nowak", title: "iPhone 13 Pro", time: "25 minut temu" },
-          {
-            type: "report",
-            action: "submitted",
-            user: "marek.wiśniewski",
-            target: "Ogłoszenie #1234",
-            time: "45 minut temu",
-          },
-          {
-            type: "comment",
-            action: "added",
-            user: "katarzyna.lewandowska",
-            ad: "Laptop Dell XPS",
-            time: "1 godzinę temu",
-          },
-          {
-            type: "ad",
-            action: "promoted",
-            user: "piotr.zieliński",
-            title: "Mieszkanie do wynajęcia",
-            time: "2 godziny temu",
-          },
-        ])
+      if (!response.ok) {
+        throw new Error("Błąd podczas pobierania danych dashboardu")
+      }
 
-        setIsLoading(false)
-      }, 1000)
+      const data = await response.json()
+      setStats(data.stats)
+      setRecentActivity(data.recentActivity)
     } catch (error) {
-      console.error("Error fetching dashboard data:", error)
+      console.error("Błąd podczas pobierania danych dashboardu:", error)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się pobrać danych dashboardu",
+        variant: "destructive",
+      })
+    } finally {
       setIsLoading(false)
     }
   }
 
-  if (isLoading) {
-    return <div className="flex items-center justify-center h-full">Ładowanie...</div>
+  const formatTimeAgo = (dateString : Date) => {
+    const now = new Date()
+    const date = new Date(dateString)
+    const diffInSeconds = Math.floor((now - date) / 1000)
+
+    if (diffInSeconds < 60) {
+      return `${diffInSeconds} sekund temu`
+    } else if (diffInSeconds < 3600) {
+      return `${Math.floor(diffInSeconds / 60)} minut temu`
+    } else if (diffInSeconds < 86400) {
+      return `${Math.floor(diffInSeconds / 3600)} godzin temu`
+    } else {
+      return `${Math.floor(diffInSeconds / 86400)} dni temu`
+    }
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <Button onClick={() => fetchDashboardData()}>Odśwież</Button>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium">Okres:</span>
+            <select
+              className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+            >
+              <option value="all">Wszystko</option>
+              <option value="today">Dzisiaj</option>
+              <option value="week">Ostatni tydzień</option>
+              <option value="month">Ostatni miesiąc</option>
+            </select>
+          </div>
+          <Button onClick={fetchDashboardData} disabled={isLoading}>
+            {isLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+            Odśwież
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -91,10 +97,10 @@ export default function AdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold">{stats.users}</div>
+              <div className="text-2xl font-bold">{stats.users.total}</div>
               <Users className="w-4 h-4 text-muted-foreground" />
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">+{stats.newUsersToday} dzisiaj</p>
+            <p className="mt-1 text-xs text-muted-foreground">+{stats.users.today} dzisiaj</p>
           </CardContent>
         </Card>
 
@@ -104,10 +110,10 @@ export default function AdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold">{stats.ads}</div>
+              <div className="text-2xl font-bold">{stats.ads.total}</div>
               <FileText className="w-4 h-4 text-muted-foreground" />
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">+{stats.newAdsToday} dzisiaj</p>
+            <p className="mt-1 text-xs text-muted-foreground">+{stats.ads.today} dzisiaj</p>
           </CardContent>
         </Card>
 
@@ -117,9 +123,10 @@ export default function AdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold">{stats.comments}</div>
+              <div className="text-2xl font-bold">{stats.comments.total}</div>
               <MessageSquare className="w-4 h-4 text-muted-foreground" />
             </div>
+            <p className="mt-1 text-xs text-muted-foreground">+{stats.comments.today} dzisiaj</p>
           </CardContent>
         </Card>
 
@@ -129,10 +136,10 @@ export default function AdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold">{stats.reports}</div>
+              <div className="text-2xl font-bold">{stats.reports.total}</div>
               <AlertTriangle className="w-4 h-4 text-muted-foreground" />
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">{stats.pendingReports} oczekujących</p>
+            <p className="mt-1 text-xs text-muted-foreground">{stats.reports.pending} oczekujących</p>
           </CardContent>
         </Card>
       </div>
@@ -150,29 +157,36 @@ export default function AdminPage() {
               <CardDescription>Najnowsze działania użytkowników na platformie</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-start pb-4 space-x-4 border-b last:border-0">
-                    <div className="p-2 rounded-full bg-primary/10">
-                      {activity.type === "user" && <Users className="w-4 h-4 text-primary" />}
-                      {activity.type === "ad" && <FileText className="w-4 h-4 text-primary" />}
-                      {activity.type === "comment" && <MessageSquare className="w-4 h-4 text-primary" />}
-                      {activity.type === "report" && <AlertTriangle className="w-4 h-4 text-primary" />}
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <RefreshCw className="w-8 h-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : recentActivity.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground">Brak aktywności do wyświetlenia</div>
+              ) : (
+                <div className="space-y-4">
+                  {recentActivity.map((activity, index) => (
+                    <div key={index} className="flex items-start pb-4 space-x-4 border-b last:border-0">
+                      <div className="p-2 rounded-full bg-primary/10">
+                        {activity.type === "user" && <Users className="w-4 h-4 text-primary" />}
+                        {activity.type === "ad" && <FileText className="w-4 h-4 text-primary" />}
+                        {activity.type === "comment" && <MessageSquare className="w-4 h-4 text-primary" />}
+                        {activity.type === "report" && <AlertTriangle className="w-4 h-4 text-primary" />}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm">
+                          <span className="font-medium">{activity.user}</span>{" "}
+                          {activity.action === "registered" && "zarejestrował(a) się"}
+                          {activity.action === "created" && `dodał(a) ogłoszenie "${activity.title}"`}
+                          {activity.action === "submitted" && `zgłosił(a) ${activity.target}`}
+                          {activity.action === "added" && `skomentował(a) ogłoszenie "${activity.title}"`}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{formatTimeAgo(activity.time)}</p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm">
-                        <span className="font-medium">{activity.user}</span>{" "}
-                        {activity.action === "registered" && "zarejestrował(a) się"}
-                        {activity.action === "created" && `dodał(a) ogłoszenie "${activity.title}"`}
-                        {activity.action === "submitted" && `zgłosił(a) ${activity.target}`}
-                        {activity.action === "added" && `skomentował(a) ogłoszenie "${activity.ad}"`}
-                        {activity.action === "promoted" && `promował(a) ogłoszenie "${activity.title}"`}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -181,13 +195,78 @@ export default function AdminPage() {
           <Card>
             <CardHeader>
               <CardTitle>Statystyki</CardTitle>
-              <CardDescription>Analiza aktywności na platformie w ostatnim miesiącu</CardDescription>
+              <CardDescription>Analiza aktywności na platformie w wybranym okresie</CardDescription>
             </CardHeader>
-            <CardContent className="flex items-center justify-center h-[300px]">
-              <div className="space-y-2 text-center">
-                <Activity className="mx-auto w-16 h-16 text-muted-foreground" />
-                <p className="text-muted-foreground">Statystyki będą dostępne wkrótce</p>
-              </div>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <RefreshCw className="w-8 h-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="mb-2 text-lg font-medium">Użytkownicy</h3>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Łącznie:</span>
+                          <span className="font-medium">{stats.users.total}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Dzisiaj:</span>
+                          <span className="font-medium">{stats.users.today}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="mb-2 text-lg font-medium">Ogłoszenia</h3>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Łącznie:</span>
+                          <span className="font-medium">{stats.ads.total}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Dzisiaj:</span>
+                          <span className="font-medium">{stats.ads.today}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="mb-2 text-lg font-medium">Komentarze</h3>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Łącznie:</span>
+                          <span className="font-medium">{stats.comments.total}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Dzisiaj:</span>
+                          <span className="font-medium">{stats.comments.today}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="mb-2 text-lg font-medium">Zgłoszenia</h3>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Łącznie:</span>
+                          <span className="font-medium">{stats.reports.total}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Oczekujące:</span>
+                          <span className="font-medium">{stats.reports.pending}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Dzisiaj:</span>
+                          <span className="font-medium">{stats.reports.today}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

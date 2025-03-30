@@ -6,94 +6,103 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle, XCircle, Eye, Trash2 } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function ReportsPage() {
   const [reports, setReports] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("all")
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchReports()
-  }, [])
+  }, [activeTab])
 
   const fetchReports = async () => {
     setIsLoading(true)
     try {
-      // W rzeczywistej aplikacji, pobieralibyśmy dane z API
-      // Tutaj symulujemy dane dla demonstracji
-      setTimeout(() => {
-        setReports([
-          {
-            id: 1,
-            type: "ad",
-            targetId: 1234,
-            targetTitle: "iPhone 13 Pro Max",
-            reason: "Oszustwo",
-            description: "Sprzedający nie wysłał produktu po otrzymaniu płatności.",
-            reportedBy: "jan.kowalski",
-            status: "pending",
-            createdAt: "2023-05-15T10:30:00Z",
-          },
-          {
-            id: 2,
-            type: "comment",
-            targetId: 5678,
-            targetTitle: 'Komentarz do ogłoszenia "Laptop Dell XPS"',
-            reason: "Spam",
-            description: "Komentarz zawiera linki do podejrzanych stron.",
-            reportedBy: "anna.nowak",
-            status: "reviewed",
-            createdAt: "2023-05-14T15:45:00Z",
-          },
-          {
-            id: 3,
-            type: "user",
-            targetId: 9012,
-            targetTitle: "marek.wiśniewski",
-            reason: "Nękanie",
-            description: "Użytkownik wysyła obraźliwe wiadomości.",
-            reportedBy: "katarzyna.lewandowska",
-            status: "resolved",
-            createdAt: "2023-05-13T09:15:00Z",
-          },
-          {
-            id: 4,
-            type: "ad",
-            targetId: 3456,
-            targetTitle: "Mieszkanie do wynajęcia",
-            reason: "Fałszywe informacje",
-            description: "Ogłoszenie zawiera nieprawdziwe informacje o lokalizacji.",
-            reportedBy: "piotr.zieliński",
-            status: "rejected",
-            createdAt: "2023-05-12T14:20:00Z",
-          },
-          {
-            id: 5,
-            type: "comment",
-            targetId: 7890,
-            targetTitle: 'Komentarz do ogłoszenia "Samochód BMW"',
-            reason: "Obraźliwa treść",
-            description: "Komentarz zawiera wulgarne słowa.",
-            reportedBy: "tomasz.kowalczyk",
-            status: "pending",
-            createdAt: "2023-05-11T11:10:00Z",
-          },
-        ])
+      // Pobierz zgłoszenia z API z filtrowaniem według statusu
+      const status = activeTab !== "all" ? activeTab : ""
+      const response = await fetch(`/api/admin/reports${status ? `?status=${status}` : ""}`, {
+        credentials: "include", // Dołącz ciasteczka
+      })
 
-        setIsLoading(false)
-      }, 1000)
+      if (!response.ok) {
+        throw new Error("Błąd podczas pobierania zgłoszeń")
+      }
+
+      const data = await response.json()
+      setReports(data)
     } catch (error) {
-      console.error("Error fetching reports:", error)
+      console.error("Błąd podczas pobierania zgłoszeń:", error)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się pobrać zgłoszeń",
+        variant: "destructive",
+      })
+    } finally {
       setIsLoading(false)
     }
   }
 
-  const handleStatusChange = (reportId, newStatus) => {
-    setReports(reports.map((report) => (report.id === reportId ? { ...report, status: newStatus } : report)))
+  const handleStatusChange = async (reportId, newStatus) => {
+    try {
+      const response = await fetch("/api/admin/reports", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ id: reportId, status: newStatus }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Błąd podczas aktualizacji statusu")
+      }
+
+      // Aktualizuj lokalny stan
+      setReports(reports.map((report) => (report.id === reportId ? { ...report, status: newStatus } : report)))
+
+      toast({
+        title: "Sukces",
+        description: "Status zgłoszenia został zaktualizowany",
+      })
+    } catch (error) {
+      console.error("Błąd podczas aktualizacji statusu:", error)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się zaktualizować statusu zgłoszenia",
+        variant: "destructive",
+      })
+    }
   }
 
-  const handleDelete = (reportId) => {
-    setReports(reports.filter((report) => report.id !== reportId))
+  const handleDelete = async (reportId) => {
+    try {
+      const response = await fetch(`/api/admin/reports?id=${reportId}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+
+      if (!response.ok) {
+        throw new Error("Błąd podczas usuwania zgłoszenia")
+      }
+
+      // Aktualizuj lokalny stan
+      setReports(reports.filter((report) => report.id !== reportId))
+
+      toast({
+        title: "Sukces",
+        description: "Zgłoszenie zostało usunięte",
+      })
+    } catch (error) {
+      console.error("Błąd podczas usuwania zgłoszenia:", error)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się usunąć zgłoszenia",
+        variant: "destructive",
+      })
+    }
   }
 
   const filteredReports = activeTab === "all" ? reports : reports.filter((report) => report.status === activeTab)
@@ -168,7 +177,14 @@ export default function ReportsPage() {
       <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="all">Wszystkie</TabsTrigger>
-          <TabsTrigger value="pending">Oczekujące</TabsTrigger>
+          <TabsTrigger value="pending">
+            Oczekujące
+            {reports.filter((r) => r.status === "pending").length > 0 && (
+              <span className="ml-1 px-2 py-0.5 text-xs bg-red-500 text-white rounded-full">
+                {reports.filter((r) => r.status === "pending").length}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="reviewed">Przejrzane</TabsTrigger>
           <TabsTrigger value="resolved">Rozwiązane</TabsTrigger>
           <TabsTrigger value="rejected">Odrzucone</TabsTrigger>

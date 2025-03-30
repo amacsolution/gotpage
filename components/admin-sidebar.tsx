@@ -28,9 +28,9 @@ export function AdminSidebar() {
   ]
 
   return (
-    <div className="w-64 min-h-screen bg-white shadow-md">
+    <div className="w-64 min-h-screen bg-background shadow-md">
       <div className="p-6">
-        <h2 className="text-xl font-bold">Panel Admina</h2>
+        <h2 className="text-xl font-bold">Panel Administratora</h2>
       </div>
       <nav className="mt-6">
         <ul>
@@ -42,8 +42,8 @@ export function AdminSidebar() {
               <li key={item.href}>
                 <Link href={item.href}>
                   <div
-                    className={`flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100 ${
-                      isActive ? "bg-gray-100 border-l-4 border-blue-500" : ""
+                    className={`flex items-center m-2 rounded-md px-6 py-3 text-foreground hover:bg-muted ${
+                      isActive ? "bg-muted" : ""
                     }`}
                   >
                     <Icon className="w-5 h-5 mr-3" />
@@ -56,7 +56,7 @@ export function AdminSidebar() {
           <li>
             <button
               onClick={handleLogout}
-              className="flex items-center w-full px-6 py-3 text-gray-700 hover:bg-gray-100"
+              className="flex items-center m-2 rounded-md w-full px-6 py-3 text-foreground hover:bg-muted"
             >
               <LogOut className="w-5 h-5 mr-3" />
               <span>Wyloguj</span>

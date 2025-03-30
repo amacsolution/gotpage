@@ -4,8 +4,9 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { AdminSidebar } from "@/components/admin-sidebar"
 import { Loader2 } from "lucide-react"
+import { AdminSidebar } from "@/components/admin-sidebar"
+import { Toaster } from "@/components/ui/toaster"
 
 export default function AdminLayout({
   children,
@@ -13,26 +14,30 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const [isLoading, setIsLoading] = useState(true)
-  const [isAuthorized, setIsAuthorized] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log("Sprawdzanie uwierzytelnienia administratora")
+
         const response = await fetch("/api/admin/check", {
-          method: "GET",
-          credentials: "include", // Ważne: dołącz ciasteczka do żądania
+          credentials: "include", // Ważne: dołącz ciasteczka
         })
 
         const data = await response.json()
+        console.log("Odpowiedź z /api/admin/check:", data)
 
-        if (response.ok && data.isAdmin) {
-          setIsAuthorized(true)
+        if (response.ok && data.authenticated) {
+          console.log("Administrator jest uwierzytelniony")
+          setIsAuthenticated(true)
         } else {
+          console.log("Administrator nie jest uwierzytelniony, przekierowanie do logowania")
           router.push("/admin/login")
         }
       } catch (error) {
-        console.error("Auth check error:", error)
+        console.error("Błąd sprawdzania uwierzytelnienia:", error)
         router.push("/admin/login")
       } finally {
         setIsLoading(false)
@@ -50,14 +55,15 @@ export default function AdminLayout({
     )
   }
 
-  if (!isAuthorized) {
+  if (!isAuthenticated) {
     return null
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-background">
       <AdminSidebar />
       <div className="flex-1 p-8">{children}</div>
+      <Toaster />
     </div>
   )
 }
