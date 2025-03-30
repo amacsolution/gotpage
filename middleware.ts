@@ -28,6 +28,8 @@ const publicApiRoutes = [
   "/api/admin/verify",
   "/api/admin/login",
   "/api/admin/check",
+  "/api/admin/users",
+  "/api/admin/notifications/send",
 ]
 
 // Ścieżka do zdjęć ogłoszeń
