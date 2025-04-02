@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { db } from "@/lib/db" // Zakładam, że masz już skonfigurowane połączenie z bazą danych
+import { db } from "@/lib/db"
 
 // Funkcja pomocnicza do sprawdzania uwierzytelnienia administratora
 async function isAdmin(request: NextRequest) {
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get("status")
     const type = searchParams.get("type")
-    const limit = Number.parseInt(searchParams.get("limit") || "100")
+    const limit = Number.parseInt(searchParams.get("limit") || "10")
     const offset = Number.parseInt(searchParams.get("offset") || "0")
 
     // Buduj zapytanie SQL
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
         r.reason,
         r.status,
         r.created_at AS createdAt,
-        u.username AS reportedBy
+        u.name AS reportedBy
       FROM 
         reports r
       JOIN 
@@ -59,34 +59,79 @@ export async function GET(request: NextRequest) {
     }
 
     // Dodaj sortowanie i paginację
-    query += " ORDER BY r.created_at DESC LIMIT ? OFFSET ?"
+    query += " ORDER BY r.created_at DESC LIMIT ? OFFSET ?", [limit, offset]  
     queryParams.push(limit, offset)
 
+    console.log(query)
+
     // Wykonaj zapytanie
-    const reports = await db.query(query, queryParams)
+    const [reports] = await db.query(query, queryParams)  
+
+    type Reports = {
+      id: number,
+      type: "ad" | "ad_comment" | "news_comment" | "user",
+      targetId: number,
+      reason: string,
+      status: string,
+      createdAt: string,
+      reportedBy: string,
+    }
+
+    type User = {
+      id: number,
+      username: string,
+      email: string,}
+
+    type Ad = {
+      id: number,
+      title: string,
+    }
+
+    type Comment = {
+        id: number,
+        content: string,
+        title: string,
+    }
+
+
+    type Details = {
+      reason: string,
+    }
 
     // Pobierz dodatkowe informacje o zgłoszonych elementach
     const enrichedReports = await Promise.all(
-      reports.map(async (report) => {
+      (reports as Reports[]).map(async (report) => {
         let targetTitle = ""
 
         // Pobierz tytuł zgłoszonego elementu w zależności od typu
         if (report.type === "ad") {
-          const ad = await db.query("SELECT title FROM ads WHERE id = ?", [report.targetId])
-          targetTitle = ad[0]?.title || `Ogłoszenie #${report.targetId}`
-        } else if (report.type === "comment") {
+          const ad = await db.query("SELECT title FROM ads WHERE id = ?", [report.targetId]) as Ad[]
+          targetTitle = ad[0].title || `Ogłoszenie #${report.targetId}`
+
+        } 
+        else if (report.type === "ad_comment") {
           const comment = await db.query(
-            "SELECT c.content, a.title FROM comments c JOIN ads a ON c.ad_id = a.id WHERE c.id = ?",
-            [report.targetId],
-          )
+            `SELECT c.content, a.title FROM ad_comments c JOIN ads a ON c.ad_id = a.id WHERE c.id = ?`
+            [report.targetId]
+          ) as Comment[]
           targetTitle = comment[0] ? `Komentarz do ogłoszenia "${comment[0].title}"` : `Komentarz #${report.targetId}`
-        } else if (report.type === "user") {
-          const user = await db.query("SELECT username FROM users WHERE id = ?", [report.targetId])
+
+        } 
+        else if (report.type === "news_comment") {
+          const comment = await db.query(
+            `SELECT c.content as news_comment_content, a.content as post_content FROM news_comments c JOIN news_posts a ON c.post_id = a.id WHERE c.id = ?`
+            [report.targetId] )  as Comment[]
+            targetTitle = comment[0] ? `Komentarz do wpisu "${comment[0].title}"` : `Wpis #${report.targetId}`
+
+        } 
+        else if (report.type === "user") {
+          const user = await db.query("SELECT name FROM users WHERE id = ?", [report.targetId]) as User[]
           targetTitle = user[0]?.username || `Użytkownik #${report.targetId}`
+
         }
 
         // Pobierz pełną treść zgłoszenia
-        const reportDetails = await db.query("SELECT reason FROM reports WHERE id = ?", [report.id])
+        const reportDetails = await db.query("SELECT reason FROM reports WHERE id = ?", [report.id]) as Details[]
 
         const description = reportDetails[0]?.reason || ""
 
@@ -117,8 +162,10 @@ export async function PATCH(request: NextRequest) {
 
     // Sprawdź, czy status jest prawidłowy
     const validStatuses = ["pending", "reviewed", "resolved", "rejected"]
+
     if (!validStatuses.includes(status)) {
-      return NextResponse.json({ error: "Nieprawidłowy status" }, { status: 400 })
+      return NextResponse.json({ error: "Nieprawidłowy status" + status }, { status: 400 }, )
+      
     }
 
     // Aktualizuj status zgłoszenia

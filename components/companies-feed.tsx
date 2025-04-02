@@ -52,7 +52,7 @@ const CompaniesFeedLimit = () => {
     </div>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {[1,2,3,4].map((company) => (
-        <div className="bg-muted animate-pulse rounded-lg "/>
+        <div key={company} className="bg-muted animate-pulse rounded-lg" />
       ))}
     </div>
   </div>
@@ -63,9 +63,6 @@ const CompaniesFeedLimit = () => {
       
 
   return (
-    // {(isLoading ? (
-
-    // ) : (
       <div className="container py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Polecane firmy</h2>

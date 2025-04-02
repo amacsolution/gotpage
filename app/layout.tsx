@@ -6,7 +6,7 @@ import { CookieConsent } from "@/components/cookie-consent"
 import "./globals.css"
 import { UserProvider } from "@/lib/user-context"
 import { initUploadsFolder } from "@/lib/init-upload"
-import Head from "next/head"
+
 
 // Dodaj wywołanie funkcji przed deklaracją komponentu RootLayout
 // Inicjalizacja folderu na zdjęcia

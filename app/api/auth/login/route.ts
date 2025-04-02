@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     )
 
     // Ustawienie ciasteczka z tokenem
-    cookies().set({
+    ;(await cookies()).set({
       name: "auth_token",
       value: token,
       httpOnly: true,

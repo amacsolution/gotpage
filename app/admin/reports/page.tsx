@@ -5,11 +5,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, XCircle, Eye, Trash2 } from "lucide-react"
+import { CheckCircle, XCircle, Eye, Trash2, Loader2 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 
+type Reports = {
+    id: number,
+    type: "user" | "ad_comment" | "news_comment" | "ad",
+    targetId: number,
+    reason: string,
+    status: string,
+    createdAt: string,
+    reportedBy: string,
+    targetTitle: string,
+    description: string
+
+}
+
 export default function ReportsPage() {
-  const [reports, setReports] = useState([])
+  const [reports, setReports] = useState<Reports[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("all")
   const { toast } = useToast()
@@ -45,8 +58,10 @@ export default function ReportsPage() {
     }
   }
 
-  const handleStatusChange = async (reportId, newStatus) => {
+  const handleStatusChange = async ({reportId, newStatus } : {reportId : number, newStatus : string}) => {
     try {
+      console.log(reportId, newStatus)
+
       const response = await fetch("/api/admin/reports", {
         method: "PATCH",
         headers: {
@@ -54,14 +69,15 @@ export default function ReportsPage() {
         },
         credentials: "include",
         body: JSON.stringify({ id: reportId, status: newStatus }),
-      })
-
+      }) 
       if (!response.ok) {
         throw new Error("Błąd podczas aktualizacji statusu")
       }
 
       // Aktualizuj lokalny stan
       setReports(reports.map((report) => (report.id === reportId ? { ...report, status: newStatus } : report)))
+
+      console.log(reports)
 
       toast({
         title: "Sukces",
@@ -77,7 +93,7 @@ export default function ReportsPage() {
     }
   }
 
-  const handleDelete = async (reportId) => {
+  const handleDelete = async ({reportId} : {reportId : number}) => {
     try {
       const response = await fetch(`/api/admin/reports?id=${reportId}`, {
         method: "DELETE",
@@ -107,7 +123,7 @@ export default function ReportsPage() {
 
   const filteredReports = activeTab === "all" ? reports : reports.filter((report) => report.status === activeTab)
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = ({status} : {status : string}) => {
     switch (status) {
       case "pending":
         return (
@@ -138,7 +154,7 @@ export default function ReportsPage() {
     }
   }
 
-  const getTypeIcon = (type) => {
+  const getTypeIcon = ({type} : {type : "user" | "ad_comment" | "ad" | "news_comment"}) => {
     switch (type) {
       case "ad":
         return (
@@ -146,10 +162,16 @@ export default function ReportsPage() {
             Ogłoszenie
           </Badge>
         )
-      case "comment":
+      case "ad_comment":
         return (
           <Badge variant="outline" className="bg-blue-100 text-blue-800">
-            Komentarz
+            Komentarz ogłoszenia
+          </Badge>
+        )
+      case "news_comment":
+        return (
+          <Badge variant="outline" className="bg-blue-100 text-blue-800">
+            Komentarz wpisu
           </Badge>
         )
       case "user":
@@ -164,8 +186,37 @@ export default function ReportsPage() {
   }
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-full">Ładowanie...</div>
-  }
+    return (
+      <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Zgłoszenia</h1>
+        <Button onClick={fetchReports}>Odśwież</Button>
+      </div>
+
+      <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="all">Wszystkie</TabsTrigger>
+          <TabsTrigger value="pending">
+            Oczekujące
+            {reports.filter((r) => r.status === "pending").length > 0 && (
+              <span className="ml-1 px-2 py-0.5 text-xs bg-red-500 text-white rounded-full">
+                {reports.filter((r) => r.status === "pending").length}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="reviewed">Przejrzane</TabsTrigger>
+          <TabsTrigger value="resolved">Rozwiązane</TabsTrigger>
+          <TabsTrigger value="rejected">Odrzucone</TabsTrigger>
+        </TabsList>
+        <TabsContent value={activeTab} className="mt-6">
+          <div className="flex justify-center items-center h-96 w-96 absolute">
+              Ładowanie...
+            <Loader2 className="inline mr-2 w-4 h-4 animate-spin" />
+          </div>
+        </TabsContent>
+      </Tabs>
+      </div>
+  )}
 
   return (
     <div className="space-y-6">
@@ -211,19 +262,19 @@ export default function ReportsPage() {
                 <div className="py-8 text-center text-muted-foreground">Brak zgłoszeń w tej kategorii</div>
               ) : (
                 <div className="space-y-4">
-                  {filteredReports.map((report) => (
+                  {filteredReports.map((report : Reports) => (
                     <div key={report.id} className="p-4 border rounded-lg">
                       <div className="flex items-start justify-between mb-4">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            {getTypeIcon(report.type)}
+                            {getTypeIcon({ type: report.type })}
                             <h3 className="text-lg font-semibold">{report.targetTitle}</h3>
                           </div>
                           <p className="text-sm text-muted-foreground">
                             Zgłoszone przez: {report.reportedBy} • {new Date(report.createdAt).toLocaleDateString()}
                           </p>
                         </div>
-                        <div>{getStatusBadge(report.status)}</div>
+                        <div>{getStatusBadge({ status: report.status })}</div>
                       </div>
 
                       <div className="mb-4">
@@ -237,7 +288,7 @@ export default function ReportsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleStatusChange(report.id, "reviewed")}
+                              onClick={() => handleStatusChange({ reportId: report.id, newStatus: "reviewed" })}
                             >
                               <Eye className="w-4 h-4 mr-1" />
                               Oznacz jako przejrzane
@@ -246,7 +297,7 @@ export default function ReportsPage() {
                               variant="outline"
                               size="sm"
                               className="text-green-600"
-                              onClick={() => handleStatusChange(report.id, "resolved")}
+                              onClick={() => handleStatusChange({ reportId: report.id, newStatus: "resolved" })}
                             >
                               <CheckCircle className="w-4 h-4 mr-1" />
                               Rozwiąż
@@ -255,7 +306,7 @@ export default function ReportsPage() {
                               variant="outline"
                               size="sm"
                               className="text-red-600"
-                              onClick={() => handleStatusChange(report.id, "rejected")}
+                              onClick={() => handleStatusChange({ reportId: report.id, newStatus: "rejected" })}
                             >
                               <XCircle className="w-4 h-4 mr-1" />
                               Odrzuć
@@ -266,7 +317,7 @@ export default function ReportsPage() {
                           variant="outline"
                           size="sm"
                           className="text-red-600"
-                          onClick={() => handleDelete(report.id)}
+                          onClick={() => handleDelete({ reportId: report.id })}
                         >
                           <Trash2 className="w-4 h-4 mr-1" />
                           Usuń

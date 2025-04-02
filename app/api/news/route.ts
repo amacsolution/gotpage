@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
+import type { NextRequest } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { db } from "@/lib/db"
 
 // Funkcja pomocnicza do wyodrębniania URL z tekstu
 function extractUrl(text: string): string | null {
@@ -16,110 +20,134 @@ function extractUrl(text: string): string | null {
 }
 
 // Pobieranie wpisów aktualności
-export async function GET(request: Request) {
+export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = new URL(req.url)
     const page = Number.parseInt(searchParams.get("page") || "1")
-    const limit = Number.parseInt(searchParams.get("limit") || "20")
-    const userId = searchParams.get("userId")
-    const offset = (page - 1) * limit
+    const limit = Number.parseInt(searchParams.get("limit") || "10")
+    const includeComments = searchParams.get("includeComments") === "true"
 
-    // Budowanie zapytania SQL
-    let sql = `
-      SELECT 
-        p.id, 
-        p.content, 
-        p.has_link,
-        p.link_url,
-        p.likes, 
-        p.comments,
-        p.created_at as createdAt,
-        u.id as author_id, 
-        u.name as author_name, 
-        u.avatar as author_avatar, 
-        u.type as author_type, 
-        u.verified as author_verified
-      FROM news_posts p
-      JOIN users u ON p.user_id = u.id
-    `
+    const skip = (page - 1) * limit
 
-    const params: any[] = []
+    const session = await getServerSession(authOptions)
+    const userId = session?.user?.id
 
-    // Filtrowanie po użytkowniku, jeśli podano
-    if (userId) {
-      sql += " WHERE p.user_id = ?"
-      params.push(userId)
-    }
-
-    // Sortowanie i limit
-    sql += " ORDER BY p.created_at DESC LIMIT ? OFFSET ?"
-    params.push(limit, offset)
-
-    // Wykonanie zapytania
-    const posts = await query(sql, params)
-
-    if (!Array.isArray(posts)) {
-      return NextResponse.json({ posts: [], total: 0 })
-    }
-
-    // Pobranie całkowitej liczby wpisów
-    let countSql = "SELECT COUNT(*) as count FROM news_posts"
-    if (userId) {
-      countSql += " WHERE user_id = ?"
-    }
-
-    const totalResult = await query(countSql, userId ? [userId] : [])
-    const total = Array.isArray(totalResult) && totalResult[0]?.count ? Number.parseInt(totalResult[0].count) : 0
-
-    // Sprawdzenie, czy zalogowany użytkownik polubił wpisy
-    const user = await auth(request)
-    const userLikes: Record<number, boolean> = {}
-
-    if (user) {
-      const postIds = posts.map((post: any) => post.id)
-      if (postIds.length > 0) {
-        const likesResult = await query(
-          `SELECT post_id FROM news_likes WHERE user_id = ? AND post_id IN (${postIds.map(() => "?").join(",")})`,
-          [user.id, ...postIds],
-        )
-
-        if (Array.isArray(likesResult)) {
-          likesResult.forEach((like: any) => {
-            userLikes[like.post_id] = true
-          })
-        }
-      }
-    }
-
-    // Formatowanie danych
-    const formattedPosts = posts.map((post: any) => ({
-      id: post.id,
-      content: post.content,
-      hasLink: post.has_link === 1,
-      linkUrl: post.link_url,
-      likes: post.likes,
-      comments: post.comments,
-      createdAt: post.createdAt,
-      isLiked: userLikes[post.id] || false,
-      author: {
-        id: post.author_id,
-        name: post.author_name,
-        avatar: post.author_avatar,
-        type: post.author_type,
-        verified: post.author_verified === 1,
+    // Query posts with pagination
+    const posts = await db.post.findMany({
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
       },
-    }))
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+        pollOptions: true,
+        votes: userId
+          ? {
+              where: {
+                userId,
+              },
+            }
+          : false,
+        likes: userId
+          ? {
+              where: {
+                userId,
+              },
+            }
+          : false,
+        ...(includeComments && {
+          comments: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                },
+              },
+            },
+            orderBy: {
+              createdAt: "asc",
+            },
+          },
+        }),
+      },
+    })
+
+    // Get total count for pagination
+    const totalPosts = await db.post.count()
+    const totalPages = Math.ceil(totalPosts / limit)
+
+    // Format posts for response
+    const formattedPosts = posts.map((post) => {
+      const userVote = post.votes && post.votes.length > 0 ? post.votes[0].pollOptionId : null
+      const isLiked = post.likes && post.likes.length > 0
+
+      // Calculate total votes if it's a poll
+      let pollTotalVotes = 0
+      if (post.isPoll && post.pollOptions) {
+        pollTotalVotes = post.pollOptions.reduce((sum, option) => sum + option.votes, 0)
+      }
+
+      // Format comments if included
+      const commentsList =
+        includeComments && post.comments
+          ? post.comments.map((comment) => ({
+              id: comment.id,
+              authorId: comment.author.id,
+              authorName: comment.author.name,
+              authorAvatar: comment.author.image,
+              content: comment.content,
+              createdAt: comment.createdAt,
+            }))
+          : []
+
+      return {
+        id: post.id,
+        author: {
+          id: post.author.id,
+          name: post.author.name,
+          avatar: post.author.image,
+        },
+        content: post.content,
+        isPoll: post.isPoll,
+        pollQuestion: post.pollQuestion,
+        pollOptions: post.isPoll
+          ? post.pollOptions.map((option) => ({
+              id: option.id,
+              text: option.text,
+              votes: option.votes,
+            }))
+          : [],
+        pollTotalVotes,
+        userVotedOption: userVote,
+        image: post.image,
+        pollImage: post.pollImage,
+        createdAt: post.createdAt,
+        likes: post.likeCount,
+        comments: post.commentCount,
+        commentsList,
+        isLiked,
+      }
+    })
 
     return NextResponse.json({
       posts: formattedPosts,
-      total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPages,
+      totalPosts,
     })
   } catch (error) {
-    console.error("Błąd podczas pobierania wpisów aktualności:", error)
-    return NextResponse.json({ error: "Wystąpił błąd podczas pobierania wpisów aktualności" }, { status: 500 })
+    console.error("Error fetching posts:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
 
@@ -133,7 +161,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { content } = body
+    const { content, type = "text", imageUrl, pollOptions } = body
 
     if (!content || content.trim() === "") {
       return NextResponse.json({ error: "Treść wpisu nie może być pusta" }, { status: 400 })
@@ -143,11 +171,47 @@ export async function POST(request: Request) {
     const linkUrl = extractUrl(content)
     const hasLink = !!linkUrl
 
+    // Przygotowanie danych do zapisu
+    const params: any[] = [user.id, content, hasLink, linkUrl]
+    let sql = "INSERT INTO news_posts (user_id, content, has_link, link_url"
+
+    // Dodanie typu wpisu
+    sql += ", type"
+    params.push(type)
+
+    // Dodanie URL obrazka, jeśli istnieje (dla typu image lub poll)
+    if ((type === "image" || type === "poll") && imageUrl) {
+      sql += ", image_url"
+      params.push(imageUrl)
+    }
+
+    // Dodanie danych ankiety, jeśli istnieją
+    if (type === "poll" && Array.isArray(pollOptions) && pollOptions.length >= 2) {
+      sql += ", poll_data"
+      params.push(
+        JSON.stringify({
+          options: pollOptions,
+          votes: pollOptions.map(() => 0),
+          totalVotes: 0,
+        }),
+      )
+    }
+
+    sql += ", created_at) VALUES (?, ?, ?, ?, ?, "
+
+    // Dodanie placeholderów dla opcjonalnych pól
+    if ((type === "image" || type === "poll") && imageUrl) {
+      sql += "?, "
+    }
+
+    if (type === "poll" && Array.isArray(pollOptions) && pollOptions.length >= 2) {
+      sql += "?, "
+    }
+
+    sql += "NOW())"
+
     // Dodanie wpisu
-    const result = await query(
-      "INSERT INTO news_posts (user_id, content, has_link, link_url, created_at) VALUES (?, ?, ?, ?, NOW())",
-      [user.id, content, hasLink, linkUrl],
-    )
+    const result = await query(sql, params)
 
     if (!result || !result.insertId) {
       throw new Error("Nie udało się dodać wpisu")
@@ -163,6 +227,9 @@ export async function POST(request: Request) {
         p.likes, 
         p.comments,
         p.created_at as createdAt,
+        p.type,
+        p.image_url as imageUrl,
+        p.poll_data as pollData,
         u.id as author_id, 
         u.name as author_name, 
         u.avatar as author_avatar, 
@@ -190,6 +257,9 @@ export async function POST(request: Request) {
       comments: post.comments,
       createdAt: post.createdAt,
       isLiked: false,
+      type: post.type || "text",
+      imageUrl: post.imageUrl,
+      pollData: post.pollData ? JSON.parse(post.pollData) : null,
       author: {
         id: post.author_id,
         name: post.author_name,

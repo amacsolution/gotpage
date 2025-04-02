@@ -3,6 +3,7 @@ import Link from "next/link"
 import Image from "next/legacy/image"
 import { MainNav } from "@/components/main-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { Footer } from "./footer"
 
 interface PageLayoutProps {
   children: React.ReactNode
@@ -17,6 +18,7 @@ export function PageLayout({ children }: PageLayoutProps) {
         </div>
       </header>
       <main className="flex-1">{children}</main>
+      <Footer />
       <footer className="border-t py-6">
         <div className="container flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex items-center gap-2">

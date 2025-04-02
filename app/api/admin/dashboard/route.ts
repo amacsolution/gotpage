@@ -15,6 +15,9 @@ type RecentActivityItem = {
   target: string | null;
   time: string;
 };
+type usersStats = {
+  total: number;
+  today: number;}
 
 // Funkcja pomocnicza do sprawdzania uwierzytelnienia administratora
 async function isAdmin(request: NextRequest) {
@@ -37,7 +40,7 @@ export async function GET(request: NextRequest) {
     let dateCondition = ""
     if (period === "today") {
       dateCondition = "WHERE DATE(created_at) = CURDATE()"
-    const usersStats = (await db.query(usersQuery)) as UserStats[]
+    } else if (period === "week") {
       dateCondition = "WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
     } else if (period === "month") {
       dateCondition = "WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
@@ -47,21 +50,21 @@ export async function GET(request: NextRequest) {
     const usersQuery = `
       SELECT 
         COUNT(*) as total,
-    const adsStats = (await db.query(adsQuery)) as AdsStats[]
+        SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) as today
       FROM users
       ${period !== "all" ? dateCondition : ""}
     `
-    const usersStats = await db.query(usersQuery)
+    const [usersStats]= await db.query(usersQuery)
 
     // Pobierz statystyki ogłoszeń
     const adsQuery = `
       SELECT 
         COUNT(*) as total,
         SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) as today
-    const commentsStats = (await db.query(commentsQuery)) as CommentsStats[]
+        FROM ads
       ${period !== "all" ? dateCondition : ""}
     `
-    const adsStats = await db.query(adsQuery)
+    const [adsStats] = await db.query(adsQuery)
 
     // Pobierz statystyki komentarzy
     const commentsQuery = `
@@ -69,10 +72,9 @@ export async function GET(request: NextRequest) {
     (SELECT COUNT(*) FROM ad_comments) + (SELECT COUNT(*) FROM news_comments) AS total,
     (SELECT COUNT(*) FROM ad_comments WHERE DATE(created_at) = CURDATE()) + 
     (SELECT COUNT(*) FROM news_comments WHERE DATE(created_at) = CURDATE()) AS today
-    const reportsStats = (await db.query(reportsQuery)) as ReportsStats[]
       ${period !== "all" ? dateCondition : ""}
     `
-    const commentsStats = await db.query(commentsQuery)
+    const [commentsStats] = await db.query(commentsQuery)
 
     // Pobierz statystyki zgłoszeń
     const reportsQuery = `
@@ -83,7 +85,7 @@ export async function GET(request: NextRequest) {
       FROM reports
       ${period !== "all" ? dateCondition : ""}
     `
-    const [reportsStats] = await db.query(reportsQuery) as ReportsStats[]
+    const [reportsStats] = await db.query(reportsQuery)
 
     // Pobierz ostatnią aktywność
     const recentActivityQuery = `
@@ -173,21 +175,21 @@ LIMIT 10;
     const dashboardData = {
       stats: {
         users: {
-          total: (usersStats[0] as UserStats)?.total || 0,
-          today: (usersStats[0] as UserStats)?.today || 0,
+          total: usersStats[0].total ,
+          today: usersStats[0].today || 0 ,
         },
         ads: {
-          total: (adsStats[0] as AdsStats)?.total || 0,
-          today: (adsStats[0] as AdsStats)?.today || 0,
+          total: adsStats[0].total ,
+          today: adsStats[0].today || 0 ,
         },
         comments: {
-          total: (commentsStats[0] as CommentsStats)?.total || 0,
-          today: (commentsStats[0] as CommentsStats)?.today || 0,
+          total: commentsStats[0].total,
+          today: commentsStats[0].today || 0,
         },
         reports: {
-          total: (reportsStats[0] as ReportsStats)?.total || 0,
-          pending: (reportsStats[0] as ReportsStats)?.pending || 0,
-          today: (reportsStats[0] as ReportsStats)?.today || 0,
+          total: reportsStats[0].total,
+          pending: reportsStats[0].pending || 0,
+          today: reportsStats[0].today || 0,
         },
       },
       recentActivity: (recentActivity as RecentActivityItem[]).map((item) => ({
@@ -196,6 +198,8 @@ LIMIT 10;
         timeFormatted: new Date(item.time).toLocaleString("pl-PL"), // Dodaj sformatowaną datę
       })),
     }
+
+    console.log("Dane dashboardu:", dashboardData.stats)
 
     return NextResponse.json(dashboardData)
   } catch (error) {

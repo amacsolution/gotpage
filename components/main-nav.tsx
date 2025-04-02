@@ -1,6 +1,6 @@
 "use client"
 import Link from "next/link"
-import Image from "next/legacy/image"
+import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Home, Search, User, Menu, Plus, Building, MessageSquare } from "lucide-react"
@@ -52,7 +52,7 @@ export function MainNav() {
       active: pathname === "/firmy" || pathname.startsWith("/firmy/"),
     },
     {
-      href: "/profil",
+      href: user ? `/profil/${user.id}` : "/profil",
       label: "Profil",
       icon: <User className="h-5 w-5" />,
       active: pathname === "/profil" || pathname.startsWith("/profil/"),
@@ -105,14 +105,14 @@ export function MainNav() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
                   <Avatar className="h-8 w-8">
-                    {/* <AvatarImage
+                    <AvatarImage
                       src={
                         user.avatar ||
                         `/placeholder.svg?height=40&width=40&text=${user.name.substring(0, 2).toUpperCase()}`
                       }
                       alt={user.name}
-                    /> */}
-                    <AvatarFallback className="text-xs">{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    />
+                    <AvatarFallback>{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
@@ -121,7 +121,7 @@ export function MainNav() {
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
-                    <Link href={`/profil`}>
+                    <Link href={`/profil/${user.id}`}>
                       <User className="mr-2 h-4 w-4" />
                       <span>Profil</span>
                     </Link>
@@ -177,7 +177,7 @@ export function MainNav() {
                     </Avatar>
                     <div>
                       <p className="font-medium">{user.name}</p>
-                      <Link href={`/profil}`} className="text-sm text-primary">
+                      <Link href={`/profil/${user.id}`} className="text-sm text-primary">
                         Zobacz profil
                       </Link>
                     </div>
