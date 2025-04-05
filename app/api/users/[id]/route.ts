@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth"
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     // Sprawdzenie, czy ID jest liczbą
-    const userId = Number.parseInt(params.id)
+    const userId = Number.parseInt(await params.id)
     if (isNaN(userId)) {
       return NextResponse.json({ error: "Nieprawidłowe ID użytkownika" }, { status: 400 })
     }

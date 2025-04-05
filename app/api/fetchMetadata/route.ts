@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     result.requestUrl = url
     result.success = true
 
-    console.log("Metadata result:", result)
+    // console.log("Metadata result:", result)
     return NextResponse.json(result)
   } catch (error) {
     console.error("Error fetching metadata:", error)

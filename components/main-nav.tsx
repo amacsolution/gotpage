@@ -52,10 +52,10 @@ export function MainNav() {
       active: pathname === "/firmy" || pathname.startsWith("/firmy/"),
     },
     {
-      href: user ? `/profil/${user.id}` : "/profil",
+      href: "/profil",
       label: "Profil",
       icon: <User className="h-5 w-5" />,
-      active: pathname === "/profil" || pathname.startsWith("/profil/"),
+      active: pathname === "/profil",
       authRequired: true,
     },
   ]

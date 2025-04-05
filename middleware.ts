@@ -39,17 +39,17 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Debugowanie - zapisz ścieżkę i ciasteczka w konsoli
-  console.log(`Middleware processing path: ${pathname}`)
-  console.log(
-    "Cookies:",
-    request.cookies.getAll().map((c) => `${c.name}=${c.value}`),
-  )
+  //console.log(`Middleware processing path: ${pathname}`)
+  // console.log(
+  //   "Cookies:",
+  //   request.cookies.getAll().map((c) => `${c.name}=${c.value}`),
+  // )
 
   // 1. Obsługa panelu administracyjnego
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
     console.log("Checking admin authentication")
     const token = request.cookies.get("admin_token")
-    console.log("Admin token:", token)
+    //console.log("Admin token:", token)
 
     // Jeśli nie ma tokenu, przekieruj do logowania
     if (!token || token.value !== "authenticated") {
@@ -58,7 +58,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    console.log("Admin token valid, proceeding")
+    //console.log("Admin token valid, proceeding")
   }
 
   // 2. Zezwól na dostęp do zdjęć ogłoszeń bez autentykacji
@@ -75,7 +75,7 @@ export function middleware(request: NextRequest) {
     pathname.includes("/public")
 
   if (isPublicPath) {
-    console.log(`Path ${pathname} is public, proceeding`)
+    //console.log(`Path ${pathname} is public, proceeding`)
     return NextResponse.next()
   }
 

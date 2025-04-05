@@ -30,7 +30,7 @@ interface PromotedAd {
     avatar: string
     type: string
     verified: boolean
-  }
+  } 
   likes: number
   comments: number
 }
@@ -92,7 +92,6 @@ export default function PromoteAdsPage() {
         "Wyróżnienie na liście ogłoszeń",
         "Oznaczenie jako 'Promowane'",
         "Wyższe pozycjonowanie",
-        "Statystyki wyświetleń",
       ],
       color: "bg-blue-500",
       icon: <Sparkles className="h-5 w-5" />,
@@ -107,7 +106,6 @@ export default function PromoteAdsPage() {
         "Wyświetlanie w sekcji polecanych",
         "Odświeżanie ogłoszenia co 3 dni",
         "Priorytetowe wyświetlanie w wynikach wyszukiwania",
-        "Rozszerzone statystyki",
       ],
       color: "bg-purple-500",
       popular: true,
@@ -117,13 +115,12 @@ export default function PromoteAdsPage() {
       id: "premium",
       name: "Premium",
       price: 39.99,
-      duration: "30 dni",
+      duration: "Miesiąc",
       features: [
-        "Wszystkie funkcje Standard",
+        "Wszystkie funkcje Standard i Basic",
         "Wyświetlanie na stronie głównej",
         "Odświeżanie ogłoszenia codziennie",
         "Wyróżnienie w powiadomieniach",
-        "Pełne statystyki i analityka",
         "Priorytetowa obsługa klienta",
       ],
       color: "bg-amber-500",
@@ -230,7 +227,7 @@ export default function PromoteAdsPage() {
                   <Skeleton className="h-[400px] w-full rounded-lg" />
                 ) : (
                   <div className="relative z-10 transform hover:scale-105 transition-transform duration-300">
-                    {promotedAds.length > 0 && <AdCard ad={promotedAds[0]} image={promotedAds[0].images[0]} />}
+                    {promotedAds.length > 0 && <AdCard ad={promotedAds[0]} />}
                   </div>
                 )}
               </div>
@@ -372,7 +369,7 @@ export default function PromoteAdsPage() {
                 {promotedAds.length > 0
                   ? promotedAds.map((ad) => (
                       <div key={ad.id} className="transform hover:scale-105 transition-transform duration-300">
-                        <AdCard ad={ad} image={ad.images[0]} />
+                        <AdCard ad={ad}/>
                       </div>
                     ))
                   : // Fallback to example ads if no promoted ads are available
@@ -405,7 +402,7 @@ export default function PromoteAdsPage() {
                       },
                     ].map((ad) => (
                       <div key={ad.id} className="transform hover:scale-105 transition-transform duration-300">
-                        <AdCard ad={ad} image={ad.images[0]}/>
+                        <AdCard ad={ad} image={ad.images[0].image_url}/>
                       </div>
                     ))}
               </div>

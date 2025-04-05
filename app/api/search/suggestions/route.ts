@@ -24,11 +24,10 @@ export async function GET(request: Request) {
         FROM ads a
         WHERE 
           a.title LIKE ? OR 
-          a.content LIKE ? OR 
           a.description LIKE ?
         LIMIT 10
       `,
-        [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`],
+        [`%${searchQuery}%`, `%${searchQuery}%`],
       )
 
       if (Array.isArray(adSuggestions)) {

@@ -4,13 +4,15 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Home, Search, ArrowLeft, AlertTriangle } from "lucide-react"
+import { PageLayout } from "@/components/page-layout"
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
+    <PageLayout>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background ">
       <Card className="w-full max-w-md shadow-lg border-0">
         <CardHeader className="text-center pb-2">
-          <div className="mx-auto mb-4 bg-red-100 p-3 rounded-full">
+          <div className="mx-auto mb-4 p-3 rounded-full">
             <AlertTriangle className="h-10 w-10 text-red-600" />
           </div>
           <CardTitle className="text-3xl font-bold">Strona nie znaleziona</CardTitle>
@@ -57,6 +59,7 @@ export default function NotFound() {
         </p>
       </div>
     </div>
+    </PageLayout>
   )
 }
 

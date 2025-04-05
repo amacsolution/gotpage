@@ -77,7 +77,7 @@ export async function GET(request: Request) {
     }
 
     if (searchQuery) {
-      sql += " AND (a.title LIKE ? OR a.content LIKE ?)"
+      sql += " AND (a.title LIKE ? OR a.description LIKE ?)"
       params.push(`%${searchQuery}%`, `%${searchQuery}%`)
     }
 

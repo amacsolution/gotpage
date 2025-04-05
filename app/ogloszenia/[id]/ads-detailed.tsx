@@ -226,6 +226,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
                 alt={ad.title}
                 className="object-fill"
                 priority
+                layout="fill"
               />
             </div>
             {ad.images.length > 1 && (
@@ -242,6 +243,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
                       src={imageObj.image_url} // 🔥 Zmiana tutaj!
                       alt={`${ad.title} - zdjęcie ${index + 1}`}
                       className="object-fill"
+                      layout="fill"
                     />
                   </div>
                 ))}

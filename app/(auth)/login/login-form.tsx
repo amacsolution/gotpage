@@ -49,6 +49,8 @@ export function LoginForm() {
         throw new Error(responseData.error || "Wystąpił błąd podczas logowania")
       }
 
+      console.log("Zalogowano pomyślnie:", responseData)
+
       toast({
         title: "Zalogowano pomyślnie",
         description: "Zostałeś pomyślnie zalogowany do swojego konta",

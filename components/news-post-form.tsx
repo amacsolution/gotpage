@@ -60,10 +60,10 @@ export function NewsPostForm({ user, onPostCreated }: NewsPostFormProps) {
     }
 
     // Check file size (max 5MB)
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "Błąd",
-        description: "Maksymalny rozmiar pliku to 10MB",
+        description: "Maksymalny rozmiar pliku to 5MB",
         variant: "destructive",
       })
       return

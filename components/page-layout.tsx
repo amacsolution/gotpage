@@ -19,7 +19,7 @@ export function PageLayout({ children }: PageLayoutProps) {
       </header>
       <main className="flex-1">{children}</main>
       <Footer />
-      <footer className="border-t py-6">
+      {/* <footer className="border-t py-6">
         <div className="container flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex items-center gap-2">
             <Image src="/logo.png" alt="Gotpage Logo" width={24} height={24} className="h-6 w-auto" />
@@ -40,7 +40,7 @@ export function PageLayout({ children }: PageLayoutProps) {
             <ThemeToggle />
           </div>
         </div>
-      </footer>
+      </footer> */}
     </div>
   )
 }

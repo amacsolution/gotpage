@@ -4,9 +4,9 @@ import Image from "next/image"
 
 export function Footer() {
   return (
-    <footer className="bg-background border-t border-muted">
+    <footer className="bg-background border-t border-muted md:px-4">
       <div className="container mx-auto py-8 px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h3 className="text-lg font-semibold mb-4">O nas</h3>
             <ul className="space-y-2">
@@ -85,7 +85,7 @@ export function Footer() {
             </ul>
           </div>
 
-          <div>
+          {/* <div>
             <h3 className="text-lg font-semibold mb-4">Śledź nas</h3>
             <div className="flex space-x-4">
               <a
@@ -163,6 +163,7 @@ export function Footer() {
               </form>
             </div>
           </div>
+        </div> */}
         </div>
 
         <div className="mt-8 pt-8 border-t border-muted">

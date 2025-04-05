@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PageLayout } from "@/components/page-layout"
-import { NewsPost, type Comment } from "@/components/news-post"
+import { NewsPost} from "@/components/news-post"
 import { NewsPostForm } from "@/components/news-post-form"
 import { useToast } from "@/hooks/use-toast"
 import { useUser } from "@/lib/user-context"
@@ -357,6 +357,8 @@ export default function NewsPage() {
     }
   }
 
+  console.log("Posts:", posts)
+
   const loadMore = () => {
     const nextPage = page + 1
     fetchPosts(nextPage)
@@ -456,23 +458,7 @@ export default function NewsPage() {
               <>
                 {posts.map((post) => (
                   <NewsPost
-                    key={post.id}
-                    id={post.id}
-                    author={post.author}
-                    content={post.content}
-                    isPoll={post.isPoll}
-                    pollQuestion={post.pollQuestion}
-                    pollOptions={post.pollOptions}
-                    pollTotalVotes={post.pollTotalVotes}
-                    userVotedOption={post.userVotedOption}
-                    image={post.image}
-                    pollImage={post.pollImage}
-                    createdAt={post.createdAt}
-                    likes={post.likes}
-                    comments={post.comments}
-                    commentsList={post.commentsList || []}
-                    isLiked={post.isLiked}
-                    currentUserId={user?.id}
+                    post={post}
                     onVote={handleVote}
                     onLike={handleLike}
                     onComment={handleComment}

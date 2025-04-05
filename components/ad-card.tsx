@@ -44,14 +44,13 @@ interface AdCardProps {
       type: string
       verified: boolean
     }
-
     likes: number
     comments: number
   }
-  image: string
+  image?: string
 }
 
-export function AdCard({ ad, image }: AdCardProps) {
+export function AdCard({ ad, image}: AdCardProps) {
   const [isAuthor, setIsAuthor] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -108,7 +107,7 @@ export function AdCard({ ad, image }: AdCardProps) {
         method: "DELETE",
       })
 
-      if (!response.ok) {
+      if (!response.ok) { 
         throw new Error("Nie udało się usunąć ogłoszenia")
       }
 
@@ -148,7 +147,7 @@ export function AdCard({ ad, image }: AdCardProps) {
                 {/* Zdjęcie produktu - zawsze na górze, zarówno na mobile jak i desktop */}
                 <div className="relative w-full h-48 overflow-hidden bg-gray-50">
                   <Image
-                    src={ad.image || plImage}
+                    src={image || ad.image || plImage}
                     alt={ad.title}
                     loading="lazy"
                     objectFit="cover"

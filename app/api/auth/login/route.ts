@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     }
 
     // Sprawdzenie czy użytkownik istnieje
-    const users = await query("SELECT id, name, email, password, type, verified FROM users WHERE email = ?", [email])
+    const users = await query("SELECT id, name, email, password, type, verified, avatar FROM users WHERE email = ?", [email])
 
     if (!Array.isArray(users) || users.length === 0) {
       return NextResponse.json({ error: "Nieprawidłowy email lub hasło" }, { status: 401 })
@@ -61,7 +61,8 @@ export async function POST(request: Request) {
       email: user.email,
       type: user.type,
       verified: user.verified,
-      authChange: true, // Dodanie flagi dla klienta
+      authChange: true,
+      avatar: user.avatar // Dodanie flagi dla klienta
     })
   } catch (error) {
     console.error("Błąd podczas logowania:", error)

@@ -4,7 +4,7 @@ import { cookies } from "next/headers"
 export async function POST() {
   try {
     // Usunięcie ciasteczka z tokenem
-    cookies().delete("auth_token")
+    (await cookies()).delete("auth_token")
 
     return NextResponse.json({ message: "Wylogowano pomyślnie" })
   } catch (error) {

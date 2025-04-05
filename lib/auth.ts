@@ -26,7 +26,7 @@ export async function auth(request?: Request): Promise<User | null> {
         token = authHeader.substring(7)
       } else {
         // Jeśli nie ma tokenu w nagłówku, spróbuj pobrać z ciasteczek
-        const cookieStore =await cookies()
+        const cookieStore = await cookies()
         token = cookieStore.get("auth_token")?.value
       }
     } else {
@@ -40,10 +40,10 @@ export async function auth(request?: Request): Promise<User | null> {
     }
 
     // Weryfikacja tokenu
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_secret") as User
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as User
 
     // Opcjonalnie: sprawdzenie czy użytkownik nadal istnieje w bazie danych
-    const users = await query("SELECT id, name, email, type, verified FROM users WHERE id = ?", [decoded.id])
+    const users = await query("SELECT id, name, email, type, verified, avatar FROM users WHERE id = ?", [decoded.id])
 
     if (!Array.isArray(users) || users.length === 0) {
       return null
@@ -83,15 +83,17 @@ export const authOptions: NextAuthOptions = {
             return null
           }
 
+          // console.log("Zalogowano pomyślnie:", user)
+
           return {
             id: user.id.toString(),
             name: user.username,
             email: user.email,
             role: user.role,
-            image: user.avatar || null,
+            image: user.avatar 
           }
         } catch (error) {
-          console.error("Auth error:", error)
+          // console.error("Auth error:", error)
           return null
         }
       },

@@ -311,8 +311,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-// Dodajemy metodę DELETE do istniejącego pliku
-
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const adId = Number.parseInt(await params.id)
@@ -321,7 +319,6 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ error: "Nieprawidłowe ID ogłoszenia" }, { status: 400 })
     }
 
-    // Sprawdzenie autoryzacji
     const user = await auth(request)
     console.log(user)
 

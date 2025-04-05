@@ -25,6 +25,7 @@ export function AdminSidebar() {
     { href: "/admin/ads", label: "Ogłoszenia", icon: MessageSquare },
     { href: "/admin/companies", label: "Firmy", icon: Building },
     { href: "/admin/settings", label: "Ustawienia", icon: Settings },
+    { href: "/admin/kontakt", label: "Formularze kontaktowe", icon: MessageSquare },
   ]
 
   return (
