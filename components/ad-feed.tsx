@@ -43,14 +43,14 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       // Budowanie URL zapytania
       let url =
         isUserProfile && userId
-          ? `/api/users/${userId}/ads?page=${pageNum}&limit=12&sortBy=${sort}`
+          ? `/api/users/${userId}/ads?page=${pageNum}&limit=6&sortBy=${sort}`
           : `/api/ads?page=${pageNum}&limit=12&sortBy=${sort}`
 
       // Dodanie parametrów filtrowania
       if (!isUserProfile) {
         const params = new URLSearchParams()
         params.append("page", pageNum.toString())
-        params.append("limit", "12")
+        params.append("limit", "6")
         params.append("sortBy", sort)
 
         if (category) params.append("category", category)
@@ -185,7 +185,7 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       {/* Siatka ogłoszeń */}
       <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
         {ads.map((ad) => (
-          <AdCard key={ad.id} ad={ad} image={ad.image.length > 0 ? ad.image[0] : ad.image}/>
+          <AdCard key={ad.id} ad={ad} image={ad.image}/>
         ))}
       </div>
       

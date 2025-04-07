@@ -41,7 +41,8 @@ const CompaniesFeedLimit = () => {
     fetchData()
   }, [toast])
 
-  if(isLoading) {
+  if(isLoading && companies.length === 0) {
+    // Loading state when no companies are available
     return(
       <div className="container py-8">
     <div className="flex justify-between items-center mb-6">
@@ -52,11 +53,10 @@ const CompaniesFeedLimit = () => {
     </div>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {[1,2,3,4].map((company) => (
-        <div key={company} className="bg-muted animate-pulse rounded-lg" />
+        <div key={company} className="bg-muted h-25 w-35 animate-pulse rounded-lg" />
       ))}
     </div>
   </div>
-
     )
   }
     

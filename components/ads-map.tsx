@@ -191,7 +191,7 @@ function MarkerClusterHandler({ ads }: { ads: any[] }) {
                 <div class="font-medium text-sm mt-2 text-foreground">
                   ${ad.price ? `${ad.price.toLocaleString()} zł` : "Cena do negocjacji"}
                 </div>
-                <a href="/ogloszenia/${ad.id}" class="mt-2 inline-block w-full rounded-md bg-primary px-3 py-1.5 text-center text-xs font-medium text-foreground hover:bg-primary/90">
+                <a href="/ogloszenia/${ad.id}" class="mt-2 inline-block w-full rounded-md bg-primary px-3 py-1.5 text-center text-xs font-medium text-foreground! hover:bg-primary/90">
                   Zobacz szczegóły
                 </a>
               </div>

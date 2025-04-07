@@ -17,7 +17,7 @@ function MapUpdater({ center }: { center?: { lat: number; lng: number } }) {
 
   useEffect(() => {
     if (center) {
-      map.setView(center, 12)
+      map.setView(center, 7)
     }
   }, [center, map])
 

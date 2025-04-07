@@ -18,12 +18,17 @@ export async function GET(request: Request, { params }: { params: { id: string }
         email, 
         phone, 
         bio, 
+        description,
         avatar, 
         type, 
         verified, 
+        website,
         created_at as joinedAt, 
         location, 
-        categories
+        categories,
+        company_size,
+        occupation,
+        interests
       FROM users 
       WHERE id = ?`,
       [userId],

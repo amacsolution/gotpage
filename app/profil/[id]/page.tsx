@@ -11,10 +11,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PageLayout } from "@/components/page-layout"
 import { AdFeed } from "@/components/ad-feed"
-import { Star, Mail, Phone, MapPin, Calendar, Building, User, Link2, Globe, Book, BookUser, Briefcase } from "lucide-react"
+import { Star, Mail, Phone, MapPin, Calendar, Building, User, Link2, Globe, Book, BookUser, Briefcase, Loader2, ShieldCheck } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { UserReviews } from "@/components/user-reviews"
 import { CompanyCard } from "@/components/company-card"
+import { NewsPost } from "@/components/news-post"
 
 export default function UserProfilePage({ params }: { params: { id: string } }) {
   const { id } = use(params)
@@ -23,11 +24,53 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
   const [isLoading, setIsLoading] = useState(true)
   const [similarUsers, setSimilarUsers] = useState<any[]>([])
   const [isSimilarUsersLoading, setIsSimilarUsersLoading] = useState(true)
+  const [posts, setPosts] = useState<any[]>([])
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
   const router = useRouter()
   const { toast } = useToast()
 
   // Utworzenie lokalnej zmiennej dla ID do użycia w tablicy zależności
 
+  useEffect(() => {
+    fetchPosts(1)
+  }, [])
+
+  const fetchPosts = async (pageNum: number) => {
+    try {
+      setIsLoading(true)
+
+      const user = JSON.parse(localStorage.getItem("userData") || "{}")
+      const response = await fetch(`/api/news?page=${pageNum}&limit=10&userId=${user.id}`)
+
+      if (!response.ok) {
+        throw new Error("Nie udało się pobrać aktualności")
+      }
+
+      const data = await response.json()
+
+      console.log(data)
+
+      if (pageNum === 1) {
+        setPosts(data.posts)
+      } else {
+        setPosts((prev) => [...prev, ...data.posts])
+      }
+
+      console.log(data)
+      setHasMore(pageNum < data.totalPages)
+      setPage(pageNum)
+    } catch (error) {
+      console.error("Error fetching posts:", error)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się pobrać aktualności",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -83,6 +126,11 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
       fetchSimilarUsers()
     }
   }, [user, isLoading])
+
+  const loadMore = () => {
+    const nextPage = page + 1
+    fetchPosts(nextPage)
+  }
 
   // Skeleton loading dla całej strony
   if (isLoading) {
@@ -195,7 +243,7 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
               <div className="text-sm text-muted-foreground">
                 <div className="flex items-center gap-1 mb-1">
                   <Calendar className="h-4 w-4" />
-                  <span>Dołączył: {new Date(user.created_at).toLocaleDateString()}</span>
+                  <span>Dołączył: {new Date(user.joinedAt).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center gap-1 mb-1">
                   <MapPin className="h-4 w-4" />
@@ -312,7 +360,7 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
                                     <span className="font-medium text-sm">{similarUser.name}</span>
                                     {similarUser.verified && (
                                       <span className="text-primary text-xs" title="Zweryfikowany">
-                                        ✓
+                                        <ShieldCheck className="h-4 w-4" />
                                       </span>
                                     )}
                                   </div>
@@ -340,12 +388,11 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
           </div>
 
           <div className="md:col-span-2">
-            <Tabs defaultValue="info">
+            <Tabs defaultValue="tab">
               <TabsList className="w-full">
-                <TabsTrigger value="info" className="flex-1">
-                  Informacje
+                <TabsTrigger value="tab" className="flex-1">
+                  Tablica
                 </TabsTrigger>
-
                 <TabsTrigger value="ads" className="flex-1">
                   Ogłoszenia ({user.stats.ads})
                 </TabsTrigger>
@@ -355,10 +402,10 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
                   </TabsTrigger>
                 )}
               </TabsList>
-              <TabsContent value="info" className="mt-4">
+              <TabsContent value="tab" className="mt-4">
                 <div className="space-y-4">
                   <h2 className="text-xl font-semibold mb-4">Informacje</h2>
-                  <p>{user.bio}</p>
+                  {user.type === "individual" && (<p>{user.bio}</p>)}
                   {user.type === "individual" && (
                     <>
                       {user.occupation && (
@@ -381,56 +428,93 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
                         <CardContent className="p-4">
                           <h3 className="text-lg font-semibold mb-2">Dane firmy</h3>
                           {user.businessData.nip && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 text-muted-foreground my-1">
                               <Briefcase className="h-4 w-4 text-muted-foreground" />
-                              <span>NIP: {user.businessData.nip}</span>
+                              <p >NIP: <span className="text-foreground">{user.businessData.nip}</span></p>
                             </div>
                           )}
                           {user.businessData.krs && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 text-muted-foreground my-1">
                               <Building className="h-4 w-4 text-muted-foreground" />
-                              <span>KRS: {user.businessData.krs}</span>
+                              <span>KRS: <span className="text-foreground">{user.businessData.krs}</span></span>
                             </div>
                           )}
                           {user.businessData.regon && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 text-muted-foreground my-1">
                               <Building className="h-4 w-4 text-muted-foreground" />
-                              <span>REGON: {user.businessData.regon}</span>
+                              <span>REGON: <span className="text-foreground">{user.businessData.regon}</span></span>
                             </div>
                           )}
                           {user.location && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 text-muted-foreground my-1">
                               <MapPin className="h-4 w-4 text-muted-foreground" />
-                              <span>Lokalizacja: {user.location}</span>
+                              <span>Lokalizacja: <span className="text-foreground">{user.location}</span></span>
+                            </div>
+                          )}
+                          {user.company_size && (
+                            <div className="flex items-center gap-2 text-muted-foreground my-1">
+                              <Building className="h-4 w-4 text-muted-foreground" />
+                              <span>Wielkość firmy: <span className="text-foreground">{user.company_size}</span></span>
+                            </div>
+                          )}
+                          {user.website && (
+                            <div className="flex items-center gap-2 my-1">
+                              <Globe className="h-4 w-4 text-muted-foreground" />
+                              <Link href={user.website} className="hover:underline">
+                                {user.website}
+                              </Link>
+                            </div>
+                          )}
+                          {user.categories && user.categories.length > 0 && (
+                            <div className="flex flex-wrap gap-2 my-2">
+                              <h3 className="text-sm font-medium text-muted-foreground mb-1">Kategorie</h3>
+                              {user.categories.map((category: string) => (
+                                <Badge key={category} variant="secondary">
+                                  {category}
+                                </Badge>
+                              ))}
                             </div>
                           )}
                         </CardContent>
                       </Card>
-                      {user.company_size && (
-                        <div className="flex items-center gap-2">
-                          <Building className="h-4 w-4 text-muted-foreground" />
-                          <span>Wielkość firmy: {user.company_size}</span>
-                        </div>
-                      )}
-                      {user.website && (
-                        <div className="flex items-center gap-2">
-                          <Globe className="h-4 w-4 text-muted-foreground" />
-                          <Link href={user.website} className="hover:underline">
-                            {user.website}
-                          </Link>
-                        </div>
-                      )}
-                      {user.categories && user.categories.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {user.categories.map((category: string) => (
-                            <Badge key={category} variant="secondary">
-                              {category}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
                     </>
                   )}
+                </div>
+                <h3 className="text-xl font-semibold mb-2 mt-6">Aktualności</h3>
+                <div className="mt-4">
+                {isLoading && posts.length === 0 ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-40 w-full rounded-lg" />
+                    ))}
+                  </div>
+                ) : posts.length > 0 ? (
+                  <>
+                    {posts.map((post) => (
+                      <NewsPost key={post.id} post={post} />
+                    ))}
+    
+                    {hasMore && (
+                      <div className="flex justify-center mt-6">
+                        <Button variant="outline" onClick={loadMore} disabled={isLoading}>
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Ładowanie...
+                            </>
+                          ) : (
+                            "Załaduj więcej"
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-12 bg-muted/30 rounded-lg">
+                    <h3 className="text-lg font-medium mb-2">Brak aktualności</h3>
+                    <p className="text-muted-foreground">Dodaj nowy wpis i daj się poznać!</p>
+                  </div>
+                )}
                 </div>
               </TabsContent>
               <TabsContent value="ads" className="mt-4">

@@ -30,8 +30,8 @@ export const metadata: Metadata = {
       "Publikuj i przeglądaj ogłoszenia w nowoczesnym stylu. Znajdź to, czego szukasz lub sprzedaj to, co chcesz.",
     images: [
       {
-        url: "/og-image.jpg",
-        width: 1200,
+        url: "/logo.png",
+        width: 630,
         height: 630,
         alt: "Gotpage - Nowoczesna platforma ogłoszeniowa",
       },
