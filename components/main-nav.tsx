@@ -121,7 +121,7 @@ export function MainNav() {
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
-                    <Link href={`/profil/${user.id}`}>
+                    <Link href={`/profil`}>
                       <User className="mr-2 h-4 w-4" />
                       <span>Profil</span>
                     </Link>
@@ -177,7 +177,7 @@ export function MainNav() {
                     </Avatar>
                     <div>
                       <p className="font-medium">{user.name}</p>
-                      <Link href={`/profil/${user.id}`} className="text-sm text-primary">
+                      <Link href={`/profil`} className="text-sm text-primary">
                         Zobacz profil
                       </Link>
                     </div>

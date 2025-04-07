@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -11,11 +11,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PageLayout } from "@/components/page-layout"
 import { AdFeed } from "@/components/ad-feed"
-import { Star, Mail, Phone, MapPin, Calendar, Building, User } from "lucide-react"
+import { Star, Mail, Phone, MapPin, Calendar, Building, User, Link2, Globe, Book, BookUser, Briefcase } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { UserReviews } from "@/components/user-reviews"
+import { CompanyCard } from "@/components/company-card"
 
 export default function UserProfilePage({ params }: { params: { id: string } }) {
+  const { id } = use(params)
+
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [similarUsers, setSimilarUsers] = useState<any[]>([])
@@ -24,19 +27,20 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
   const { toast } = useToast()
 
   // Utworzenie lokalnej zmiennej dla ID do użycia w tablicy zależności
-  const userId = params.id
+
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         setIsLoading(true)
-        const response = await fetch(`/api/users/${userId}`)
+        const response = await fetch(`/api/users/${id}`)
         const data = await response.json()
 
         if (data.error) {
           throw new Error(data.error)
         }
 
+        console.log(data)
         setUser(data)
       } catch (error) {
         console.error("Błąd podczas pobierania profilu użytkownika:", error)
@@ -51,7 +55,7 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
     }
 
     fetchUserProfile()
-  }, [userId, toast])
+  }, [id, toast])
 
   // Pobieranie podobnych użytkowników z niższym priorytetem
   useEffect(() => {
@@ -59,12 +63,14 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
       const fetchSimilarUsers = async () => {
         try {
           setIsSimilarUsersLoading(true)
-          const response = await fetch(`/api/users/similar?id=${user.id}&type=${user.type}`)
+          const response = await fetch(`/api/users/similar?id=${user.id}&type=${user.type}`) //&type=${user.type} do konkretnego wyszukiwania podobnych profili
           const data = await response.json()
 
           if (data.error) {
             throw new Error(data.error)
           }
+
+          
 
           setSimilarUsers(data)
         } catch (error) {
@@ -189,7 +195,7 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
               <div className="text-sm text-muted-foreground">
                 <div className="flex items-center gap-1 mb-1">
                   <Calendar className="h-4 w-4" />
-                  <span>Dołączył: {new Date(user.joinedAt).toLocaleDateString()}</span>
+                  <span>Dołączył: {new Date(user.created_at).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center gap-1 mb-1">
                   <MapPin className="h-4 w-4" />
@@ -234,14 +240,41 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Kontakt</h3>
                   <div className="space-y-2">
-                    <Button variant="outline" className="w-full justify-start" size="sm">
+                    <a href={`tel:${user.phone}`} >
+                    <Button variant="outline" className="w-full justify-start my-1" size="sm" >
                       <Phone className="h-4 w-4 mr-2" />
                       {user.phone}
                     </Button>
-                    <Button variant="outline" className="w-full justify-start" size="sm">
+                    </a>
+                    <a href={`mailto:${user.email}`}>
+                    <Button variant="outline" className="w-full justify-start my-1" size="sm" >
                       <Mail className="h-4 w-4 mr-2" />
                       {user.email}
                     </Button>
+                    </a>
+                    {user.website && (
+                    <a href={user.website} rel="nofollow">
+                      <Button variant="outline" className="w-full justify-start my-1" size="sm">
+                        <Globe className="h-4 w-4 mr-2" />
+                        {user.website}
+                      </Button>
+                    </a>
+                  )}       
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Opis</h3>
+                  <div className="space-y-2">
+                    <Button variant="outline" className="w-full h-auto justify-start align-top p-4" size="sm">
+                      <Book className="h-4 w-4 mr-2" />
+                      <p className="whitespace-normal break-words text-left">{user.description}</p>
+                    </Button>
+                    {user.company_size && (
+                  <Button variant="outline" className="w-full justify-start" size="sm">
+                    <BookUser className="h-4 w-4 mr-2" />
+                    Ilość pracowników {user.company_size}
+                  </Button>
+                  )}
                   </div>
                 </div>
               </CardContent>
@@ -263,38 +296,42 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
                 ) : (
                   <div className="space-y-3">
                     {similarUsers.map((similarUser) => (
-                      <Link href={`/profil/${similarUser.id}`} key={similarUser.id}>
-                        <Card className="hover:border-primary/50 transition-colors">
-                          <CardContent className="p-3">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-10 w-10">
-                                <AvatarImage src={similarUser.avatar} alt={similarUser.name} />
-                                <AvatarFallback>{similarUser.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <div className="flex items-center gap-1">
-                                  <span className="font-medium text-sm">{similarUser.name}</span>
-                                  {similarUser.verified && (
-                                    <span className="text-primary text-xs" title="Zweryfikowany">
-                                      ✓
-                                    </span>
+                      similarUser.type === "business" ? (
+                        <CompanyCard key={similarUser.id} company={similarUser} />
+                      ) : (
+                        <Link href={`/profil/${similarUser.id}`} key={similarUser.id}>
+                          <Card className="hover:border-primary/50 transition-colors">
+                            <CardContent className="p-3">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10">
+                                  <AvatarImage src={similarUser.avatar} alt={similarUser.name} />
+                                  <AvatarFallback>{similarUser.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <div className="flex items-center gap-1">
+                                    <span className="font-medium text-sm">{similarUser.name}</span>
+                                    {similarUser.verified && (
+                                      <span className="text-primary text-xs" title="Zweryfikowany">
+                                        ✓
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">{similarUser.location}</div>
+                                  {similarUser.categories && similarUser.categories.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                      {similarUser.categories.map((category: string) => (
+                                        <Badge key={category} variant="secondary" className="text-xs py-0">
+                                          {category}
+                                        </Badge>
+                                      ))}
+                                    </div>
                                   )}
                                 </div>
-                                <div className="text-xs text-muted-foreground">{similarUser.location}</div>
-                                {similarUser.categories && similarUser.categories.length > 0 && (
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {similarUser.categories.map((category: string) => (
-                                      <Badge key={category} variant="secondary" className="text-xs py-0">
-                                        {category}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                )}
                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      )
                     ))}
                   </div>
                 )}
@@ -303,8 +340,12 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
           </div>
 
           <div className="md:col-span-2">
-            <Tabs defaultValue="ads">
+            <Tabs defaultValue="info">
               <TabsList className="w-full">
+                <TabsTrigger value="info" className="flex-1">
+                  Informacje
+                </TabsTrigger>
+
                 <TabsTrigger value="ads" className="flex-1">
                   Ogłoszenia ({user.stats.ads})
                 </TabsTrigger>
@@ -314,6 +355,84 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
                   </TabsTrigger>
                 )}
               </TabsList>
+              <TabsContent value="info" className="mt-4">
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold mb-4">Informacje</h2>
+                  <p>{user.bio}</p>
+                  {user.type === "individual" && (
+                    <>
+                      {user.occupation && (
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span>{user.occupation}</span>
+                        </div>
+                      )}
+                      {user.interests && (
+                        <div className="flex items-center gap-2">
+                          <Star className="h-4 w-4 text-muted-foreground" />
+                          <span>{user.interests}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {user.type === "business" && (
+                    <>
+                      <Card>
+                        <CardContent className="p-4">
+                          <h3 className="text-lg font-semibold mb-2">Dane firmy</h3>
+                          {user.businessData.nip && (
+                            <div className="flex items-center gap-2">
+                              <Briefcase className="h-4 w-4 text-muted-foreground" />
+                              <span>NIP: {user.businessData.nip}</span>
+                            </div>
+                          )}
+                          {user.businessData.krs && (
+                            <div className="flex items-center gap-2">
+                              <Building className="h-4 w-4 text-muted-foreground" />
+                              <span>KRS: {user.businessData.krs}</span>
+                            </div>
+                          )}
+                          {user.businessData.regon && (
+                            <div className="flex items-center gap-2">
+                              <Building className="h-4 w-4 text-muted-foreground" />
+                              <span>REGON: {user.businessData.regon}</span>
+                            </div>
+                          )}
+                          {user.location && (
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-muted-foreground" />
+                              <span>Lokalizacja: {user.location}</span>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                      {user.company_size && (
+                        <div className="flex items-center gap-2">
+                          <Building className="h-4 w-4 text-muted-foreground" />
+                          <span>Wielkość firmy: {user.company_size}</span>
+                        </div>
+                      )}
+                      {user.website && (
+                        <div className="flex items-center gap-2">
+                          <Globe className="h-4 w-4 text-muted-foreground" />
+                          <Link href={user.website} className="hover:underline">
+                            {user.website}
+                          </Link>
+                        </div>
+                      )}
+                      {user.categories && user.categories.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {user.categories.map((category: string) => (
+                            <Badge key={category} variant="secondary">
+                              {category}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </TabsContent>
               <TabsContent value="ads" className="mt-4">
                 <AdFeed isUserProfile={true} userId={user.id} />
               </TabsContent>

@@ -81,6 +81,26 @@ function MarkerClusterHandler({ ads }: { ads: any[] }) {
               border-radius: 50%;
               box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             }
+              .leaflet-popup-content-wrapper {
+              background: hsl(var(--background))!important;
+              padding: 2px !important;
+              overflow: hidden;
+            }
+
+            .leaflet-popup-content {
+              margin: 0;
+              width: auto !important;
+            }
+
+            .leaflet-container a.leaflet-popup-close-button {
+              color: hsl(var(--muted-foreground));
+              padding: 8px 8px 0 0;
+            }
+
+            .leaflet-container a.leaflet-popup-close-button:hover {
+              color: hsl(var(--foreground));
+            }
+
           `
           document.head.appendChild(style)
         }
@@ -141,39 +161,37 @@ function MarkerClusterHandler({ ads }: { ads: any[] }) {
               locale: pl,
             })
 
+            console.log("Formatted date:", formattedDate)
+            console.log("Ad data:", ad)
+
             const popupContent = `
               <div class="popup-content p-2 min-w-[200px]">
                 <div class="mb-2 overflow-hidden rounded-md">
                   ${
-                    ad.images && ad.images.length > 0
-                      ? `<img src="${ad.images[0] || "/placeholder.svg"}" alt="${ad.title}" class="h-24 w-full object-cover" />`
-                      : `<div class="flex h-24 w-full items-center justify-center bg-gray-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="text-gray-400">
-                          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                          <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                        </svg>
-                      </div>`
+                    
+                       `<img src="${ad.image || "/placeholder.svg"}" alt="${ad.title}" class="h-24 w-full object-cover" />`
+                      
                   }
                 </div>
-                <h3 class="font-medium text-sm">${ad.title}</h3>
-                <div class="flex items-center text-xs text-gray-500 mt-1">
+                <h3 class="font-medium text-sm text-foreground">${ad.title}</h3>
+                <div class="flex items-center text-xs text-muted-foreground mt-1">
                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="mr-1">
                     <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
                     <circle cx="12" cy="10" r="3"></circle>
                   </svg>
                   <span>${ad.location}</span>
                 </div>
-                <div class="flex items-center text-xs text-gray-500 mt-1">
+                <div class="flex items-center text-xs text-muted-foreground mt-1">
                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="mr-1">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
                   <span>${formattedDate}</span>
                 </div>
-                <div class="font-medium text-sm mt-2">
+                <div class="font-medium text-sm mt-2 text-foreground">
                   ${ad.price ? `${ad.price.toLocaleString()} zł` : "Cena do negocjacji"}
                 </div>
-                <a href="/ogloszenia/${ad.id}" class="mt-2 inline-block w-full rounded-md bg-blue-600 px-3 py-1.5 text-center text-xs font-medium text-white hover:bg-blue-700">
+                <a href="/ogloszenia/${ad.id}" class="mt-2 inline-block w-full rounded-md bg-primary px-3 py-1.5 text-center text-xs font-medium text-foreground hover:bg-primary/90">
                   Zobacz szczegóły
                 </a>
               </div>

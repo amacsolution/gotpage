@@ -101,9 +101,9 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
     setSortBy(value)
   }
 
-  const toggleViewMode = () => {
-    setViewMode(viewMode === "grid" ? "list" : "grid")
-  }
+  // const toggleViewMode = () => {
+  //   setViewMode(viewMode === "grid" ? "list" : "grid")
+  // }
 
   // Skeleton loading dla ogłoszeń
   if (isLoading && ads.length === 0) {
@@ -150,7 +150,7 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
           <span className="text-sm text-muted-foreground">
             Znaleziono {totalAds} {totalAds === 1 ? "ogłoszenie" : totalAds < 5 ? "ogłoszenia" : "ogłoszeń"}
           </span>
-          <Button
+          {/* <Button
             variant="outline"
             size="icon"
             className="h-8 w-8"
@@ -158,7 +158,7 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
             title={viewMode === "grid" ? "Widok listy" : "Widok siatki"}
           >
             {viewMode === "grid" ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
-          </Button>
+          </Button> */}
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -185,7 +185,7 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       {/* Siatka ogłoszeń */}
       <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
         {ads.map((ad) => (
-          <AdCard key={ad.id} ad={ad} image={ad.image[0]}/>
+          <AdCard key={ad.id} ad={ad} image={ad.image.length > 0 ? ad.image[0] : ad.image}/>
         ))}
       </div>
       

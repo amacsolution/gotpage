@@ -214,7 +214,7 @@ export default function HomePage() {
             <p className="text-muted-foreground mb-4">
               Twoje ogłoszenia będą wyświetlane na górze listy wyszukiwania, co zwiększa szansę na szybką sprzedaż.
             </p>
-            <Link href="/ogloszenia/promuj">
+            <Link href="/promowanie/ogloszenia">
               <Button variant="outline" className="w-full">
                 Promuj ogłoszenia
               </Button>
@@ -228,7 +228,7 @@ export default function HomePage() {
             <p className="text-muted-foreground mb-4">
               Wyróżnij swój profil firmowy, aby przyciągnąć więcej klientów i zwiększyć rozpoznawalność marki.
             </p>
-            <Link href="/profil?tab=promotion">
+            <Link href="/promowanie/firma">
               <Button variant="outline" className="w-full">
                 Promuj firmę
               </Button>

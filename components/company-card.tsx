@@ -47,11 +47,11 @@ const categories = Array.isArray(company.categories) ? company.categories : [];
                   <Building className="h-8 w-8 text-muted-foreground" />
                 )}
               </div>
-              {company.verified && (
+              {company.verified ? (
                 <div className="absolute -bottom-1 -right-1 bg-primary text-white rounded-full p-1">
                   <ShieldCheck className="h-3 w-3" />
                 </div>
-              )}
+              ) : ("")}
             </div>
 
             <div className="flex-1 min-w-0">

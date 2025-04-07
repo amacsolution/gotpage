@@ -11,7 +11,6 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -364,6 +363,23 @@ export default function ProfilePage() {
                 <p>Dołączył: {new Date(user.joinedAt).toLocaleDateString()}</p>
                 <p>Lokalizacja: {user.location || "Nie podano"}</p>
                 <p>Typ konta: {user.type === "individual" ? "Osoba prywatna" : "Firma"}</p>
+                  {user.stats.reviews && user.stats.reviews > 0 ? (
+                    <>
+                      <div className="flex text-yellow-500 items-center gap-2 my-4">
+                        <div className="flex">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className="h-5 w-5"
+                              fill={star <= (user.stats.rating || 0) ? "currentColor" : "none"}
+                            />
+                          ))}
+                        </div>
+                        <span className="font-bold">{Number(user.stats.rating)?.toFixed(1)}</span>
+                        <span className="text-muted-foreground">({user.stats.reviews} opinii)</span>
+                      </div>
+                      </>
+                  ) : ( "" )}
               </div>
               <div className="flex gap-4 text-sm">
                 <div>

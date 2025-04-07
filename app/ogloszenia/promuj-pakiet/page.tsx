@@ -61,7 +61,7 @@ const promotionPlans = [
     id: "standard",
     title: "Standard",
     description: "Wyróżnij swoje ogłoszenie na liście wyników wyszukiwania na 7 dni",
-    price: 10,
+    price: 9.99,
     features: ["Wyróżnienie kolorem", "Pozycjonowanie wyżej w wynikach", "7 dni promocji"],
     icon: <Rocket className="h-6 w-6" />,
   },
@@ -69,7 +69,7 @@ const promotionPlans = [
     id: "premium",
     title: "Premium",
     description: "Twoje ogłoszenie będzie wyświetlane na górze listy przez 14 dni",
-    price: 20,
+    price: 24.99,
     features: ["Wszystko co w Standard", "Wyświetlanie na górze listy", "14 dni promocji", "Większe zdjęcia"],
     icon: <Sparkles className="h-6 w-6" />,
   },
@@ -77,7 +77,7 @@ const promotionPlans = [
     id: "vip",
     title: "VIP",
     description: "Maksymalna widoczność i wyróżnienie ogłoszenia przez 30 dni",
-    price: 50,
+    price: 39.90,
     features: [
       "Wszystko co w Premium",
       "Wyświetlanie na stronie głównej",
@@ -98,13 +98,76 @@ const discounts = [
 
 export default function PromotePackagePage() {
   const router = useRouter()
+  const [ads, setAds] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [totalAds, setTotalAds] = useState(0)
+  const [sortBy, setSortBy] = useState("newest")
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const { toast } = useToast()
   const [selectedAds, setSelectedAds] = useState<number[]>([])
   const [selectedPlan, setSelectedPlan] = useState<string>("standard")
-  const [isLoading, setIsLoading] = useState(false)
   const [totalPrice, setTotalPrice] = useState(0)
   const [discountedPrice, setDiscountedPrice] = useState(0)
   const [appliedDiscount, setAppliedDiscount] = useState<{ rate: number; label: string } | null>(null)
+  
+  
+
+
+  useEffect(() => {
+    // Reset stanu przy zmianie filtrów
+    setAds([])
+    setPage(1)
+    setHasMore(true)
+    setIsLoading(true)
+    fetchAds(1, sortBy)
+  }, [ sortBy])
+
+  const fetchAds = async (pageNum: number, sort: string) => {
+    try {
+      setIsLoading(true)
+
+      const user = JSON.parse(localStorage.getItem("userData") || "{}")
+      const userId = user.id || null
+
+      // Budowanie URL zapytania
+      let url =
+        userId
+          ? `/api/users/${userId}/ads?page=${pageNum}&limit=12&sortBy=${sort}`
+          : `/api/ads?page=${pageNum}&limit=12&sortBy=${sort}`
+
+      // Dodanie parametrów filtrowania
+
+      const response = await fetch(url)
+      const data = await response.json()
+
+      //console.log(data)
+
+      if (data.error) {
+        throw new Error(data.error)
+      }
+
+      if (pageNum === 1) {
+        setAds(data.ads)
+      } else {
+        setAds((prev) => [...prev, ...data.ads])
+      }
+
+      setTotalAds(data.total)
+      console.log("Liczba ogłoszeń:", data.ads)
+      setHasMore(pageNum < data.totalPages)
+    } catch (error) {
+      //console.error("Błąd podczas pobierania ogłoszeń:", error)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się pobrać ogłoszeń. Spróbuj ponownie później.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   // Obliczanie ceny i zniżki
   useEffect(() => {
@@ -196,11 +259,13 @@ export default function PromotePackagePage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {userAds.map((ad) => (
-                    <div key={ad.id} className="flex items-center space-x-4 p-3 rounded-lg border">
+
+                  {ads.map((ad) => (
+                    <div key={ad.id} className={`${selectedAds.includes(ad.id) ? "border-primary border-1" : ""} inline-flex w-full items-center space-x-4 p-3 rounded-lg border`} onClick={() => toggleAdSelection(ad.id)}>
                       <Checkbox
                         id={`ad-${ad.id}`}
-                        checked={selectedAds.includes(ad.id)}
+                        className="hidden"
+                        checked={ads.includes(ad.id)}
                         onCheckedChange={() => toggleAdSelection(ad.id)}
                         disabled={ad.promoted}
                       />
@@ -214,11 +279,11 @@ export default function PromotePackagePage() {
                       <div className="flex-grow">
                         <div className="flex items-center gap-2">
                           <h3 className="font-medium text-sm">{ad.title}</h3>
-                          {ad.promoted && (
+                          {ad.promoted ? (
                             <Badge variant="outline" className="text-primary border-primary/30">
                               Już promowane
                             </Badge>
-                          )}
+                          ) : ( "" )}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <span>{ad.category}</span>

@@ -40,6 +40,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     const viewsCountResult = await query("SELECT SUM(views) as count FROM ads WHERE user_id = ?", [userId])
 
+    const businessData = user.type === "business" 
+                        ? await query("SELECT nip, regon, krs FROM business_details WHERE user_id = ?", [userId]) 
+                        : []
+
     const likesCountResult = await query(
       "SELECT COUNT(*) as count FROM ad_likes WHERE ad_id IN (SELECT id FROM ads WHERE user_id = ?)",
       [userId],
@@ -54,6 +58,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const formattedUser = {
       ...user,
       // Parsowanie kategorii jeśli są przechowywane jako JSON string
+      businessData: Array.isArray(businessData) && businessData.length > 0 ? businessData[0] : null,
       categories: user.categories ? JSON.parse(user.categories) : [],
       stats: {
         ads: Array.isArray(adsCountResult) && adsCountResult[0]?.count ? Number.parseInt(adsCountResult[0].count) : 0,

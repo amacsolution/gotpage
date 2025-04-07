@@ -5,7 +5,21 @@ import bcrypt from "bcryptjs"
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { name, email, password, type, bio, phone, nip, location, categories } = body
+    const {
+      name,
+      email,
+      password,
+      type,
+      bio,
+      phone,
+      nip,
+      location,
+      categories,
+      occupation,
+      interests,
+      companySize,
+      website,
+    } = body
 
     // Walidacja danych wejściowych
     if (!name || !email || !password || !type) {
@@ -38,8 +52,12 @@ export async function POST(request: Request) {
         created_at, 
         bio, 
         location, 
-        categories
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)`,
+        categories,
+        occupation,
+        interests,
+        company_size,
+        website
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?)`,
       [
         name,
         email,
@@ -51,6 +69,10 @@ export async function POST(request: Request) {
         bio || (type === "individual" ? "Zwykły użytkownik platformy." : "Firma korzystająca z platformy."),
         location || "",
         JSON.stringify(categories || []),
+        occupation || null,
+        interests || null,
+        companySize || null,
+        website || null,
       ],
     )
 

@@ -5,7 +5,7 @@ import { RowDataPacket } from "mysql2"
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { searchParams } = new URL(request.url)
-    const userId = Number.parseInt(await params.id)
+    const userId = Number.parseInt((await params).id)
     const page = Number.parseInt(searchParams.get("page") || "1")
     const limit = Number.parseInt(searchParams.get("limit") || "10")
     const offset = (page - 1) * limit
