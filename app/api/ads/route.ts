@@ -2,6 +2,29 @@ import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
 import { uploadImage } from "@/lib/upload"
+import crypto from "crypto"
+
+export interface AdData {
+  id: number
+  title: string
+  description: string
+  price: number
+  currency: string
+  location: string
+  category: string
+  subcategory: string | null
+  image: string | string[] | null
+  createdAt: string
+  promoted: number
+  likes: number
+  views: number
+  author_id: number
+  author_name: string
+  author_avatar: string | null
+  author_type: string
+  author_verified: number
+  comments_count: number
+}
 
 export async function GET(request: Request) {
   try {
@@ -54,7 +77,7 @@ export async function GET(request: Request) {
     if (category) {
       sql += " AND a.category = ?"
       params.push(category)
-    }
+    } 
 
     if (subcategory) {
       sql += " AND a.subcategory = ?"
@@ -108,7 +131,7 @@ export async function GET(request: Request) {
     params.push(limit, offset)
 
     // Wykonanie zapytania
-    const ads = await query(sql, params)
+    const ads = await query(sql, params) as AdData[]
 
     if (!Array.isArray(ads)) {
       return NextResponse.json({ ads: [], total: 0 })
@@ -149,7 +172,7 @@ export async function GET(request: Request) {
       countSql += " AND (a.title LIKE ? OR a.content LIKE ?)"
     }
 
-    const totalResult = await query(countSql, countParams)
+    const totalResult = await query(countSql, countParams) as { count: string }[]
 
     const total = Array.isArray(totalResult) && totalResult[0]?.count ? Number.parseInt(totalResult[0].count) : 0
 
@@ -181,6 +204,11 @@ export async function GET(request: Request) {
   }
 }
 
+const generateAdKey = (name: string): string => {
+  const baseKey = name.replace(/\s+/g, '-').toLowerCase(); // Przekształć nazwę na format sługowany
+  const uniqueSuffix = crypto.randomBytes(3).toString('hex'); // Generuj 6-znakowy sufiks
+  return `${baseKey}-${uniqueSuffix}`;
+};
 
 export async function POST(request: Request) {
   try {
@@ -201,6 +229,11 @@ export async function POST(request: Request) {
     const price = formData.get("price") ? Number.parseFloat(formData.get("price") as string) : null
     const isPromoted = formData.get("isPromoted") === "true"
     const location = (formData.get("location") as string) || null
+    const adres = (formData.get("adres") as string) || null
+    const kod = (formData.get("kod") as string) || null
+    const adKey = generateAdKey(title) // Generowanie unikalnego klucza ogłoszenia
+
+    console.log("dane ogłoszenia", title, content, category, subcategory, price, isPromoted, location, adres, kod, adKey )
 
     // Walidacja podstawowych pól
     if (!title || !content || !category) {
@@ -213,9 +246,9 @@ export async function POST(request: Request) {
     try {
       // Przygotowanie zapytania SQL w zależności od kategorii
       let sqlColumns =
-        "title, description, category, subcategory, price, promoted, location, user_id, created_at, updated_at"
-      let sqlPlaceholders = "?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW()"
-      const sqlValues: any[] = [title, content, category, subcategory, price, isPromoted ? 1 : 0, location, user.id]
+        "ad_key, title, description, category, subcategory, price, promoted, location, adress, kod, user_id, created_at, updated_at"
+      let sqlPlaceholders = "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW()"
+      const sqlValues: any[] = [adKey, title, content, category, subcategory, price, isPromoted ? 1 : 0, location, adres, kod, user.id]
 
       // Dodatkowe pola w zależności od kategorii
       if (category === "Nieruchomości") {
@@ -316,7 +349,7 @@ export async function POST(request: Request) {
 
       // Dodanie ogłoszenia do bazy danych
       const sql = `INSERT INTO ads (${sqlColumns}) VALUES (${sqlPlaceholders})`
-      const result = await query(sql, sqlValues)
+      const result = await query(sql, sqlValues) as { insertId: number }
 
       if (!result || !result.insertId) {
         throw new Error("Nie udało się dodać ogłoszenia")

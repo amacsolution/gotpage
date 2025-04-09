@@ -83,16 +83,16 @@ const LinkPreview = ({ text }: { text: string }) => {
       setLoading(true)
       setError(null)
 
-      console.log("Fetching metadata for URL:", extractedUrl)
+      //console.log("Fetching metadata for URL:", extractedUrl)
 
       // Dodajemy timestamp, aby uniknąć cachowania
       const timestamp = new Date().getTime()
       fetch(`/api/fetchMetadata?url=${encodeURIComponent(extractedUrl)}&t=${timestamp}`)
         .then((res) => res.json())
         .then((data) => {
-          console.log("Received metadata:", data)
+          // console.log("Received metadata:", data)
           if (data.error) {
-            console.error("Error in metadata response:", data.error)
+            // console.error("Error in metadata response:", data.error)
             setError(data.error)
             setMetadata(null)
           } else {
@@ -101,7 +101,7 @@ const LinkPreview = ({ text }: { text: string }) => {
           }
         })
         .catch((err) => {
-          console.error("Error fetching metadata:", err)
+          // console.error("Error fetching metadata:", err)
           setError("Nie udało się pobrać podglądu linku")
           setMetadata(null)
         })
@@ -190,7 +190,7 @@ const LinkPreview = ({ text }: { text: string }) => {
                     className="object-cover"
                     loading="lazy"
                     onError={(e) => {
-                    console.error("Image failed to load:", imageUrl)
+                    // console.error("Image failed to load:", imageUrl)
                     // Jeśli obrazek nie załaduje się, ukryj go
                     ;(e.target as HTMLImageElement).style.display = "none"
                     }}

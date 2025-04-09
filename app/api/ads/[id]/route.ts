@@ -4,10 +4,11 @@ import { auth } from "@/lib/auth"
 import path from "path"
 import { existsSync } from "fs"
 import { promises as fs } from "fs"
+import { use } from "react"
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const adId = Number.parseInt(await params.id)
+    const adId = Number.parseInt(params.id)
 
     if (isNaN(adId)) {
       return NextResponse.json({ error: "Nieprawidłowe ID ogłoszenia" }, { status: 400 })

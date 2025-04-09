@@ -144,6 +144,14 @@ const createFormSchema = (selectedCategory: string, selectedSubcategory: string)
     location: z.string().min(2, {
       message: "Lokalizacja musi mieć co najmniej 2 znaki",
     }),
+    adres: z.string().min(2, {
+      message: "Adres musi mieć co najmniej 2 znaki",
+    }),
+    kod: z
+      .string()
+      .regex(/^\d{2}-\d{3}$/, {
+        message: "Kod pocztowy musi być w formacie XX-XXX",
+      }),
     isPromoted: z.boolean().default(false),
   })
 
@@ -208,6 +216,8 @@ export default function AddAdPage() {
       subcategory: "",
       price: "",
       location: "",
+      adres: "",
+      kod: "",
       isPromoted: false,
     },
   })
@@ -222,7 +232,6 @@ export default function AddAdPage() {
         // const data = await response.json();
 
         // Symulacja opóźnienia sieciowego
-        await new Promise((resolve) => setTimeout(resolve, 1000))
 
         // Używamy mock data
         setIsDataLoading(false)
@@ -379,6 +388,8 @@ export default function AddAdPage() {
       // Przygotowanie danych formularza
       const formData = new FormData()
 
+      console.log(values.location, values.adres, values.kod)
+
       // Dodanie podstawowych pól
       formData.append("title", values.title)
       formData.append("content", values.content)
@@ -386,7 +397,11 @@ export default function AddAdPage() {
       if (values.subcategory) formData.append("subcategory", values.subcategory)
       if (values.price) formData.append("price", values.price)
       formData.append("location", values.location)
+      formData.append("adres", values.adres)
+      formData.append("kod", values.kod)
       formData.append("isPromoted", values.isPromoted.toString())
+
+    
 
       // Dodanie pól specyficznych dla kategorii
       const category = categories.find((c) => c.name === selectedCategory)
@@ -405,6 +420,8 @@ export default function AddAdPage() {
       selectedImages.forEach((image) => {
         formData.append("images", image)
       })
+
+      console.log(formData)
 
       // Wysłanie formularza
       const response = await fetch("/api/ads", {
@@ -427,6 +444,7 @@ export default function AddAdPage() {
       // Przekierowanie na stronę ogłoszenia
       router.push(`/ogloszenia/${data.adId}`)
     } catch (error) {
+      
       console.error("Błąd podczas dodawania ogłoszenia:", error)
       toast({
         title: "Błąd",
@@ -556,6 +574,38 @@ export default function AddAdPage() {
                   </FormItem>
                 )}
               />
+
+              <div className="md:inline-flex gap-4 w-full ">
+              <FormField
+                control={form.control}
+                name="adres"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Adres</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Marszałkowska 12a" {...field} />
+                    </FormControl>
+                    <FormDescription>Podaj ulice i numer</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="kod"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kod Pocztowy</FormLabel>
+                    <FormControl>
+                      <Input placeholder="XX-XXX" {...field} />
+                    </FormControl>
+                    <FormDescription>Podaj kod pocztowy</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              </div>
 
               {/* Dynamiczne pola dla wybranej kategorii */}
               {categoryFields.length > 0 && (
@@ -718,7 +768,7 @@ export default function AddAdPage() {
                 </div>
               </div>
 
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="isPromoted"
                 render={({ field }) => (
@@ -735,7 +785,7 @@ export default function AddAdPage() {
                     </div>
                   </FormItem>
                 )}
-              />
+              /> */}
 
               <div className="flex justify-end gap-4">
                 <Button type="button" variant="outline" onClick={() => router.push("/ogloszenia")}>

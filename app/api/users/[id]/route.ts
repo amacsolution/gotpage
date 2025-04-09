@@ -2,11 +2,46 @@ import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
 
+interface UserData {
+  id: string
+  name: string
+  email: string
+  phone: string
+  bio: string
+  avatar: string
+  type: string
+  verified: boolean
+  joinedAt: string
+  location: string
+  categories: string
+  stats: {
+    ads: number
+    views: number
+    likes: number
+    reviews?: number
+    rating?: number
+  }
+  businessData?: {
+    nip: string
+    regon: string
+    krs: string
+  }
+  occupation?: string
+  interests?: string
+  website?: string
+  company_size?: string
+  promotion?: {
+    active: boolean
+    plan: string
+    endDate: string
+  } | null
+}
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     // Sprawdzenie, czy ID jest liczbą
-    const userId = Number.parseInt(await params.id)
-    if (isNaN(userId)) {
+    const userId = (await params).id
+    if (!userId) {
       return NextResponse.json({ error: "Nieprawidłowe ID użytkownika" }, { status: 400 })
     }
 
@@ -32,7 +67,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       FROM users 
       WHERE id = ?`,
       [userId],
-    )
+    ) as UserData[]
 
     if (!Array.isArray(users) || users.length === 0) {
       return NextResponse.json({ error: "Użytkownik nie został znaleziony" }, { status: 404 })
@@ -41,9 +76,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const user = users[0]
 
     // Pobranie statystyk użytkownika
-    const adsCountResult = await query("SELECT COUNT(*) as count FROM ads WHERE user_id = ?", [userId])
+    const adsCountResult = await query("SELECT COUNT(*) as count FROM ads WHERE user_id = ?", [userId]) as { count: string }[]
 
-    const viewsCountResult = await query("SELECT SUM(views) as count FROM ads WHERE user_id = ?", [userId])
+    const viewsCountResult = await query("SELECT SUM(views) as count FROM ads WHERE user_id = ?", [userId]) as { count: string }[]
 
     const businessData = user.type === "business" 
                         ? await query("SELECT nip, regon, krs FROM business_details WHERE user_id = ?", [userId]) 
@@ -52,12 +87,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const likesCountResult = await query(
       "SELECT COUNT(*) as count FROM ad_likes WHERE ad_id IN (SELECT id FROM ads WHERE user_id = ?)",
       [userId],
-    )
+    ) as { count: string }[]
 
     const reviewsCountResult = await query(
       "SELECT COUNT(*) as count, AVG(rating) as average FROM user_reviews WHERE user_id = ?",
       [userId],
-    )
+    ) as { count: string; average: string }[]
 
     // Formatowanie danych
     const formattedUser = {
@@ -139,7 +174,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
        FROM users 
        WHERE id = ?`,
       [userId],
-    )
+    ) as UserData[]
 
     if (!Array.isArray(updatedUsers) || updatedUsers.length === 0) {
       throw new Error("Nie udało się pobrać zaktualizowanych danych użytkownika")

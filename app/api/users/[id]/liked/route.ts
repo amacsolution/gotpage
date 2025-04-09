@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
+import { AdData } from "@/app/api/ads/route"
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -10,14 +11,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
     }
 
-    const userId = Number.parseInt(params.id)
-    if (isNaN(userId)) {
+    const userId = params.id
+    if (!userId) {
       return NextResponse.json({ error: "Nieprawidłowe ID użytkownika" }, { status: 400 })
     }
 
     // Sprawdzenie, czy użytkownik ma dostęp do tych danych
     // Użytkownik może przeglądać tylko swoje polubione ogłoszenia
-    if (currentUser.id !== userId) {
+    if (currentUser.id.toString() !== userId) {
       return NextResponse.json({ error: "Brak dostępu do tych danych" }, { status: 403 })
     }
 
@@ -55,14 +56,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
       ORDER BY a.promoted DESC
       LIMIT ? OFFSET ?`,
       [userId, limit, offset],
-    )
+    ) as AdData[]
 
     if (!Array.isArray(likedAds)) {
       return NextResponse.json({ ads: [], total: 0 })
     }
 
     // Pobieranie całkowitej liczby polubionych ogłoszeń
-    const totalResult = await query("SELECT COUNT(*) as count FROM ad_likes WHERE user_id = ?", [userId])
+    const totalResult = await query("SELECT COUNT(*) as count FROM ad_likes WHERE user_id = ?", [userId]) as {count : string}[]
 
     const total = Array.isArray(totalResult) && totalResult[0]?.count ? Number.parseInt(totalResult[0].count) : 0
 
@@ -70,7 +71,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const formattedAds = await Promise.all(
       likedAds.map(async (ad) => {
         // Pobierz zdjęcia dla ogłoszenia
-        const images = await query("SELECT image_url FROM ad_images WHERE ad_id = ? ORDER BY id ASC", [ad.id])
+        const images = await query("SELECT image_url FROM ad_images WHERE ad_id = ? ORDER BY id ASC", [ad.id]) as { image_url: string }[]
         const imageUrls = Array.isArray(images) ? images.map((img) => img.image_url) : []
 
         // Formatowanie danych

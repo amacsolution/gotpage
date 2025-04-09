@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
+import { User } from "next-auth"
+
+interface Promotion {
+  id: number
+  plan: string
+  active: number
+  startDate: string
+  endDate: string
+  
+}
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -10,13 +20,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
     }
 
-    const userId = Number.parseInt(params.id)
-    if (isNaN(userId)) {
+    const userId = params.id
+    if (!userId) {
       return NextResponse.json({ error: "Nieprawidłowe ID użytkownika" }, { status: 400 })
     }
 
     // Sprawdzenie, czy użytkownik próbuje pobrać dane swojej promocji lub ma uprawnienia administratora
-    if (userId !== user.id && user.type !== "admin") {
+    if (userId !== user.id.toString() && user.type !== "admin") {
       return NextResponse.json({ error: "Nie masz uprawnień do pobrania tych danych" }, { status: 403 })
     }
 
@@ -33,8 +43,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
         WHERE user_id = ? AND active = 1 
         ORDER BY end_date DESC 
         LIMIT 1`,
-        [userId],
-      )
+        [userId], 
+      ) as Promotion[]
 
       if (!Array.isArray(promotions) || promotions.length === 0) {
         return NextResponse.json({

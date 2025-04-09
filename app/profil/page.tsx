@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast"
 import { AdFeed } from "@/components/ad-feed"
 import { LikedAdsFeed } from "@/components/liked-ads-feed"
 import { CompanyPromotion } from "@/components/company-promotion"
-import { Star, Edit, Loader2 } from "lucide-react"
+import { Star, Edit, Loader2, User, Briefcase, Building, MapPin, Globe } from "lucide-react"
 import { ProfileImageUpload } from "@/components/profile-image-upload"
 import { UserReviews } from "@/components/user-reviews"
 import { NewsPostForm } from "@/components/news-post-form"
@@ -44,6 +44,15 @@ interface UserData {
     reviews?: number
     rating?: number
   }
+  businessData?: {
+    nip: string
+    regon: string
+    krs: string
+  }
+  occupation?: string
+  interests?: string
+  website?: string
+  company_size?: string
   promotion?: {
     active: boolean
     plan: string
@@ -515,7 +524,7 @@ export default function ProfilePage() {
 
           <div className="md:col-span-2">
             <Tabs defaultValue="tablica">
-              <TabsList className="w-full">
+              <TabsList className="w-full overflow-x-auto whitespace-nowrap no-scrollbar">
               <TabsTrigger value="tablica" className="flex-1">
                   Tablica
                 </TabsTrigger>
@@ -537,6 +546,83 @@ export default function ProfilePage() {
                 )}
               </TabsList>
               <TabsContent value="tablica" className="mt-4">
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold mb-4">Informacje</h2>
+                  {user.type === "individual" && (<p>{user.bio}</p>)}
+                  {user.type === "individual" && (
+                    <>
+                      {user.occupation && (
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span>{user.occupation}</span>
+                        </div>
+                      )}
+                      {user.interests && (
+                        <div className="flex items-center gap-2">
+                          <Star className="h-4 w-4 text-muted-foreground" />
+                          <span>{user.interests}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {user.type === "business" && (
+                    <>
+                      <Card>
+                        <CardContent className="p-4">
+                          <h3 className="text-lg font-semibold mb-2">Dane firmy</h3>
+                          {user.businessData?.nip && (
+                            <div className="flex items-center gap-2 text-muted-foreground my-1">
+                              <Briefcase className="h-4 w-4 text-muted-foreground" />
+                              <p >NIP: <span className="text-foreground">{user.businessData.nip}</span></p>
+                            </div>
+                          )}
+                          {user.businessData?.krs && (
+                            <div className="flex items-center gap-2 text-muted-foreground my-1">
+                              <Building className="h-4 w-4 text-muted-foreground" />
+                              <span>KRS: <span className="text-foreground">{user.businessData.krs}</span></span>
+                            </div>
+                          )}
+                          {user.businessData?.regon && (
+                            <div className="flex items-center gap-2 text-muted-foreground my-1">
+                              <Building className="h-4 w-4 text-muted-foreground" />
+                              <span>REGON: <span className="text-foreground">{user.businessData.regon}</span></span>
+                            </div>
+                          )}
+                          {user.location && (
+                            <div className="flex items-center gap-2 text-muted-foreground my-1">
+                              <MapPin className="h-4 w-4 text-muted-foreground" />
+                              <span>Lokalizacja: <span className="text-foreground">{user.location}</span></span>
+                            </div>
+                          )}
+                          {user.company_size && (
+                            <div className="flex items-center gap-2 text-muted-foreground my-1">
+                              <Building className="h-4 w-4 text-muted-foreground" />
+                              <span>Wielkość firmy: <span className="text-foreground">{user.company_size}</span></span>
+                            </div>
+                          )}
+                          {user.website && (
+                            <div className="flex items-center gap-2 my-1">
+                              <Globe className="h-4 w-4 text-muted-foreground" />
+                              <Link href={user.website} className="hover:underline">
+                                {user.website}
+                              </Link>
+                            </div>
+                          )}
+                          {user.categories && user.categories.length > 0 && (
+                            <div className="flex flex-wrap gap-2 my-2">
+                              <h3 className="text-sm font-medium text-muted-foreground mb-1">Kategorie</h3>
+                              {user.categories.map((category: string) => (
+                                <Badge key={category} variant="secondary">
+                                  {category}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </>
+                  )}
+                </div>
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold">Wpisy</h2>
                   <Link href="/aktualnosci">

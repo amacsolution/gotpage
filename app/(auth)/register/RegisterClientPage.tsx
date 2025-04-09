@@ -22,7 +22,7 @@ export default function RegisterClientPage() {
       <CardTitle className="text-2xl font-bold">Rejestracja</CardTitle>
       <CardDescription>Utwórz nowe konto w serwisie Gotpage</CardDescription>
       <CardContent className="pt-6">
-        <Dialog open={open} onOpenChange={setOpen} className="max-h-screen">
+        <Dialog open={open} onOpenChange={setOpen} >
           <DialogTrigger asChild>
             <Button className="w-full">Zarejestruj się</Button>
           </DialogTrigger>

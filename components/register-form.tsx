@@ -33,7 +33,7 @@ const validateNIP = (nip: string) => {
   // Obliczenie sumy kontrolnej
   let sum = 0
   for (let i = 0; i < 9; i++) {
-    sum += Number.parseInt(cleanedNIP[i] * weights[i])
+    sum += Number.parseInt(cleanedNIP[i]) * weights[i]
   }
 
   // Obliczenie cyfry kontrolnej
@@ -75,6 +75,9 @@ const individualSchema = z.object({
   name: z.string().min(2, {
     message: "Imię musi mieć co najmniej 2 znaki",
   }),
+  fullname: z.string().min(2, {
+    message: "Imię i nazwisko musi mieć co najmniej 2 znaki",
+  }),
   email: z.string().email({
     message: "Wprowadź poprawny adres email",
   }),
@@ -90,6 +93,7 @@ const individualSchema = z.object({
   confirmPassword: z.string(),
   bio: z.string().optional(),
   accountType: z.literal("individual"),
+  location: z.string().optional(),
   // New fields
   occupation: z.string().optional(),
   interests: z.string().optional(),
@@ -99,6 +103,9 @@ const individualSchema = z.object({
 const businessSchema = z.object({
   name: z.string().min(2, {
     message: "Nazwa firmy musi mieć co najmniej 2 znaki",
+  }),
+  fullname: z.string().min(2, {
+    message: "Imię i nazwisko musi mieć co najmniej 2 znaki",
   }),
   email: z.string().email({
     message: "Wprowadź poprawny adres email",
@@ -139,8 +146,10 @@ const businessSchema = z.object({
     .string()
     .min(1, {
       message: "Podaj lokalizację firmy",
-    })
-    .optional(),
+    }),
+  adress: z.string().min(1, {
+      message: "Podaj dokładny adres firmy",
+  }),
   termsAccepted: z
     .boolean()
     .refine((val) => val === true, {
@@ -169,6 +178,7 @@ export function MultiStepRegisterForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      fullname: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -190,12 +200,14 @@ export function MultiStepRegisterForm() {
         password: values.password,
         type: values.accountType,
         bio: values.bio || "",
+        ...(values.accountType === "individual" && {
         occupation: values.occupation || "",
-        interests: values.interests || "",
+        interests: values.interests || "",}),
         ...(values.accountType === "business" && {
           phone: values.phone,
           nip: values.nip,
           location: values.location,
+          adress: values.adress,
           categories: values.categories,
           companySize: values.companySize,
           website: values.website,
@@ -328,10 +340,27 @@ export function MultiStepRegisterForm() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{accountType === "individual" ? "Imię i nazwisko" : "Nazwa firmy"}</FormLabel>
+                          <FormLabel>{accountType === "individual" ? "Nazwa uzytkownika" : "Nazwa firmy"}</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder={accountType === "individual" ? "Jan Kowalski" : "Firma Sp. z o.o."}
+                              placeholder={accountType === "individual" ? "Jankowal24" : "Firma Sp. z o.o."}
+                              {...field}
+                              disabled={isLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="fullname"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Imie i nazwisko</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Jan Kowalski"
                               {...field}
                               disabled={isLoading}
                             />
@@ -442,6 +471,20 @@ export function MultiStepRegisterForm() {
                       />
                       <FormField
                         control={form.control}
+                        name="adress"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Adres</FormLabel>
+                            <FormControl>
+                              <Input placeholder="ul.Fabryczna 2a/10f" {...field} disabled={isLoading} />
+                            </FormControl>
+                            <FormDescription>Podaj ulicę i adres</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
                         name="categories"
                         render={() => (
                           <FormItem>
@@ -524,6 +567,20 @@ export function MultiStepRegisterForm() {
                   )}
                   {accountType === "individual" && (
                     <>
+                      <FormField
+                        control={form.control}
+                        name="location"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Lokalizacja</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Warszawa, Mazowieckie" {...field} disabled={isLoading} />
+                            </FormControl>
+                            <FormDescription>Podaj miasto i województwo</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       <FormField
                         control={form.control}
                         name="occupation"

@@ -2,6 +2,52 @@ import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
 
+export type UserData = {
+  id: number
+  name: string
+  password?: string 
+  email: string
+  phone: string | null
+  bio: string | null
+  avatar: string | null
+  type: string
+  verified: number
+  joinedAt: string
+  location: string | null
+  adress: string | null
+  occupation: string | null
+  interests: string | null
+  website: string | null
+  company_size: string | null
+  nip: string | null
+  regon: string | null
+  krs: string | null
+  promotion: {
+    active: boolean
+    plan: string
+    endDate: string
+  } | null
+  stats: {
+    ads: number | null
+    views: number | null
+    likes: number | null
+    reviews: number | null
+    rating: number | null
+  }
+  categories: string | null
+  ads_count: number | null
+  views_count: number | null
+  likes_count: number | null
+  reviews_count: number | null
+  rating_avg: number | null
+}
+
+type Promotions = {
+  plan: string
+  active: number
+  endDate: string
+}
+
 export async function GET(request: Request) {
   try {
     // Sprawdzenie, czy użytkownik jest zalogowany
@@ -33,7 +79,7 @@ export async function GET(request: Request) {
       WHERE u.id = ?
       LIMIT 1`,
       [user.id],
-    )
+    ) as UserData[]
 
     if (!Array.isArray(users) || users.length === 0) {
       return NextResponse.json({ error: "Nie znaleziono użytkownika" }, { status: 404 })
@@ -56,7 +102,9 @@ export async function GET(request: Request) {
           ORDER BY end_date DESC 
           LIMIT 1`,
           [user.id],
-        )
+        ) as Promotions[]
+
+
 
         if (Array.isArray(promotions) && promotions.length > 0) {
           promotionData = {
@@ -70,6 +118,10 @@ export async function GET(request: Request) {
         console.error("Błąd podczas pobierania danych promocji:", error)
       }
     }
+
+    const businessData = user.type === "business" 
+    ? await query("SELECT nip, regon, krs FROM business_details WHERE user_id = ?", [user.id]) 
+    : []
 
     // Formatowanie danych
     const formattedUser = {
@@ -91,6 +143,7 @@ export async function GET(request: Request) {
         reviews: userData.reviews_count || 0,
         rating: userData.rating_avg || 0,
       },
+      businessData: Array.isArray(businessData) && businessData.length > 0 ? businessData[0] : null,
       promotion: promotionData,
     }
 

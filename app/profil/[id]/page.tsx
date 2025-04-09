@@ -17,9 +17,9 @@ import { UserReviews } from "@/components/user-reviews"
 import { CompanyCard } from "@/components/company-card"
 import { NewsPost } from "@/components/news-post"
 
-export default function UserProfilePage({ params }: { params: { id: string } }) {
-  const { id } = use(params)
-
+export default function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = use(params); // Unwrap the params object
+  const id = unwrappedParams.id;
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [similarUsers, setSimilarUsers] = useState<any[]>([])
@@ -33,15 +33,14 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
   // Utworzenie lokalnej zmiennej dla ID do użycia w tablicy zależności
 
   useEffect(() => {
-    fetchPosts(1)
+    fetchPosts(1, id)
   }, [])
 
-  const fetchPosts = async (pageNum: number) => {
+  const fetchPosts = async (pageNum: number, id: string) => {
     try {
       setIsLoading(true)
 
-      const user = JSON.parse(localStorage.getItem("userData") || "{}")
-      const response = await fetch(`/api/news?page=${pageNum}&limit=10&userId=${user.id}`)
+      const response = await fetch(`/api/news?page=${pageNum}&limit=10&userId=${id}`)
 
       if (!response.ok) {
         throw new Error("Nie udało się pobrać aktualności")
@@ -76,6 +75,7 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
     const fetchUserProfile = async () => {
       try {
         setIsLoading(true)
+        console.log(id)
         const response = await fetch(`/api/users/${id}`)
         const data = await response.json()
 
@@ -129,7 +129,7 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
 
   const loadMore = () => {
     const nextPage = page + 1
-    fetchPosts(nextPage)
+    fetchPosts(nextPage, id)
   }
 
   // Skeleton loading dla całej strony
@@ -389,7 +389,7 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
 
           <div className="md:col-span-2">
             <Tabs defaultValue="tab">
-              <TabsList className="w-full">
+              <TabsList className="w-full overflow-x-auto whitespace-nowrap no-scrollbar">
                 <TabsTrigger value="tab" className="flex-1">
                   Tablica
                 </TabsTrigger>
@@ -427,19 +427,19 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
                       <Card>
                         <CardContent className="p-4">
                           <h3 className="text-lg font-semibold mb-2">Dane firmy</h3>
-                          {user.businessData.nip && (
+                          {user.businessData?.nip && (
                             <div className="flex items-center gap-2 text-muted-foreground my-1">
                               <Briefcase className="h-4 w-4 text-muted-foreground" />
                               <p >NIP: <span className="text-foreground">{user.businessData.nip}</span></p>
                             </div>
                           )}
-                          {user.businessData.krs && (
+                          {user.businessData?.krs && (
                             <div className="flex items-center gap-2 text-muted-foreground my-1">
                               <Building className="h-4 w-4 text-muted-foreground" />
                               <span>KRS: <span className="text-foreground">{user.businessData.krs}</span></span>
                             </div>
                           )}
-                          {user.businessData.regon && (
+                          {user.businessData?.regon && (
                             <div className="flex items-center gap-2 text-muted-foreground my-1">
                               <Building className="h-4 w-4 text-muted-foreground" />
                               <span>REGON: <span className="text-foreground">{user.businessData.regon}</span></span>

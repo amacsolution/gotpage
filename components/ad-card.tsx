@@ -139,9 +139,9 @@ export function AdCard({ ad, image}: AdCardProps) {
 
   return (
     <>
-      <div className="relative hover:scale-105" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+      <div className="relative " onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
         <Link href={`/ogloszenia/${ad.id}`} className="block">
-          <Card ref={cardRef} className="hover:shadow-md overflow-hidden transition-all relative hover:scale-105">
+          <Card ref={cardRef} className="hover:shadow-md overflow-hidden transition-all relative hover:scale-[1.01]">
             <CardContent className={`p-0 overflow-hidden ${ad.promoted ? "border-primary/40" : "border-muted"}`}>
               <div className="flex flex-col">
                 {/* Zdjęcie produktu - zawsze na górze, zarówno na mobile jak i desktop */}
@@ -151,8 +151,7 @@ export function AdCard({ ad, image}: AdCardProps) {
                     alt={ad.title}
                     loading="lazy"
                     objectFit="cover"
-                    width={600}
-                    height={600}
+                    layout="fill"
                   />
                   {ad.promoted && (
                     <Badge variant="default" className="absolute top-2 left-2 z-10">

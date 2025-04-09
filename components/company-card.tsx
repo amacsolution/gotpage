@@ -28,7 +28,7 @@ const categories = Array.isArray(company.categories) ? company.categories : [];
 
   return (
     <Card
-      className={`overflow-hidden hover:shadow-md  transition-all flex flex-col justify-between hover:scale-105 ${
+      className={`overflow-hidden hover:shadow-md  transition-all flex flex-col justify-between hover:scale-[1.01] ${
         featured ? "border-amber-300 hover:scale-105 shadow-amber-100" : ""
       }`}
     >

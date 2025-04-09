@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
+import { AdData } from "../route"
 
 export async function GET(request: Request) {
   try {
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
       ORDER BY a.promoted DESC, RAND()
       LIMIT ?`,
       [adId, category, limit],
-    )
+    ) as AdData[]
 
     if (!Array.isArray(ads)) {
       return NextResponse.json([])

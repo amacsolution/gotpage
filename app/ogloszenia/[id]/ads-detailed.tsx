@@ -244,6 +244,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
                       alt={`${ad.title} - zdjęcie ${index + 1}`}
                       className="object-fill"
                       layout="fill"
+                      priority={index === 0} // Ustaw priorytet tylko dla pierwszego zdjęcia
                     />
                   </div>
                 ))}
@@ -257,11 +258,11 @@ export default function AdDetailsClient({ id }: { id: string }) {
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <Badge variant="secondary">{ad.category}</Badge>
               {ad.subcategory && <Badge variant="outline">{ad.subcategory}</Badge>}
-              {ad.promoted && (
+              {ad.promoted ?(
                 <Badge variant="outline" className="text-primary border-primary/30">
                   Promowane
                 </Badge>
-              )}
+              ): ("")}
               <span className="text-muted-foreground text-sm">
                 <Clock className="h-4 w-4 inline mr-1" />
                 {formatDistanceToNow(new Date(ad.created_at), {
@@ -570,13 +571,14 @@ export default function AdDetailsClient({ id }: { id: string }) {
           ) : similarAds.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {similarAds.map((similarAd) => (
-                <Link href={`/ogloszenia/${similarAd.id}`} key={similarAd.id} className="block">
+                <Link href={`/ogloszenia/${similarAd.id}`} key={similarAd.id} className="block hover:scale-[1.01] transition-transform">
                   <Card className="overflow-hidden hover:shadow-md transition-shadow">
                     <div className="relative h-40">
                       <Image
                         src={similarAd.image || "/placeholder.svg?height=200&width=300"}
                         alt={similarAd.title}
                         className="object-fill"
+                        layout="fill"
                       />
                     </div>
                     <div className="p-3">

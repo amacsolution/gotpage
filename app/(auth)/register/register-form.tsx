@@ -132,6 +132,9 @@ const businessSchema = z
     location: z.string().min(1, {
       message: "Podaj lokalizację firmy",
     }),
+    adress: z.string().min(1, {
+      message: "Podaj adres firmy",
+    }),
     termsAccepted: z.boolean().refine((val) => val === true, {
       message: "Musisz zaakceptować regulamin",
     }),
@@ -180,6 +183,7 @@ export function RegisterForm() {
           phone: values.phone,
           nip: values.nip,
           location: values.location,
+          adress: values.adress,
           categories: values.categories,
         }),
       }
@@ -358,6 +362,20 @@ export function RegisterForm() {
                         <Input placeholder="Warszawa, Mazowieckie" {...field} disabled={isLoading} />
                       </FormControl>
                       <FormDescription>Podaj miasto i województwo</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="adress"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Lokalizacja</FormLabel>
+                      <FormControl>
+                        <Input placeholder="ul.Fabryczna 2a" {...field} disabled={isLoading} />
+                      </FormControl>
+                      <FormDescription>Podaj ulicę i numer</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

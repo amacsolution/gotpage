@@ -3,6 +3,7 @@ import { cookies } from "next/headers"
 import { query } from "@/lib/db"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
+import { UserData } from "../../profile/route"
 
 export async function POST(request: Request) {
   try {
@@ -15,7 +16,7 @@ export async function POST(request: Request) {
     }
 
     // Sprawdzenie czy użytkownik istnieje
-    const users = await query("SELECT id, name, email, password, type, verified, avatar FROM users WHERE email = ?", [email])
+    const users = await query("SELECT id, name, email, password, type, verified, avatar FROM users WHERE email = ?", [email]) as UserData[]
 
     if (!Array.isArray(users) || users.length === 0) {
       return NextResponse.json({ error: "Nieprawidłowy email lub hasło" }, { status: 401 })
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
     const user = users[0]
 
     // Weryfikacja hasła
-    const isPasswordValid = await bcrypt.compare(password, user.password)
+    const isPasswordValid = user.password ? await bcrypt.compare(password, user.password) : false
 
     if (!isPasswordValid) {
       return NextResponse.json({ error: "Nieprawidłowy email lub hasło" }, { status: 401 })

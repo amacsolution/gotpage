@@ -2,9 +2,19 @@ import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
 
+export interface Reviews {
+  id: number
+  rating: number
+  content: string
+  createdAt: string
+  reviewer_id: number
+  reviewer_name: string
+  reviewer_avatar: string
+}
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const userId = Number.parseInt(params.id)
+    const userId = Number.parseInt((await params).id)
 
     if (isNaN(userId)) {
       return NextResponse.json({ error: "Nieprawidłowe ID użytkownika" }, { status: 400 })
@@ -31,14 +41,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
       ORDER BY r.created_at DESC
       LIMIT ? OFFSET ?`,
       [userId, limit, offset],
-    )
+    ) as Reviews[]
 
     if (!Array.isArray(reviews)) {
       return NextResponse.json({ reviews: [], total: 0 })
     }
 
     // Pobieranie całkowitej liczby opinii
-    const totalResult = await query("SELECT COUNT(*) as count FROM user_reviews WHERE user_id = ?", [userId])
+    const totalResult = await query("SELECT COUNT(*) as count FROM user_reviews WHERE user_id = ?", [userId]) as { count: string }[]
 
     const total = Array.isArray(totalResult) && totalResult[0]?.count ? Number.parseInt(totalResult[0].count) : 0
 
@@ -112,7 +122,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const result = await query(
       "INSERT INTO user_reviews (user_id, reviewer_id, rating, content, created_at) VALUES (?, ?, ?, ?, NOW())",
       [userId, user.id, rating, content],
-    )
+    ) as { insertId: number }
 
     if (!result || !result.insertId) {
       throw new Error("Nie udało się dodać opinii")
@@ -132,7 +142,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
       JOIN users u ON r.reviewer_id = u.id
       WHERE r.id = ?`,
       [result.insertId],
-    )
+    ) as Reviews[]
 
     if (!Array.isArray(reviews) || reviews.length === 0) {
       throw new Error("Nie udało się pobrać dodanej opinii")

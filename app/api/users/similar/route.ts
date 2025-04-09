@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
+import { User } from "next-auth"
+import { UserData } from "../../profile/route"
 
 export async function GET(request: Request) {
   try {
@@ -11,20 +13,6 @@ export async function GET(request: Request) {
     if (!userId || !userType) {
       return NextResponse.json({ error: "Brak wymaganych parametrów: id i type" }, { status: 400 })
     }
-
-    // Pobranie kategorii użytkownika (jeśli jest firmą)
-    // let userCategories: string[] = []
-    // if (userType === "business") {
-    //   const categoriesResult = await query("SELECT categories FROM users WHERE id = ?", [userId])
-
-    //   if (Array.isArray(categoriesResult) && categoriesResult.length > 0 && categoriesResult[0].categories) {
-    //     try {
-    //       userCategories = JSON.parse(categoriesResult[0].categories)
-    //     } catch (e) {
-    //       console.error("Błąd parsowania kategorii:", e)
-    //     }
-    //   }
-    // }
 
     let sql = '';
 
@@ -64,19 +52,10 @@ export async function GET(request: Request) {
     }
     const params: any[] = [userId, userType]
 
-
-    // Dodanie filtrowania po lokalizacji (jeśli dostępne)
-    // if (userType === "business" && userCategories.length > 0) {
-    //   // Dla firm szukamy podobnych kategorii
-    //   sql += " AND JSON_OVERLAPS(categories, ?)"
-    //   params.push(JSON.stringify(userCategories))
-    // }
-
-    // Dodanie limitu
     sql += " ORDER BY RAND() LIMIT ?"
     params.push(limit)
 
-    const similarUsers = await query(sql, params)
+    const similarUsers = await query(sql, params) as UserData[]
 
     if (!Array.isArray(similarUsers)) {
       return NextResponse.json([])

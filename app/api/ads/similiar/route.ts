@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
+import { AdData } from "../route"
 
 export async function GET(request: Request) {
   try {
@@ -20,13 +21,13 @@ export async function GET(request: Request) {
         a.price, 
         a.currency, 
         a.location, 
-        a.images
+        a.images as image
       FROM ads a
       WHERE a.id != ? AND a.category = ?
       ORDER BY a.promoted DESC, RAND()
       LIMIT ?`,
       [adId, category, limit],
-    )
+    ) as AdData[]
 
     if (!Array.isArray(ads)) {
       return NextResponse.json([])
@@ -36,13 +37,13 @@ export async function GET(request: Request) {
     const formattedAds = ads.map((ad) => {
       // Bezpieczne parsowanie pola images
       let images = []
-      if (ad.images) {
+      if (ad.image) {
         try {
           // Próba parsowania jako JSON
-          images = JSON.parse(ad.images)
+          images = typeof ad.image === "string" ? JSON.parse(ad.image) : ad.image
         } catch (e) {
           // Jeśli nie jest prawidłowym JSON, traktuj jako pojedynczy string
-          images = [ad.images]
+          images = [ad.image]
         }
       }
 

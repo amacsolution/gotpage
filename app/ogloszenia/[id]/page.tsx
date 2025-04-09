@@ -1,6 +1,7 @@
 import type { Metadata, ResolvingMetadata } from "next"
 import { getAdDetailsFromDatabase } from "@/lib/data-service"
 import AdDetailsClient from "./ads-detailed"
+import { use } from "react"
 
 // Generowanie dynamicznych metadanych dla pojedynczego ogłoszenia
 export async function generateMetadata(
@@ -46,8 +47,8 @@ export async function generateMetadata(
     description: description,
     keywords: `${ad.title}, ${ad.category}, ogłoszenie, gotpage`,
     openGraph: {
-      title: title,
-      description: description,
+      title,
+      description,
       images: [
         {
           url: ad.images && ad.images.length > 0 ? ad.images[0] : "/og-image-ad-default.jpg",

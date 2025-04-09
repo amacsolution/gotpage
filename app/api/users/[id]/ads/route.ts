@@ -5,12 +5,12 @@ import { RowDataPacket } from "mysql2"
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { searchParams } = new URL(request.url)
-    const userId = Number.parseInt((await params).id)
+    const userId = (await params).id
     const page = Number.parseInt(searchParams.get("page") || "1")
     const limit = Number.parseInt(searchParams.get("limit") || "10")
     const offset = (page - 1) * limit
 
-    if (isNaN(userId)) {
+    if (!userId) {
       return NextResponse.json({ error: "Nieprawidłowe ID użytkownika" }, { status: 400 })
     }
 
@@ -55,20 +55,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
     // Formatowanie danych
     const formattedAds = ads.map((ad: any) => {
       // Bezpieczne parsowanie pola images
-      let image = []
-      if (ad.image) {
-        try {
-          // Próba parsowania jako JSON
-          image = JSON.parse(ad.image)
-        } catch (e) {
-          // Jeśli nie jest prawidłowym JSON, traktuj jako pojedynczy string
-          image = [ad.image]
-        }
-      }
-
       return {
         ...ad,
-        image,
+        image: ad.image,
         author: {
           id: ad.author_id,
           name: ad.author_name,
