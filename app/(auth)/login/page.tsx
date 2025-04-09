@@ -2,13 +2,19 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { LoginForm } from "./login-form"
 import { CardContent, CardDescription, CardFooter, CardTitle } from "@/components/ui/card"
+import { useEffect } from "react"
+import { toast } from "@/hooks/use-toast"
 
 export const metadata: Metadata = {
   title: "Logowanie | Gotpage",
   description: "Zaloguj się do swojego konta Gotpage",
 }
 
+
+
 export default function LoginPage() {
+
+
   return (
     <>
       <CardTitle className="text-2xl font-bold">Logowanie</CardTitle>

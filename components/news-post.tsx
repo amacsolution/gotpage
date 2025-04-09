@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, JSX } from "react"
+import { useState, JSX, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { formatDistanceToNow } from "date-fns"
@@ -8,7 +8,7 @@ import { pl } from "date-fns/locale"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Heart, MessageSquare, Share2, ChevronDown, ChevronUp } from "lucide-react"
+import { Heart, MessageSquare, Share2, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Flag, ShieldCheck, ExternalLink, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import LinkPreview from "@/components/link-preview"
 import { NewsComments } from "@/components/news-comments"
@@ -16,6 +16,16 @@ import { useUser } from "@/lib/user-context"
 import { Progress } from "@/components/ui/progress"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useRouter } from "next/navigation"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 interface NewsPostProps {
   post: {
@@ -53,34 +63,32 @@ const hasUrl = (text: string): boolean => {
 }
 
 // Funkcja do formatowania tekstu z pogrubieniem linków - zaktualizowana
-// const formatTextWithBoldLinks = (text: string) => {
-//   const urlRegex =
-//     /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?(:\d+)?(\/[^\s]*)?)/gi
+export const formatTextWithBoldLinksAndHashtags = (text: string) => {
+  const urlRegex =
+    /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?(:\d+)?(\/[^\s]*)?)/gi
+  const hashtagRegex = /#(\w+)/g
 
-//   // Podziel tekst na części - tekst i linki
-//   const parts = text.split(urlRegex)
-//   const matches = text.match(urlRegex) || []
-
-//   // Złóż tekst z powrotem, owijając linki w <strong>
-//   return parts.reduce(
-//     (acc, part, i) => {
-//       // Dodaj część tekstu
-//       if (part) acc.push(part)
-
-//       // Jeśli jest odpowiadający link, dodaj go jako <strong>
-//       if (matches[i]) {
-//         acc.push(
-//           <strong key={i} className="text-primary">
-//             {matches[i]}
-//           </strong>,
-//         )
-//       }
-
-//       return acc
-//     },
-//     [] as (string | JSX.Element)[],
-//   )
-// }
+  // Zamień linki na <strong> i hashtagi na <span> w tekście
+  return text.split(/(\s+)/).map((part, i) => {
+    if (urlRegex.test(part)) {
+      return (
+        <strong key={`url-${i}`} className="text-primary">
+          <a href={part} target="_blank" rel="noopener noreferrer">
+            {part}
+            <ExternalLink className="h-4 w-4 inline-block ml-1" />
+          </a>
+        </strong>
+      )
+    } else if (hashtagRegex.test(part)) {
+      return (
+        <span key={`hashtag-${i}`} className="text-muted-foreground text-sm cursor-pointer">
+          {part}
+        </span>
+      )
+    }
+    return part
+  })
+}
 
 export function NewsPost({ post }: NewsPostProps) {
 
@@ -92,13 +100,12 @@ export function NewsPost({ post }: NewsPostProps) {
   const [userVote, setUserVote] = useState<number | undefined>(post.pollData?.userVote)
   const { toast } = useToast()
   const { user } = useUser()
-
-  
+  const [isAuthor, setIsAuthor] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const router = useRouter()
 
   const handleLike = async () => {
     try {
-
-
       setIsLoading(true)
       const response = await fetch("/api/news/like", {
         method: "POST",
@@ -210,6 +217,74 @@ export function NewsPost({ post }: NewsPostProps) {
     }
   }
 
+  useEffect(() => {
+    if (user) {
+      setIsAuthor(user.id === post.author.id)
+    } else {
+      setIsAuthor(false)
+    }
+  }, [user, post.author.id])
+
+
+  const handleDelete = async () => {
+    setShowDeleteDialog(true)
+  }
+
+  const confirmDelete = async () => {
+    setIsLoading(true)
+    try {
+      let response;
+      try {
+        response = await fetch(`/api/news/${post.id}`, {
+          method: "DELETE",
+        });
+      } catch (networkError) {
+        console.error("Network error:", networkError);
+        toast({
+          title: "Błąd sieci",
+          description: "Nie udało się połączyć z serwerem. Sprawdź swoje połączenie internetowe.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = { error: "Nieznany błąd" };
+        }
+        throw new Error(errorData.error || "Wystąpił błąd podczas usuwania wpisu");
+      }
+
+      toast({
+        title: "Wpis usunięty",
+        description: "Wpis został pomyślnie usunięty",
+      })
+      router.refresh()
+    } catch (error) {
+      //console.error("Error deleting post:", error)
+      toast({
+        title: "Błąd",
+        description: error instanceof Error ? error.message : "Wystąpił błąd podczas usuwania wpisu",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+      setShowDeleteDialog(false)
+    }
+  }
+
+  const handleEdit = () => {
+    // Implement edit logic here
+    toast({
+      title: "Edycja wpisu",
+      description: "Funkcja edycji wpisu jest w przygotowaniu",
+    })
+  }
+
   return (
     <div className="mb-6">
       <Card className="mb-0" itemScope itemType="https://schema.org/SocialMediaPosting">
@@ -235,7 +310,7 @@ export function NewsPost({ post }: NewsPostProps) {
                 </Link>
                 {post.author.verified && (
                   <span className="text-primary text-xs" title="Zweryfikowany">
-                    ✓
+                    <ShieldCheck className="h-4 w-4" />
                   </span>
                 )}
               </div>
@@ -246,11 +321,40 @@ export function NewsPost({ post }: NewsPostProps) {
                 })}
               </div>
             </div>
+
+          {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {isAuthor ? (
+                    <>
+                      <DropdownMenuItem onClick={handleEdit}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edytuj
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Usuń
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <DropdownMenuItem>
+                      <Flag className="h-4 w-4 mr-2" />
+                      Zgłoś
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
           </div>
 
           {/* Treść wpisu */}
           <div className="whitespace-pre-wrap mb-3" itemProp="text">
-            {post.content}
+            {formatTextWithBoldLinksAndHashtags(post.content)}
           </div>
 
           {/* Zdjęcie, jeśli post jest typu image */}
@@ -370,6 +474,23 @@ export function NewsPost({ post }: NewsPostProps) {
           />
         </div>
       )}
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Usuń wpis</DialogTitle>
+            <DialogDescription>Czy na pewno chcesz usunąć ten wpis? Ta akcja jest nieodwracalna.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={() => setShowDeleteDialog(false)}>
+              Anuluj
+            </Button>
+            <Button type="button" variant="destructive" onClick={confirmDelete} disabled={isLoading}>
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Usuń"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

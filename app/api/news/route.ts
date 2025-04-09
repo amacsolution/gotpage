@@ -254,3 +254,42 @@ export async function POST(request: Request) {
   }
 }
 
+// Usuwanie wpisu
+export async function DELETE(request: Request) {
+  try {
+    // Sprawdzenie, czy użytkownik jest zalogowany
+    const user = await auth(request)
+    if (!user) {
+      return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const postId = searchParams.get("postId")
+
+    if (!postId) {
+      return NextResponse.json({ error: "Brak ID wpisu do usunięcia" }, { status: 400 })
+    }
+
+    // Sprawdzenie, czy użytkownik jest autorem wpisu
+    const post = await query("SELECT user_id FROM news_posts WHERE id = ?", [postId])
+    if (!Array.isArray(post) || post.length === 0) {
+      return NextResponse.json({ error: "Wpis nie istnieje" }, { status: 404 })
+    }
+
+    if (post[0].user_id !== user.id) {
+      return NextResponse.json({ error: "Nie masz uprawnień do usunięcia tego wpisu" }, { status: 403 })
+    }
+
+    // Usunięcie wpisu
+    const result = await query("DELETE FROM news_posts WHERE id = ?", [postId])
+    if (!result || result.affectedRows === 0) {
+      throw new Error("Nie udało się usunąć wpisu")
+    }
+
+    return NextResponse.json({ message: "Wpis został usunięty" })
+  } catch (error) {
+    console.error("Błąd podczas usuwania wpisu:", error)
+    return NextResponse.json({ error: "Wystąpił błąd podczas usuwania wpisu" }, { status: 500 })
+  }
+}
+

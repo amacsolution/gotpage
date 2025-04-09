@@ -222,6 +222,25 @@ export default function AddAdPage() {
     },
   })
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const userData = await localStorage.getItem("userData")
+        
+        if (!userData) {
+          toast({
+            title: "Nie jesteś zalogowany",
+            description: "Zaloguj się, aby dodać ogłoszenie",
+            variant: "destructive",
+          })
+            router.push("/login")
+        }
+      } catch (error) {
+        //console.error("Nie jesteś zalogowany", error)
+      }
+    })()
+  }, [router, toast])
+
   // Symulacja pobierania danych z bazy
   useEffect(() => {
     const fetchData = async () => {

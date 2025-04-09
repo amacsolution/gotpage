@@ -2,9 +2,11 @@ import type React from "react"
 import Link from "next/link"
 import { Card, CardHeader } from "@/components/ui/card"
 import Image from "next/legacy/image"
+import { PageLayout } from "@/components/page-layout"
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
+    <PageLayout>
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
@@ -18,6 +20,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </CardHeader>
       </Card>
     </div>
+  </PageLayout>
   )
 }
 
