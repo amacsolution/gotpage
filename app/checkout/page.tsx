@@ -51,10 +51,10 @@ export default function CheckoutPage() {
 
     // If no plan is provided, redirect to promotion page
     // WŁĄczyć to
-    // if (!plan) {
-    //   router.push("/promowanie")
-    //   return
-    // }
+    if (!plan) {
+      router.push("/promowanie")
+      return
+    }
 
     // Fetch checkout session from API
     const fetchCheckoutSession = async () => {
@@ -126,29 +126,31 @@ export default function CheckoutPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {checkoutUrl ? (
-                <div className="space-y-6">
-                  <div className="bg-muted/30 p-4 rounded-lg flex items-start gap-3">
-                    <Shield className="h-5 w-5 text-primary mt-0.5" />
-                    <div>
-                      <h3 className="font-medium mb-1">Bezpieczna płatność</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Twoja płatność jest przetwarzana bezpiecznie przez Stripe. Nie przechowujemy danych Twojej
-                        karty.
-                      </p>
-                    </div>
+            {checkoutUrl ? (
+              <div className="space-y-6">
+                <div className="bg-muted/30 p-4 rounded-lg flex items-start gap-3">
+                  <Shield className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <h3 className="font-medium mb-1">Bezpieczna płatność</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Twoja płatność jest przetwarzana bezpiecznie przez Stripe. Nie przechowujemy danych Twojej karty.
+                    </p>
                   </div>
+                </div>
 
-                  <div className="border rounded-lg overflow-hidden">
-                    <iframe src={checkoutUrl} className="w-full h-[450px]" frameBorder="0" allow="payment" />
-                  </div>
+                <div className="text-center">
+                  <Button className="text-lg px-6 py-3" onClick={() => (window.location.href = checkoutUrl)}>
+                    Przejdź do płatności
+                  </Button>
                 </div>
-              ) : (
-                <div className="text-center py-8">
-                  <CreditCard className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">Ładowanie formularza płatności...</p>
-                </div>
-              )}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <CreditCard className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">Ładowanie formularza płatności...</p>
+              </div>
+            )}
+
             </CardContent>
             <CardFooter className="flex justify-between">
               <Button variant="outline" onClick={() => router.back()}>

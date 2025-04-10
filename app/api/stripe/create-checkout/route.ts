@@ -10,14 +10,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 // Mapa identyfikatorów cen dla różnych typów promocji i planów
 const PRICE_IDS = {
   company: {
-    business: process.env.STRIPE_PRICE_STANDARD || "price_1RCPXUQDAXdhlL91yBLVyf5v",
-    professional: process.env.STRIPE_PRICE_PREMIUM || "price_1RCPXUQDAXdhlL91ELgMfv2r",
-    enterprise: process.env.STRIPE_PRICE_VIP || "price_1RCPXUQDAXdhlL91xMuiEFj4",
+    business: process.env.STRIPE_COMPANY_PRICE_STANDARD ,
+    professional: process.env.STRIPE_COMPANY_PRICE_PREMIUM ,
+    enterprise: process.env.STRIPE_COMPANY_PRICE_VIP,
   },
   ad: {
-    basic: process.env.STRIPE_PRICE_STANDARD || "price_1RCPV4QDAXdhlL916x7e0rHB",
-    standard: process.env.STRIPE_PRICE_PREMIUM || "price_1RCPV4QDAXdhlL91AsKlAfFk",
-    premium: process.env.STRIPE_PRICE_VIP || "price_1RCPV4QDAXdhlL91KHidmb9d",
+    basic: process.env.STRIPE_AD_PRICE_STANDARD,
+    standard: process.env.STRIPE_AD_PRICE_PREMIUM,
+    premium: process.env.STRIPE_AD_PRICE_VIP,
   },
 }
 
@@ -61,17 +61,17 @@ export async function GET(request: Request) {
       switch (plan) {
         case "business":
           productName = "Business"
-          productPrice = 99
+          productPrice = 80
           productDescription = "Promocja firmy - pakiet Business (subskrypcja miesięczna)"
           break
         case "professional":
           productName = "Professional"
-          productPrice = 199
+          productPrice = 109
           productDescription = "Promocja firmy - pakiet Professional (subskrypcja miesięczna)"
           break
         case "enterprise":
           productName = "Enterprise"
-          productPrice = 399
+          productPrice = 149
           productDescription = "Promocja firmy - pakiet Enterprise (subskrypcja miesięczna)"
           break
         default:
@@ -93,7 +93,7 @@ export async function GET(request: Request) {
         case "premium":
           productName = "Premium"
           productPrice = 39.99
-          productDescription = "Promocja ogłoszenia - pakiet Premium"
+          productDescription = "Promocja ogłoszenia - pakiet Premium (subskrypcja miesięczna)"
           break
         default:
           return NextResponse.json({ error: "Nieprawidłowy plan" }, { status: 400 })
@@ -112,16 +112,19 @@ export async function GET(request: Request) {
       metadata.itemId = itemId
     }
 
+    const mode = type === "company" ? "subscription" : "payment"
+
+
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card", "blik"], // Dodanie płatności BLIK
+      payment_method_types: type === "company" ? ["card"] : ["card", "blik", "p24"], // Dodanie płatności BLIK
       line_items: [
         {
           price: priceId,
           quantity: 1,
         },
       ],
-      mode: "payment",
+      mode,
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?type=${type}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout?canceled=true&type=${type}`,
       metadata,
