@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -31,10 +31,32 @@ export function LoginForm() {
     },
   })
 
+  useEffect(() => {
+    try {
+      const userData = localStorage.getItem("userData")
+      setTimeout(() => {
+      if (userData) {
+        const user = JSON.parse(userData)
+        
+        toast({
+          title: "Jesteś zalogowany",
+          description: "Zalogowano jako " + user.email,
+          variant: "default",
+        })
+        window.history.back()
+      } else {
+        return
+      }}, 1000)
+    } catch (error) {
+    }
+  }, [toast])
+
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true)
 
     try {
+
+
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
@@ -49,19 +71,24 @@ export function LoginForm() {
         throw new Error(responseData.error || "Wystąpił błąd podczas logowania")
       }
 
-      console.log("Zalogowano pomyślnie:", responseData)
-
       toast({
         title: "Zalogowano pomyślnie",
         description: "Zostałeś pomyślnie zalogowany do swojego konta",
       })
 
       // Emituj zdarzenie auth-change, aby powiadomić kontekst użytkownika
-      window.dispatchEvent(new Event("auth-change"))
+      await window.dispatchEvent(new Event("auth-change"))
 
       // Odświeżenie danych sesji i przekierowanie
       router.refresh()
-      router.push("/")
+
+      // Przekierowanie na stronę główną lub poprzednia stronę jezeli jest zdefiniowana
+      // Jeśli poprzednia strona nie jest zdefiniowana, przekieruj na stronę główną
+      if (window.history.length <= 1) {
+        router.push("/profil");
+      } else {
+        window.history.back()
+      }
     } catch (error) {
       toast({
         title: "Błąd logowania",
