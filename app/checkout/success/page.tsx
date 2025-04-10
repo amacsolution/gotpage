@@ -6,7 +6,10 @@ import { PageLayout } from "@/components/page-layout"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CheckCircle } from "lucide-react"
+import dynamic from "next/dynamic"
 import confetti from "canvas-confetti"
+
+const Confetti = dynamic(() => import("canvas-confetti"), { ssr: false })
 
 export default function CheckoutSuccessPage() {
   const router = useRouter()
@@ -15,7 +18,6 @@ export default function CheckoutSuccessPage() {
 
   // Trigger confetti effect on page load
   useEffect(() => {
-    // Create confetti effect
     const duration = 3 * 1000
     const animationEnd = Date.now() + duration
     const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }
