@@ -23,7 +23,22 @@ export interface AdData {
   author_avatar: string | null
   author_type: string
   author_verified: number
+  author_email: string
+  author_phone: string
+  author_joined_at : string
   comments_count: number
+  comments: {
+    id: number
+    ad_id: number
+    user_id: number
+    content: string
+    created_at: string
+    updated_at: string
+  }
+  content: string
+  ad_key: string
+  created_at: string
+  updated_at: string
 }
 
 export async function GET(request: Request) {

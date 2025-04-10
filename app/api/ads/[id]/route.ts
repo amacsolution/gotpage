@@ -4,7 +4,10 @@ import { auth } from "@/lib/auth"
 import path from "path"
 import { existsSync } from "fs"
 import { promises as fs } from "fs"
-import { use } from "react"
+import { RowDataPacket } from "mysql2"
+import { AdData } from "../route"
+
+
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -33,7 +36,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       JOIN users u ON a.user_id = u.id
       WHERE a.id = ?`,
       [adId],
-    )
+    ) as AdData[]
 
     if (!Array.isArray(ads) || ads.length === 0) {
       return NextResponse.json({ error: "Ogłoszenie nie zostało znalezione" }, { status: 404 })
@@ -55,10 +58,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
       WHERE c.ad_id = ?
       ORDER BY c.created_at DESC`,
       [adId],
-    )
+    ) as AdData[]
 
     let images = []
-    images = await query("SELECT image_url FROM `ad_images` where ad_id = ? ORDER BY `ad_images`.`id` ASC", [adId]) as 
+    const imageResults = await query("SELECT image_url FROM `ad_images` where ad_id = ? ORDER BY `ad_images`.`id` ASC", [adId]) as RowDataPacket[];
+    images = imageResults.map((row: any) => row.image_url);
 
     // Sprawdzenie, czy zalogowany użytkownik polubił to ogłoszenie
     const user = await auth(request)
@@ -69,35 +73,23 @@ export async function GET(request: Request, { params }: { params: { id: string }
       isLiked = Array.isArray(likeResult) && likeResult.length > 0
     }
 
-    // Bezpieczne parsowanie pola images
-    
-    /*if (ad.images) {
-      try {
-        // Próba parsowania jako JSON
-        images = JSON.parse(ad.images)
-      } catch (e) {
-        // Jeśli nie jest prawidłowym JSON, traktuj jako pojedynczy string
-        images = [ad.images]
-      }
-    }*/
-
     // Bezpieczne parsowanie pola parameters
-    let parameters = []
-    if (ad.parameters) {
-      try {
-        // Próba parsowania jako JSON
-        parameters = JSON.parse(ad.parameters)
-      } catch (e) {
-        // Jeśli nie jest prawidłowym JSON, ustaw puste parametry
-        parameters = [e]
-      }
-    }
+    // let parameters = []
+    // if (ad.parameters) {
+    //   try {
+    //     // Próba parsowania jako JSON
+    //     parameters = JSON.parse(ad.parameters)
+    //   } catch (e) {
+    //     // Jeśli nie jest prawidłowym JSON, ustaw puste parametry
+    //     parameters = [e]
+    //   }
+    // }
 
     // Formatowanie danych
     const formattedAd = {
       ...ad,
       images,
-      parameters,
+      // parameters,
       author: {
         id: ad.author_id,
         name: ad.author_name,
