@@ -86,30 +86,32 @@ const CheckoutForm = () => {
       return
     }
 
-    const { error } = await checkout.confirm()
+    const confirmResult = await checkout.confirm()
+
+    if (confirmResult.type === "error") {
+      setMessage(confirmResult.error.message)
+    }
 
     // Ten punkt zostanie osiągnięty tylko wtedy, gdy wystąpi natychmiastowy błąd podczas
     // potwierdzania płatności. W przeciwnym razie klient zostanie przekierowany do
     // Twojego `return_url`. W przypadku niektórych metod płatności, takich jak iDEAL, klient
     // zostanie najpierw przekierowany na stronę pośrednią w celu autoryzacji płatności,
     // a następnie przekierowany do `return_url`.
-    if (error) {
-      setMessage(error.message)
-    }
+    // Remove undefined error handling block
 
     setIsLoading(false)
   }
 
   return (
-    <div className="max-w-md w-full mx-auto bg-white p-8 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Formularz płatności</h2>
+    <div className="max-w-md w-full mx-auto bg-background p-8 rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold text-foreground mb-6 text-center">Formularz płatności</h2>
 
       <form id="payment-form" onSubmit={handleSubmit} className="space-y-6">
         <EmailInput email={email} setEmail={setEmail} error={emailError} setError={setEmailError} />
 
         <div className="pt-2">
-          <h4 className="text-lg font-medium text-gray-700 mb-3">Płatność</h4>
-          <div className="bg-gray-50 p-4 rounded-md">
+          <h4 className="text-lg font-medium text-foreground mb-3">Płatność</h4>
+          <div className="bg-background p-4 rounded-md">
             <PaymentElement id="payment-element" />
           </div>
         </div>
@@ -117,11 +119,11 @@ const CheckoutForm = () => {
         <button
           disabled={isLoading}
           id="submit"
-          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition duration-150 ease-in-out disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full bg-emerald-600 hover:bg-emerald-700 text-foreground font-medium py-2 px-4 rounded-md shadow-sm transition duration-150 ease-in-out disabled:opacity-70 disabled:cursor-not-allowed"
         >
           <span id="button-text" className="flex justify-center items-center">
             {isLoading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" id="spinner"></div>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-muted-foreground" id="spinner"></div>
             ) : (
               `Zapłać ${checkout.total?.total?.amount || ""} teraz`
             )}
