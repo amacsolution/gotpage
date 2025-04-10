@@ -66,7 +66,7 @@ export default function PromotionPage() {
                   </ul>
                 </CardContent>
                 <CardFooter className="flex justify-center pb-6">
-                  <Link href="/promocja/ogloszenia">
+                  <Link href="/promowanie/ogloszenia">
                     <Button className="gap-2 group">
                       Promuj ogłoszenie{" "}
                       <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -112,7 +112,7 @@ export default function PromotionPage() {
                   </ul>
                 </CardContent>
                 <CardFooter className="flex justify-center pb-6">
-                  <Link href="/promocja/firma">
+                  <Link href="/promowanie/firma">
                     <Button className="gap-2 bg-blue-700 hover:bg-blue-800 group">
                       Promuj firmę <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Button>

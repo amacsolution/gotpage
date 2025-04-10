@@ -6,14 +6,14 @@ import {
   useCheckout,
 } from '@stripe/react-stripe-js';
 
-const validateEmail = async (email, checkout) => {
+const validateEmail = async ({email, checkout} : {email: string, checkout: ReturnType<typeof useCheckout> }) => {
   const updateResult = await checkout.updateEmail(email);
   const isValid = updateResult.type !== "error";
 
   return { isValid, message: !isValid ? updateResult.error.message : null };
 }
 
-const EmailInput = ({ email, setEmail, error, setError }) => {
+const EmailInput = ({ email, setEmail, error, setError } : {email: string, setEmail: React.Dispatch<React.SetStateAction<string>>, error: string | null, setError: React.Dispatch<React.SetStateAction<string | null>> }) => {
   const checkout = useCheckout();
 
   const handleBlur = async () => {
@@ -21,13 +21,13 @@ const EmailInput = ({ email, setEmail, error, setError }) => {
       return;
     }
 
-    const { isValid, message } = await validateEmail(email, checkout);
+    const { isValid, message } = await validateEmail({ email, checkout });
     if (!isValid) {
       setError(message);
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
     setEmail(e.target.value);
   };
@@ -54,16 +54,16 @@ const CheckoutForm = () => {
   const checkout = useCheckout();
   
   const [email, setEmail] = useState('');
-  const [emailError, setEmailError] = useState(null);
-  const [message, setMessage] = useState(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setIsLoading(true);
 
-    const { isValid, message } = await validateEmail(email, checkout);
+    const { isValid, message } = await validateEmail({email, checkout});
     if (!isValid) {
       setEmailError(message);
       setMessage(message);
@@ -71,14 +71,18 @@ const CheckoutForm = () => {
       return;
     }
 
-    const { error } = await checkout.confirm();
+    const error = await checkout.confirm();
 
     // This point will only be reached if there is an immediate error when
     // confirming the payment. Otherwise, your customer will be redirected to
     // your `return_url`. For some payment methods like iDEAL, your customer will
     // be redirected to an intermediate site first to authorize the payment, then
     // redirected to the `return_url`.
-    setMessage(error.message);
+    if (error?.type === "error") {
+      setMessage(error.error.message || "An unknown error occurred.");
+    } else {
+      setMessage("An unknown error occurred.");
+    }
 
     setIsLoading(false);
   };
@@ -89,7 +93,7 @@ const CheckoutForm = () => {
         email={email}
         setEmail={setEmail}
         error={emailError}
-        setError={setEmailError}
+        setError={(error) => setEmailError(error)}
       />
       <h4>Payment</h4>
       <PaymentElement id="payment-element" />

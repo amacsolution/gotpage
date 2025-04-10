@@ -58,7 +58,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     )
 
     let images = []
-    images = await query("SELECT image_url FROM `ad_images` where ad_id = ? ORDER BY `ad_images`.`id` ASC", [adId])
+    images = await query("SELECT image_url FROM `ad_images` where ad_id = ? ORDER BY `ad_images`.`id` ASC", [adId]) as 
 
     // Sprawdzenie, czy zalogowany użytkownik polubił to ogłoszenie
     const user = await auth(request)
