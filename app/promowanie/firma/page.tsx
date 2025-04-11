@@ -29,6 +29,7 @@ import {
 } from "lucide-react"
 import { CompanyCard } from "@/components/company-card"
 import { Arrow } from "@radix-ui/react-select"
+import { link } from "fs"
 
 const business = {
   id: 1,
@@ -63,7 +64,7 @@ export default function PromoteBusinessPage() {
       description: "Za chwilę zostaniesz przekierowany do systemu płatności",
     })
     // W rzeczywistej implementacji przekierowanie do Stripe
-    // window.location.href = `/api/stripe/create-checkout?plan=${selectedPlan}&type=business`
+    window.location.href = `/checkout?plan=${selectedPlan}&type=company`
   }
 
   const plans = [
@@ -82,6 +83,7 @@ export default function PromoteBusinessPage() {
       ],
       color: "bg-blue-600",
       icon: <Building className="h-5 w-5" />,
+      link: "/checkout?plan=business&type=company",
     },
     {
       id: "professional",
@@ -99,6 +101,7 @@ export default function PromoteBusinessPage() {
       color: "bg-purple-600",
       popular: true,
       icon: <Briefcase className="h-5 w-5" />,
+      link: "/checkout?plan=professional&type=company",
     },
     {
       id: "enterprise",
@@ -115,6 +118,7 @@ export default function PromoteBusinessPage() {
       ],
       color: "bg-amber-600",
       icon: <Crown className="h-5 w-5" />,
+      link: "/checkout?plan=enterprise&type=company",
     },
   ]
 

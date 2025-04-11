@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import Stripe from "stripe"
+import { query } from "@/lib/db"
 
 // Initialize Stripe with your secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
@@ -24,10 +25,13 @@ const PRICE_IDS = {
 export async function GET(request: Request) {
   try {
     // Check if user is authenticated
-    const user = await auth(request)
+    const user = await auth(request) as { id: number; email: string; stripeCustomerId: string } | null
     if (!user) {
       return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
     }
+
+
+
 
     // Get query parameters
     const { searchParams } = new URL(request.url)
@@ -35,8 +39,31 @@ export async function GET(request: Request) {
     const type = searchParams.get("type") || "company"
     const itemId = searchParams.get("id")
 
+    if(type === "business"){
+          // Check if user has a valid subscription
+      const userSubscription = await stripe.subscriptions.list({
+        customer: user.stripeCustomerId,
+        status: "active",
+        limit: 1,
+      })
+
+      const userCheck = await query(
+        `SELECT active FROM user_promotion WHERE user_id = ?`,
+        [user.id]
+      ) as { active: number }[]
+
+      if (userSubscription.data.length > 0 || userCheck[0].active == 1 ) {
+        return NextResponse.json({ error: "Już masz aktywną subskrypcję" }, { status: 400 })
+      }
+    }
+
     if (!plan) {
       return NextResponse.json({ error: "Brak wymaganego parametru: plan" }, { status: 400 })
+    }
+
+    //Validate ad id
+    if (type === "ad" && !itemId) {
+      return NextResponse.json({ error: "Brak wymaganego parametru: id" }, { status: 400 })
     }
 
     // Validate promotion type

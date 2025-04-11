@@ -12,48 +12,48 @@ import { useToast } from "@/hooks/use-toast"
 import { Rocket, CheckCircle, Sparkles, Crown, ArrowLeft } from "lucide-react"
 
 // Mock data dla ogłoszeń użytkownika
-const userAds = [
-  {
-    id: 1,
-    title: "Sprzedam samochód Toyota Corolla 2018",
-    category: "Motoryzacja",
-    price: 55000,
-    image: "/placeholder.svg?height=100&width=100",
-    promoted: false,
-  },
-  {
-    id: 2,
-    title: "Wynajmę mieszkanie w centrum Warszawy",
-    category: "Nieruchomości",
-    price: 2800,
-    image: "/placeholder.svg?height=100&width=100",
-    promoted: false,
-  },
-  {
-    id: 3,
-    title: "Laptop Dell XPS 15 - stan idealny",
-    category: "Elektronika",
-    price: 4500,
-    image: "/placeholder.svg?height=100&width=100",
-    promoted: false,
-  },
-  {
-    id: 4,
-    title: "Usługi remontowe - kompleksowo",
-    category: "Usługi",
-    price: null,
-    image: "/placeholder.svg?height=100&width=100",
-    promoted: true,
-  },
-  {
-    id: 5,
-    title: "iPhone 13 Pro - nowy, nieużywany",
-    category: "Elektronika",
-    price: 3800,
-    image: "/placeholder.svg?height=100&width=100",
-    promoted: false,
-  },
-]
+// const userAds = [
+//   {
+//     id: 1,
+//     title: "Sprzedam samochód Toyota Corolla 2018",
+//     category: "Motoryzacja",
+//     price: 55000,
+//     image: "/placeholder.svg?height=100&width=100",
+//     promoted: false,
+//   },
+//   {
+//     id: 2,
+//     title: "Wynajmę mieszkanie w centrum Warszawy",
+//     category: "Nieruchomości",
+//     price: 2800,
+//     image: "/placeholder.svg?height=100&width=100",
+//     promoted: false,
+//   },
+//   {
+//     id: 3,
+//     title: "Laptop Dell XPS 15 - stan idealny",
+//     category: "Elektronika",
+//     price: 4500,
+//     image: "/placeholder.svg?height=100&width=100",
+//     promoted: false,
+//   },
+//   {
+//     id: 4,
+//     title: "Usługi remontowe - kompleksowo",
+//     category: "Usługi",
+//     price: null,
+//     image: "/placeholder.svg?height=100&width=100",
+//     promoted: true,
+//   },
+//   {
+//     id: 5,
+//     title: "iPhone 13 Pro - nowy, nieużywany",
+//     category: "Elektronika",
+//     price: 3800,
+//     image: "/placeholder.svg?height=100&width=100",
+//     promoted: false,
+//   },
+// ]
 
 // Plany promocji
 const promotionPlans = [
@@ -112,9 +112,6 @@ export default function PromotePackagePage() {
   const [discountedPrice, setDiscountedPrice] = useState(0)
   const [appliedDiscount, setAppliedDiscount] = useState<{ rate: number; label: string } | null>(null)
   
-  
-
-
   useEffect(() => {
     // Reset stanu przy zmianie filtrów
     setAds([])

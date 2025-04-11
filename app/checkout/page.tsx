@@ -129,11 +129,11 @@ export default function CheckoutPage() {
             {checkoutUrl ? (
               <div className="space-y-6">
                 <div className="bg-muted/30 p-4 rounded-lg flex items-start gap-3">
-                  <Shield className="h-5 w-5 text-primary mt-0.5" />
+                  <Shield className="h-7 w-7 text-primary mt-0.5" />
                   <div>
                     <h3 className="font-medium mb-1">Bezpieczna płatność</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Twoja płatność jest przetwarzana bezpiecznie przez Stripe. Nie przechowujemy danych Twojej karty.
+                    <p className="text-sm text-foreground">
+                      Twoja płatność jest przetwarzana bezpiecznie przez Stripe. <br/>Nie przechowujemy danych Twojej karty.
                     </p>
                   </div>
                 </div>

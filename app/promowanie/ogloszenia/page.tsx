@@ -95,6 +95,7 @@ export default function PromoteAdsPage() {
       ],
       color: "bg-blue-500",
       icon: <Sparkles className="h-5 w-5" />,
+      link: "/checkout/?plan=basic&type=ad",
     },
     {
       id: "standard",
@@ -106,10 +107,12 @@ export default function PromoteAdsPage() {
         "Wyświetlanie w sekcji polecanych",
         "Odświeżanie ogłoszenia co 3 dni",
         "Priorytetowe wyświetlanie w wynikach wyszukiwania",
+
       ],
       color: "bg-purple-500",
       popular: true,
       icon: <TrendingUp className="h-5 w-5" />,
+      link: "/checkout/?plan=standard&type=ad",
     },
     {
       id: "premium",
@@ -125,6 +128,7 @@ export default function PromoteAdsPage() {
       ],
       color: "bg-amber-500",
       icon: <Crown className="h-5 w-5" />,
+      link: "/checkout/?plan=premium&type=ad",
     },
   ]
 
@@ -303,7 +307,7 @@ export default function PromoteAdsPage() {
                     {plans.map((plan) => (
                       <div key={plan.id} className="relative">
                         <Card
-                          className={`h-full border-2 transition-all duration-300 ${selectedPlan === plan.id ? "border-primary shadow-lg scale-105 z-10" : "border-muted hover:border-primary/50"}`}
+                          className={`h-full border-2 transition-all duration-300 ${selectedPlan === plan.id ? "border-primary shadow-lg scale-105 z-10" : "border-muted hover:border-primary/50"}`} onClick={() => setSelectedPlan(plan.id)}
                         >
                           {plan.popular && (
                             <div className="absolute -top-3 left-0 right-0 flex justify-center">

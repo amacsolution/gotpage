@@ -4,7 +4,7 @@ import Stripe from "stripe"
 import { query } from "@/lib/db"
 
 // Initialize Stripe with your secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-03-31.basil",
 })
 
@@ -69,10 +69,10 @@ async function processCompanyPromotion(userId: number, plan: string) {
         durationDays = 30
         break
       case "professional":
-        durationDays = 60
+        durationDays = 30
         break
       case "enterprise":
-        durationDays = 90
+        durationDays = 30
         break
     }
 
