@@ -30,6 +30,7 @@ import {
 import { CompanyCard } from "@/components/company-card"
 import { Arrow } from "@radix-ui/react-select"
 import { link } from "fs"
+import { usePathname, useSearchParams, useRouter } from "next/navigation"
 
 const business = {
   id: 1,
@@ -42,12 +43,16 @@ const business = {
   rating: 4.8,
   reviewCount: 124,
   verified: true,
+  phone : "123456789"
 };
 
 export default function PromoteBusinessPage() {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
   const [selectedPlan, setSelectedPlan] = useState("professional")
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   // Symulacja ładowania danych
   useEffect(() => {
@@ -58,13 +63,14 @@ export default function PromoteBusinessPage() {
     return () => clearTimeout(timer)
   }, [])
 
+
   const handlePromote = () => {
     toast({
       title: "Przekierowanie do płatności",
       description: "Za chwilę zostaniesz przekierowany do systemu płatności",
     })
-    // W rzeczywistej implementacji przekierowanie do Stripe
     window.location.href = `/checkout?plan=${selectedPlan}&type=company`
+    router.push(`/checkout?plan=${selectedPlan}&type=company`)
   }
 
   const plans = [

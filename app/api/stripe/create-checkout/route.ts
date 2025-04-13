@@ -30,9 +30,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
     }
 
-
-
-
     // Get query parameters
     const { searchParams } = new URL(request.url)
     const plan = searchParams.get("plan")
@@ -52,7 +49,10 @@ export async function GET(request: Request) {
         [user.id]
       ) as { active: number }[]
 
+      console.log("Id uzytkownika i dane" + user.id , userCheck)
+
       if (userSubscription.data.length > 0 || userCheck[0].active == 1 ) {
+        console.log("Użytkownik ma aktywną subskrypcję")
         return NextResponse.json({ error: "Już masz aktywną subskrypcję" }, { status: 400 })
       }
     }

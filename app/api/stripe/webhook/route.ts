@@ -58,6 +58,14 @@ export async function POST(request: Request) {
   }
 }
 
+async function isPromoted(postId: number) {
+  const id = await query("SELECT ad_id FROM ad_promotions WHERE ad_id = ?", [postId])
+  if(Array.isArray(id) && id.length > 0) {
+    return true
+  }
+  return false
+}
+
 // Process company promotion
 async function processCompanyPromotion(userId: number, plan: string) {
   try {
@@ -98,8 +106,35 @@ async function processCompanyPromotion(userId: number, plan: string) {
       )
     }
 
+      const posts = await query("SELECT id FROM posts WHERE user_id = ?", [userId])
+
+
+      if (Array.isArray(posts) && posts.length > 0) {
+        // Update posts to promoted status
+        posts.map(async (post: any, ) => {
+          await isPromoted(post.id)
+          await query(
+            `INSERT INTO ad_promotions (
+              ad_id, 
+              start_date, 
+              end_date, 
+              created_at
+            ) VALUES (?, NOW(), ?, NOW())`,
+            [post.id, endDate],)
+        })
+        }
+        let message
+      
     // Update user's verified status if not already verified
-    await query("UPDATE users SET verified = 1 WHERE id = ? AND verified = 0", [userId])
+    if(Number(await query("SELECT verified FROM users WHERE user_id = ?", [userId])) === 1){
+      message = "Twoja firma została zweryfikowana. Możesz korzystać z promocji."
+    } else {
+      await query("INSERT INTO verification_waiting (user_id, time) VALUES (?, NOW())", [userId]) 
+      message =  "Twoja firma oczekuje na weryfikacje. Możesz korzystać z promocji."
+    }    
+     
+    await query("INSERT INTO notifications (user_id, title, type, message, related_type, created_at) VALUES (?, ?, system, ?, system, NOW())", [
+      userId, "Weryfikacja", message])
 
     console.log(`Company promotion processed for user ${userId}, plan: ${plan}`)
   } catch (error) {
