@@ -123,7 +123,6 @@ export default function AdDetailsClient({ id }: { id: string }) {
     }
   }
 
-  console.log("ad", ad)
 
   // Skeleton loading dla całej strony
   if (isLoading) {
