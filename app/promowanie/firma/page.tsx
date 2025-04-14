@@ -51,17 +51,15 @@ export default function PromoteBusinessPage() {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const [selectedPlan, setSelectedPlan] = useState("professional")
-  const pathname = usePathname()
-  const searchParams = await useSearchParams()
 
   // Symulacja ładowania danych
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 100)
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setIsLoading(false)
+  //   }, 100)
 
-    return () => clearTimeout(timer)
-  }, [])
+  //   return () => clearTimeout(timer)
+  // }, [])
 
 
   const handlePromote = () => {
