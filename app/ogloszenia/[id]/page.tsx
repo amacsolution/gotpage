@@ -13,6 +13,8 @@ export async function generateMetadata(
   try {
     const adData = await getAdDetailsFromDatabase(Number.parseInt(params.id))
 
+    console.log("adData", adData)
+
     // Sprawdź, czy adData istnieje i czy zawiera elementy
     if (adData && Array.isArray(adData) && adData.length > 0) {
       ad = adData[0]
