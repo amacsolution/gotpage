@@ -221,7 +221,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
           <div className="space-y-4">
             <div className="relative aspect-video overflow-hidden rounded-lg">
               <Image
-                src={ad.images[activeImageIndex].image_url}
+                src={ad.images[activeImageIndex]}
                 alt={ad.title}
                 className="object-fill"
                 priority
@@ -230,7 +230,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
             </div>
             {ad.images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
-                {ad.images.map((imageObj: { image_url: string }, index: number) => (
+                {ad.images.map((imageObj: string, index: number) => (
                   <div
                     key={index}
                     className={`relative w-24 h-24 rounded-md overflow-hidden cursor-pointer border-2 ${
@@ -239,7 +239,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
                     onClick={() => setActiveImageIndex(index)}
                   >
                     <Image
-                      src={imageObj.image_url} // 🔥 Zmiana tutaj!
+                      src={imageObj} // 🔥 Zmiana tutaj!
                       alt={`${ad.title} - zdjęcie ${index + 1}`}
                       className="object-fill"
                       layout="fill"
@@ -574,7 +574,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
                   <Card className="overflow-hidden hover:shadow-md transition-shadow">
                     <div className="relative h-40">
                       <Image
-                        src={similarAd.image || "/placeholder.svg?height=200&width=300"}
+                        src={similarAd.image}
                         alt={similarAd.title}
                         className="object-fill"
                         layout="fill"

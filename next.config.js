@@ -50,7 +50,7 @@ function mergeConfig(nextConfig, userConfig) {
   }
 }
 
-// Próba importu konfiguracji użytkownika
+// Próba importu konfiguracji użytkownikap
 let userConfig = undefined;
 try {
   userConfig = require("./v0-user-next.config");

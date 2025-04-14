@@ -1,0 +1,12 @@
+<Directory "public/adimages">
+  AllowOverride All
+  Require all granted
+</Directory>
+
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ http://127.0.0.1:3000/$1 [P,L]
+
+ProxyPassReverse / http://127.0.0.1:3000/
+
