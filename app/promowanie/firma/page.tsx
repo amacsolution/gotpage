@@ -53,13 +53,13 @@ export default function PromoteBusinessPage() {
   const [selectedPlan, setSelectedPlan] = useState("professional")
 
   // Symulacja ładowania danych
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setIsLoading(false)
-  //   }, 100)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 50)
 
-  //   return () => clearTimeout(timer)
-  // }, [])
+    return () => clearTimeout(timer)
+  }, [])
 
 
   const handlePromote = () => {
