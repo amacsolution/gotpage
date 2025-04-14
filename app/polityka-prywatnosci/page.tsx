@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
             Użytkowników w związku z korzystaniem z serwisu Social Media Clone.
           </p>
           <p>
-            Administratorem danych osobowych jest Social Media Clone Sp. z o.o. z siedzibą w Warszawie, ul. Przykładowa
+            Administratorem danych osobowych jest Gotpage z siedzibą w Warszawie, ul. Przykładowa
             123, 00-001 Warszawa, wpisana do rejestru przedsiębiorców Krajowego Rejestru Sądowego pod numerem KRS
             0000123456, NIP 1234567890, REGON 123456789.
           </p>

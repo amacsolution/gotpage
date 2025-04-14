@@ -16,9 +16,7 @@ export async function generateMetadata(
     // Sprawdź, czy adData istnieje i czy zawiera elementy
     if (adData && Array.isArray(adData) && adData.length > 0) {
       ad = adData[0]
-    } else {
-      console.log("Brak danych ogłoszenia, używam domyślnych metadanych")
-    }
+    } 
   } catch (error) {
     console.error("Błąd podczas pobierania metadanych ogłoszenia:", error)
   }

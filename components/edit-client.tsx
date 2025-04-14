@@ -53,8 +53,6 @@ export function EditAdClient({ id }: { id: string }) {
         const response = await fetch(`/api/ads/${id}`)
         const data = await response.json()
 
-        console.log(data)
-
         if (data.error) {
           throw new Error(data.error)
         }

@@ -48,15 +48,12 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
       const data = await response.json()
 
-      console.log(data)
-
       if (pageNum === 1) {
         setPosts(data.posts)
       } else {
         setPosts((prev) => [...prev, ...data.posts])
       }
 
-      console.log(data)
       setHasMore(pageNum < data.totalPages)
       setPage(pageNum)
     } catch (error) {
@@ -75,7 +72,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     const fetchUserProfile = async () => {
       try {
         setIsLoading(true)
-        console.log(id)
         const response = await fetch(`/api/users/${id}`)
         const data = await response.json()
 
@@ -83,7 +79,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           throw new Error(data.error)
         }
 
-        console.log(data)
         setUser(data)
       } catch (error) {
         console.error("Błąd podczas pobierania profilu użytkownika:", error)

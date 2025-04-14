@@ -35,7 +35,6 @@ export default function AdDetailsClient({ id }: { id: string }) {
         setIsLoading(true)
         const response = await fetch(`/api/ads/${id}`)
         const data = await response.json()
-        console.log(data)
 
         if (data.error) {
           throw new Error(data.error)

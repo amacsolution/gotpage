@@ -64,8 +64,6 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       const response = await fetch(url)
       const data = await response.json()
 
-      //console.log(data)
-
       if (data.error) {
         throw new Error(data.error)
       }
@@ -77,7 +75,6 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       }
 
       setTotalAds(data.total)
-      console.log("Liczba ogłoszeń:", data.ads)
       setHasMore(pageNum < data.totalPages)
     } catch (error) {
       //console.error("Błąd podczas pobierania ogłoszeń:", error)

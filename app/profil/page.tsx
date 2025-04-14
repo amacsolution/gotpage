@@ -213,15 +213,11 @@ export default function ProfilePage() {
 
       const data = await response.json()
 
-      console.log(data)
-
       if (pageNum === 1) {
         setPosts(data.posts)
       } else {
         setPosts((prev) => [...prev, ...data.posts])
       }
-
-      console.log(data)
       setHasMore(pageNum < data.totalPages)
       setPage(pageNum)
     } catch (error) {

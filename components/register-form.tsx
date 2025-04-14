@@ -288,7 +288,6 @@ export function MultiStepRegisterForm() {
           if (step1Valid) {
             setStep(step + 1)
           } else {
-            console.log("Form errors:", form.formState.errors)
             toast({
               title: "Błąd",
               description: "Popraw błędy w formularzu",
@@ -302,7 +301,6 @@ export function MultiStepRegisterForm() {
           if (step2Valid) {
             setStep(step + 1)
           } else {
-            console.log("Form errors:", form.formState.errors)
             toast({
               title: "Błąd",
               description: "Popraw błędy w formularzu",

@@ -246,13 +246,6 @@ export default function AddAdPage() {
     const fetchData = async () => {
       try {
         setIsDataLoading(true)
-        // Tutaj byłoby rzeczywiste zapytanie do API
-        // const response = await fetch('/api/categories');
-        // const data = await response.json();
-
-        // Symulacja opóźnienia sieciowego
-
-        // Używamy mock data
         setIsDataLoading(false)
       } catch (error) {
         console.error("Błąd podczas pobierania danych:", error)
@@ -407,8 +400,6 @@ export default function AddAdPage() {
       // Przygotowanie danych formularza
       const formData = new FormData()
 
-      console.log(values.location, values.adres, values.kod)
-
       // Dodanie podstawowych pól
       formData.append("title", values.title)
       formData.append("content", values.content)
@@ -439,8 +430,6 @@ export default function AddAdPage() {
       selectedImages.forEach((image) => {
         formData.append("images", image)
       })
-
-      console.log(formData)
 
       // Wysłanie formularza
       const response = await fetch("/api/ads", {

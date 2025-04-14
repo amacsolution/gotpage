@@ -161,9 +161,6 @@ function MarkerClusterHandler({ ads }: { ads: any[] }) {
               locale: pl,
             })
 
-            console.log("Formatted date:", formattedDate)
-            console.log("Ad data:", ad)
-
             const popupContent = `
               <div class="popup-content p-2 min-w-[200px]">
                 <div class="mb-2 overflow-hidden rounded-md">

@@ -357,8 +357,6 @@ export default function NewsPage() {
     }
   }
 
-  console.log("Posts:", posts)
-
   const loadMore = () => {
     const nextPage = page + 1
     fetchPosts(nextPage)
