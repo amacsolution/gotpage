@@ -52,7 +52,7 @@ export default function PromoteBusinessPage() {
   const router = useRouter()
   const [selectedPlan, setSelectedPlan] = useState("professional")
   const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const searchParams = await useSearchParams()
 
   // Symulacja ładowania danych
   useEffect(() => {
