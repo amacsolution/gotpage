@@ -23,6 +23,7 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: ['gotpage.pl'],
   },
   experimental: {
     // WYŁĄCZENIE równoległych procesów

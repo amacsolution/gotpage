@@ -4,65 +4,49 @@ import path from "path"
 import { mkdir, writeFile, unlink } from "fs/promises"
 
 /**
- * Funkcja do przesyłania zdjęcia na serwer lokalny
- *
- * @param file Plik do przesłania
- * @returns URL przesłanego pliku
+ * Funkcja do przesyłania zdjęcia do `uploads/` (nie do `public/`)
  */
 export async function uploadImage(file: File): Promise<string> {
   try {
-    // Ścieżka do folderu, gdzie będą przechowywane zdjęcia
-    const uploadDir = path.join(process.cwd(), "public", "adimages")
+    const uploadDir = path.join(process.cwd(), "uploads")
 
-    // Sprawdzenie, czy folder istnieje, jeśli nie - utworzenie go
     if (!fs.existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true })
     }
 
-    // Generowanie unikalnej nazwy pliku
     const fileExtension = file.name.split(".").pop() || "jpg"
     const fileName = `${uuidv4()}.${fileExtension}`
     const filePath = path.join(uploadDir, fileName)
 
-    // Konwersja File na Buffer
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    // Zapisanie pliku
-    await writeFile(filePath, buffer)
+    await writeFile(filePath, buffer, { mode: 0o644 })
 
-    // Zwrócenie ścieżki URL do pliku
-    return `/adimages/${fileName}`
+    console.log("Zapisano obrazek:", filePath)
+
+    // Zwracamy ścieżkę do API route serwującego zdjęcia
+    return `/api/uploads/${fileName}`
   } catch (error) {
     console.error("Błąd podczas przesyłania zdjęcia:", error)
     throw new Error("Nie udało się przesłać zdjęcia")
   }
 }
 
-/**
- * Funkcja do usuwania zdjęcia z serwera lokalnego
- *
- * @param url URL zdjęcia do usunięcia
- * @returns true jeśli usunięto pomyślnie
- */
 export async function deleteImage(url: string): Promise<boolean> {
   try {
-    // Wyciągnięcie nazwy pliku z URL
     const fileName = url.split("/").pop()
     if (!fileName) {
       throw new Error("Nieprawidłowy URL zdjęcia")
     }
 
-    // Ścieżka do pliku
-    const filePath = path.join(process.cwd(), "public", "adimages", fileName)
+    const filePath = path.join(process.cwd(), "uploads", fileName)
 
-    // Sprawdzenie, czy plik istnieje
     if (!fs.existsSync(filePath)) {
       console.warn(`Plik ${filePath} nie istnieje`)
       return true
     }
 
-    // Usunięcie pliku
     await unlink(filePath)
 
     return true
@@ -71,4 +55,3 @@ export async function deleteImage(url: string): Promise<boolean> {
     throw new Error("Nie udało się usunąć zdjęcia")
   }
 }
-

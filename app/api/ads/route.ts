@@ -319,11 +319,7 @@ export async function POST(request: Request) {
         sqlPlaceholders += ", ?, ?, ?"
         sqlValues.push(brand, conditionType, color)
 
-        // Zapisanie dodatkowych pól jako JSON w kolumnie parameters
-        const additionalParams = { size, material }
-        sqlColumns += ", parameters"
-        sqlPlaceholders += ", ?"
-        sqlValues.push(JSON.stringify(additionalParams))
+        // Zapisanie dodatkowych pól jako JSON w kolumnie parameter
       } else if (category === "Usługi") {
         // Pola dla usług
         const jobType = formData.get("doswiadczenie") ? (formData.get("doswiadczenie") as string) : null
@@ -335,12 +331,6 @@ export async function POST(request: Request) {
         sqlValues.push(jobType, hasTransport)
 
         // Zapisanie dodatkowych pól jako JSON w kolumnie parameters
-        const additionalParams = {
-          availability: (formData.get("dostepnosc") as string) || null,
-        }
-        sqlColumns += ", parameters"
-        sqlPlaceholders += ", ?"
-        sqlValues.push(JSON.stringify(additionalParams))
       } else {
         // Dla innych kategorii, zapisz wszystkie dodatkowe pola jako JSON w kolumnie parameters
         const additionalFields: Record<string, any> = {}
@@ -354,17 +344,14 @@ export async function POST(request: Request) {
           }
         }
 
-        // Dodanie parametrów jako JSON
-        if (Object.keys(additionalFields).length > 0) {
-          sqlColumns += ", parameters"
-          sqlPlaceholders += ", ?"
-          sqlValues.push(JSON.stringify(additionalFields))
-        }
+
       }
 
       // Dodanie ogłoszenia do bazy danych
       const sql = `INSERT INTO ads (${sqlColumns}) VALUES (${sqlPlaceholders})`
       const result = await query(sql, sqlValues) as { insertId: number }
+
+      console.log("dodano do bazy danych" + sqlValues)
 
       if (!result || !result.insertId) {
         throw new Error("Nie udało się dodać ogłoszenia")

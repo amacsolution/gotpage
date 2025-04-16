@@ -32,6 +32,8 @@ export async function POST(request: Request) {
     // Przesłanie zdjęcia do lokalnego folderu
     const imageUrl = await uploadImage(file)
 
+    console.log(imageUrl)
+
     // Zwrócenie URL przesłanego zdjęcia
     return NextResponse.json({
       success: true,
