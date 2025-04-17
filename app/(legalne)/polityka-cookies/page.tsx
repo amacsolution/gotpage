@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Polityka Cookies | Social Media Clone",
-  description: "Polityka Cookies serwisu Social Media Clone.",
+  title: "Polityka Cookies | Gotpage",
+  description: "Polityka Cookies serwisu Gotpage.",
 }
 
 export default function CookiesPolicyPage() {
@@ -109,7 +109,7 @@ export default function CookiesPolicyPage() {
                 https://policies.google.com/privacy
               </a>
             </li>
-            <li>
+            {/* <li>
               <strong>Facebook Pixel</strong> - narzędzie analityczne i marketingowe dostarczane przez Meta Platforms,
               Inc., które pomaga nam mierzyć skuteczność reklam i lepiej zrozumieć działania Użytkowników. Więcej
               informacji na temat plików cookies Facebook można znaleźć na stronie:{" "}
@@ -121,7 +121,7 @@ export default function CookiesPolicyPage() {
               >
                 https://www.facebook.com/policies/cookies/
               </a>
-            </li>
+            </li> */}
             <li>
               <strong>Stripe</strong> - dostawca usług płatniczych, który wykorzystuje pliki cookies do przetwarzania
               płatności i zapobiegania oszustwom. Więcej informacji na temat plików cookies Stripe można znaleźć na

@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Polityka Prywatności | Social Media Clone",
-  description: "Polityka Prywatności serwisu Social Media Clone.",
+  title: "Polityka Prywatności | Gotpage",
+  description: "Polityka Prywatności serwisu Gotpage.",
 }
 
 export default function PrivacyPolicyPage() {
@@ -17,7 +17,7 @@ export default function PrivacyPolicyPage() {
           <h2 className="text-2xl font-semibold mb-4">1. Wprowadzenie</h2>
           <p>
             Niniejsza Polityka Prywatności określa zasady przetwarzania i ochrony danych osobowych przekazanych przez
-            Użytkowników w związku z korzystaniem z serwisu Social Media Clone.
+            Użytkowników w związku z korzystaniem z serwisu Gotpage.
           </p>
           <p>
             Administratorem danych osobowych jest Gotpage z siedzibą w Warszawie, ul. Przykładowa
@@ -150,7 +150,7 @@ export default function PrivacyPolicyPage() {
           </ul>
           <p className="mt-4">
             Aby skorzystać z powyższych praw, należy skontaktować się z Administratorem poprzez e-mail:
-            privacy@socialmediaclone.pl lub pisemnie na adres siedziby firmy.
+            privacy@gotpage.pl lub pisemnie na adres siedziby firmy.
           </p>
         </section>
 
@@ -192,8 +192,8 @@ export default function PrivacyPolicyPage() {
           <h2 className="text-2xl font-semibold mb-4">10. Kontakt</h2>
           <p>W sprawach związanych z ochroną danych osobowych można kontaktować się z Administratorem:</p>
           <ul className="list-disc pl-6 space-y-2">
-            <li>E-mail: privacy@socialmediaclone.pl</li>
-            <li>Adres: Social Media Clone Sp. z o.o., ul. Przykładowa 123, 00-001 Warszawa</li>
+            <li>E-mail: privacy@gotpage.pl</li>
+            <li>Adres: Gotpage Sp. z o.o., ul. Przykładowa 123, 00-001 Warszawa</li>
             <li>Telefon: +48 123 456 789</li>
           </ul>
         </section>

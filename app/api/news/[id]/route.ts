@@ -71,7 +71,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: Request, {params}: { params: { id: string } }) {
   try {
     // Sprawdzenie, czy użytkownik jest zalogowany
     const user = await auth(request)
@@ -79,8 +79,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url)
-    const postId = searchParams.get("postId")
+    const postId = Number.parseInt((await params).id)
 
     if (!postId) {
       return NextResponse.json({ error: "Brak ID wpisu do usunięcia" }, { status: 400 })
