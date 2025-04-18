@@ -30,7 +30,7 @@ export default function ContactPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-lg">+48 123 456 789</p>
+                <p className="text-lg">+48 606 908 927</p>
                 <p className="text-sm text-muted-foreground mt-1">Pon-Pt: 9:00 - 17:00</p>
               </CardContent>
             </Card>
@@ -56,8 +56,8 @@ export default function ContactPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-lg">ul. Przykładowa 123</p>
-                <p className="text-sm text-muted-foreground mt-1">00-000 Warszawa</p>
+                <p className="text-lg">ul. Łódzka 66</p>
+                <p className="text-sm text-muted-foreground mt-1">99-200 Poddebice</p>
               </CardContent>
             </Card>
           </div>

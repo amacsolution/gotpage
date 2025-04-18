@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Informacje RODO | Social Media Clone",
+  title: "Informacje RODO | Gotpage",
   description: "Informacje dotyczące przetwarzania danych osobowych zgodnie z RODO.",
 }
 
@@ -26,13 +26,13 @@ export default function GDPRPage() {
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4">1. Administrator danych osobowych</h2>
           <p>
-            Administratorem Państwa danych osobowych jest Social Media Clone Sp. z o.o. z siedzibą w Warszawie, ul.
+            Administratorem Państwa danych osobowych jest Gotpage z siedzibą w Warszawie, ul.
             Przykładowa 123, 00-001 Warszawa, wpisana do rejestru przedsiębiorców Krajowego Rejestru Sądowego pod
             numerem KRS 0000123456, NIP 1234567890, REGON 123456789, kapitał zakładowy 50 000 PLN.
           </p>
           <p>Kontakt z Administratorem jest możliwy za pośrednictwem:</p>
           <ul className="list-disc pl-6 space-y-2">
-            <li>adresu e-mail: privacy@socialmediaclone.pl</li>
+            <li>adresu e-mail: privacy@Gotpage.pl</li>
             <li>telefonicznie: +48 123 456 789</li>
             <li>listownie na adres siedziby Administratora</li>
           </ul>
@@ -46,9 +46,9 @@ export default function GDPRPage() {
           </p>
           <p>Kontakt z Inspektorem Ochrony Danych jest możliwy za pośrednictwem:</p>
           <ul className="list-disc pl-6 space-y-2">
-            <li>adresu e-mail: iod@socialmediaclone.pl</li>
+            <li>adresu e-mail: iod@gotpage.pl</li>
             <li>
-              listownie na adres: Inspektor Ochrony Danych, Social Media Clone Sp. z o.o., ul. Przykładowa 123, 00-001
+              listownie na adres: Inspektor Ochrony Danych, Gotpage Sp. z o.o., ul. Przykładowa 123, 00-001
               Warszawa
             </li>
           </ul>

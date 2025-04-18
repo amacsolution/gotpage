@@ -11,7 +11,7 @@ export function Footer() {
             <h3 className="text-lg font-semibold mb-4">O nas</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/o-nas" className="text-muted-foreground hover:text-foreground transition-all">
+                <Link href="/o-serwisie" className="text-muted-foreground hover:text-foreground transition-all">
                   O serwisie
                 </Link>
               </li>
@@ -20,7 +20,7 @@ export function Footer() {
                   Kontakt
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link href="/kariera" className="text-muted-foreground hover:text-foreground transition-all">
                   Kariera
                 </Link>
@@ -29,7 +29,7 @@ export function Footer() {
                 <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-all">
                   Blog
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
 
@@ -52,7 +52,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/premium" className="text-muted-foreground hover:text-foreground transition-all">
+                <Link href="/promowanie" className="text-muted-foreground hover:text-foreground transition-all">
                   Usługi premium
                 </Link>
               </li>

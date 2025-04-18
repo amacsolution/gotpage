@@ -1,14 +1,14 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Regulamin | Social Media Clone",
-  description: "Regulamin korzystania z serwisu Social Media Clone.",
+  title: "Regulamin | Gotpage",
+  description: "Regulamin korzystania z serwisu Gotpage.",
 }
 
 export default function TermsPage() {
   return (
     <div className="container mx-auto py-12 px-4 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-8">Regulamin serwisu Social Media Clone</h1>
+      <h1 className="text-3xl font-bold mb-8">Regulamin serwisu Gotpage</h1>
 
       <div className="prose prose-lg max-w-none">
         <p className="text-gray-500 mb-8">Ostatnia aktualizacja: 1 kwietnia 2025</p>
@@ -17,11 +17,11 @@ export default function TermsPage() {
           <h2 className="text-2xl font-semibold mb-4">§1. Postanowienia ogólne</h2>
           <ol className="list-decimal pl-6 space-y-2">
             <li>
-              Niniejszy Regulamin określa zasady korzystania z serwisu internetowego Social Media Clone, dostępnego pod
-              adresem https://socialmediaclone.pl.
+              Niniejszy Regulamin określa zasady korzystania z serwisu internetowego Gotpage, dostępnego pod
+              adresem https://gotpage.pl.
             </li>
             <li>
-              Właścicielem serwisu jest Social Media Clone Sp. z o.o. z siedzibą w Warszawie, ul. Przykładowa 123,
+              Właścicielem serwisu jest Gotpage z siedzibą w Warszawie, ul. Przykładowa 123,
               00-001 Warszawa, wpisana do rejestru przedsiębiorców Krajowego Rejestru Sądowego pod numerem KRS
               0000123456, NIP 1234567890, REGON 123456789, kapitał zakładowy 50 000 PLN.
             </li>
@@ -38,8 +38,8 @@ export default function TermsPage() {
           <h2 className="text-2xl font-semibold mb-4">§2. Definicje</h2>
           <ol className="list-decimal pl-6 space-y-2">
             <li>
-              <strong>Serwis</strong> - serwis internetowy Social Media Clone dostępny pod adresem
-              https://socialmediaclone.pl.
+              <strong>Serwis</strong> - serwis internetowy Gotpage dostępny pod adresem
+              https://gotpage.pl.
             </li>
             <li>
               <strong>Użytkownik</strong> - osoba fizyczna, prawna lub jednostka organizacyjna nieposiadająca osobowości
@@ -137,7 +137,7 @@ export default function TermsPage() {
           <ol className="list-decimal pl-6 space-y-2">
             <li>Użytkownik ma prawo do składania reklamacji dotyczących działania serwisu.</li>
             <li>
-              Reklamacje należy składać drogą elektroniczną na adres: reklamacje@socialmediaclone.pl lub pisemnie na
+              Reklamacje należy składać drogą elektroniczną na adres: kontakt@gotpage.pl lub pisemnie na
               adres siedziby firmy.
             </li>
             <li>Reklamacja powinna zawierać: dane Użytkownika, opis problemu oraz oczekiwany sposób rozwiązania.</li>
