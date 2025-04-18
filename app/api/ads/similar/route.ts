@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     const formattedAds = await Promise.all(
       ads.map(async (ad) => {
         // Pobierz pierwsze zdjęcie dla ogłoszenia
-        const images = await query("SELECT image_url FROM ad_images WHERE ad_id = ? ORDER BY id ASC LIMIT 1", [ad.id])
+        const images = await query("SELECT image_url FROM ad_images WHERE ad_id = ? ORDER BY id ASC LIMIT 1", [ad.id]) as { image_url: string }[]
 
         const imageUrl = Array.isArray(images) && images.length > 0 ? images[0].image_url : null
 
@@ -46,7 +46,6 @@ export async function GET(request: Request) {
         }
       }),
     )
-    console.log("Pobrano podobne ogłoszenia:", formattedAds)
     return NextResponse.json(formattedAds)
   } catch (error) {
     console.error("Błąd podczas pobierania podobnych ogłoszeń:", error)

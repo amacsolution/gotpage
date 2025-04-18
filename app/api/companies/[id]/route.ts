@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
+import { UserData } from "../../profile/route"
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -28,7 +29,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       FROM users u
       WHERE u.id = ? AND u.type = 'business'`,
       [companyId],
-    ) 
+    )  as UserData[]
 
     if (!Array.isArray(companies) || companies.length === 0) {
       return NextResponse.json({ error: "Firma nie została znaleziona" }, { status: 404 })

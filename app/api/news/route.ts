@@ -71,7 +71,7 @@ export async function GET(request: Request) {
       countSql += " WHERE user_id = ?"
     }
 
-    const totalResult = await query(countSql, userId ? [userId] : [])
+    const totalResult = await query(countSql, userId ? [userId] : []) as { count: string }[]
     const total = Array.isArray(totalResult) && totalResult[0]?.count ? Number.parseInt(totalResult[0].count) : 0
 
     // Sprawdzenie, czy zalogowany użytkownik polubił wpisy
@@ -127,6 +127,24 @@ export async function GET(request: Request) {
     console.error("Błąd podczas pobierania wpisów aktualności:", error)
     return NextResponse.json({ error: "Wystąpił błąd podczas pobierania wpisów aktualności" }, { status: 500 })
   }
+}
+
+interface NewsData {
+  id: number
+  content: string
+  has_link: number
+  link_url: string | null
+  likes: number
+  comments: number
+  createdAt: string
+  type: string
+  imageUrl: string | null
+  pollData: string | null
+  author_id: number
+  author_name: string
+  author_avatar: string | null
+  author_type: string
+  author_verified: number
 }
 
 // Dodawanie nowego wpisu
@@ -189,7 +207,7 @@ export async function POST(request: Request) {
     sql += "NOW())"
 
     // Dodanie wpisu
-    const result = await query(sql, params)
+    const result = await query(sql, params) as { insertId: number } | null
 
     if (!result || !result.insertId) {
       throw new Error("Nie udało się dodać wpisu")
@@ -217,7 +235,7 @@ export async function POST(request: Request) {
       JOIN users u ON p.user_id = u.id
       WHERE p.id = ?`,
       [result.insertId],
-    )
+    ) as NewsData[]
 
     if (!Array.isArray(posts) || posts.length === 0) {
       throw new Error("Nie udało się pobrać dodanego wpisu")
@@ -271,7 +289,7 @@ export async function DELETE(request: Request) {
     }
 
     // Sprawdzenie, czy użytkownik jest autorem wpisu
-    const post = await query("SELECT user_id FROM news_posts WHERE id = ?", [postId])
+    const post = await query("SELECT user_id FROM news_posts WHERE id = ?", [postId]) as { user_id: number }[]
     if (!Array.isArray(post) || post.length === 0) {
       return NextResponse.json({ error: "Wpis nie istnieje" }, { status: 404 })
     }
@@ -281,7 +299,7 @@ export async function DELETE(request: Request) {
     }
 
     // Usunięcie wpisu
-    const result = await query("DELETE FROM news_posts WHERE id = ?", [postId])
+    const result = await query("DELETE FROM news_posts WHERE id = ?", [postId]) as { affectedRows: number} 
     if (!result || result.affectedRows === 0) {
       throw new Error("Nie udało się usunąć wpisu")
     }

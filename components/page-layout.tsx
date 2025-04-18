@@ -9,13 +9,17 @@ interface PageLayoutProps {
 }
 
 export function PageLayout({ children }: PageLayoutProps) {
-  // Get the Google Tag Manager ID from environment variables
-  const gtmId = process.env.NEXT_PUBLIC_GTM_ID || "GTM-NDMHS7S8" // Using the ID from your screenshot as default
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID || "GTM-NDMHS7S8"
+  const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-9VWE95RHPF" // Twój ID Google Analytics
+
+  // Ustaw na true, jeśli chcesz testować GTM na localhost
+  const enableGTMOnLocalhost = true
 
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Add Google Tag Manager script */}
-      <GoogleTagManager gtmId={gtmId} />
+      <GoogleTagManager gtmId={gtmId} gaId={gaId} enableOnLocalhost={enableGTMOnLocalhost} />
+
+      {/* Add debug component only in development */}
 
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center">

@@ -313,7 +313,6 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     const user = await auth(request)
-    console.log(user)
 
     if (!user) {
       return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })

@@ -11,7 +11,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ suggestions: [] })
     }
 
-    let suggestions = []
+    let suggestions: Array<{ text: string; category?: string; subcategory?: string; type: string; categories?: string[] }> = []
 
     if (type === "ads") {
       // Get ad suggestions with categories and subcategories
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
         LIMIT 10
       `,
         [`%${searchQuery}%`, `%${searchQuery}%`],
-      )
+      ) as { text: string; category: string; subcategory: string }[]
 
       if (Array.isArray(adSuggestions)) {
         suggestions = adSuggestions.map((suggestion) => ({
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
         LIMIT 5
       `,
         [`%${searchQuery}%`],
-      )
+      ) as { text: string }[]
 
       if (Array.isArray(categorySuggestions)) {
         suggestions = [
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
         LIMIT 10
       `,
         [`%${searchQuery}%`, `%${searchQuery}%`],
-      )
+      ) as { text: string; categories: string }[]
 
       if (Array.isArray(companySuggestions)) {
         suggestions = companySuggestions.map((suggestion) => {
@@ -103,7 +103,7 @@ export async function GET(request: Request) {
         LIMIT 5
       `,
         [`%${searchQuery}%`],
-      )
+      ) as { text: string }[]
 
       if (Array.isArray(locationSuggestions)) {
         suggestions = [

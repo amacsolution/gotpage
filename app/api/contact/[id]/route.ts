@@ -49,10 +49,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     const id = Number.parseInt(await params.id)
 
-    console.log("Deleting contact message with ID:", id)
-
     await query("DELETE FROM contact_messages WHERE id = ?" , [id])
-    console.log("Contact message deleted successfully")
 
       return NextResponse.json({ success: true })
   } catch (error) {

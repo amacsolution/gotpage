@@ -80,28 +80,6 @@ export async function POST(request: Request) {
     } else {
       coordinates = ""
     }
-    console.log("Współrzędne:", coordinates)
-    console.log("data", { 
-      id,
-      name,
-      fullname: fullname || name,
-      email,
-      phone: phone || "",
-      hashedPassword,
-      type,
-      verified: 0, // verified = false
-      avatar,
-      bio: bio || "",
-      description: (type === "individual" ? "Użytkownik platformy." : "Firma korzystająca z platformy Gotpage."),
-      location: location || "",
-      adress: adress || "",
-      coordinates: coordinates ? JSON.stringify(coordinates) : '',
-      categories: JSON.stringify(categories || []),
-      occupation: occupation || null,
-      interests: interests || null,
-      companySize: companySize || null,
-      website: website || null 
-    })
 
     // Wstawienie nowego użytkownika do bazy danych
     const generatedBio = type === "individual" 
@@ -153,8 +131,6 @@ export async function POST(request: Request) {
       website || null,
     ],
   ) as { insertId: number; affectedRows: number };
-  
-    console.log("Wstawiony użytkownik:", result)
 
     if (!result || result.affectedRows !== 1) {
       throw new Error("Nie udało się utworzyć użytkownika")

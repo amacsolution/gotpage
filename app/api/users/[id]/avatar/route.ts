@@ -69,7 +69,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
           // Sprawdzenie, czy plik istnieje przed próbą usunięcia
           if (existsSync(currentAvatarPath)) {
             await unlink(currentAvatarPath)
-            console.log(`Usunięto stary avatar: ${currentAvatarPath}`)
           }
         }
       } catch (error) {

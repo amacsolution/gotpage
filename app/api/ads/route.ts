@@ -248,8 +248,6 @@ export async function POST(request: Request) {
     const kod = (formData.get("kod") as string) || null
     const adKey = generateAdKey(title) // Generowanie unikalnego klucza ogłoszenia
 
-    console.log("dane ogłoszenia", title, content, category, subcategory, price, isPromoted, location, adres, kod, adKey )
-
     // Walidacja podstawowych pól
     if (!title || !content || !category) {
       return NextResponse.json({ error: "Brakuje wymaganych pól" }, { status: 400 })

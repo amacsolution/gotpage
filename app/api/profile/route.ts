@@ -40,6 +40,8 @@ export type UserData = {
   likes_count: number | null
   reviews_count: number | null
   rating_avg: number | null
+  rating: number | null
+  reviewCount: number | null
 }
 
 type Promotions = {

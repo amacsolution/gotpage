@@ -61,8 +61,6 @@ export async function GET(request: Request) {
       return NextResponse.json([])
     }
 
-    console.log(similarUsers)
-
     // Formatowanie danych
     const formattedUsers = similarUsers.map((user) => ({
       ...user,

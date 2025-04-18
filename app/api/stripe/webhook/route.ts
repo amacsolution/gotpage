@@ -136,7 +136,6 @@ async function processCompanyPromotion(userId: number, plan: string) {
     await query("INSERT INTO notifications (user_id, title, type, message, related_type, created_at) VALUES (?, ?, system, ?, system, NOW())", [
       userId, "Weryfikacja", message])
 
-    console.log(`Company promotion processed for user ${userId}, plan: ${plan}`)
   } catch (error) {
     console.error("Error processing company promotion:", error)
     throw error
@@ -194,11 +193,10 @@ async function processAdPromotion(userId: number, plan: string, adId?: number) {
         ])
       }
 
-      console.log(`Ad promotion processed for ad ${adId}, plan: ${plan}`)
     } else {
       // If no specific ad ID, store credit for the user to use later
       // This would require additional tables and UI for the user to apply the promotion
-      console.log(`Ad promotion credit stored for user ${userId}, plan: ${plan}`)
+      console.error(`Ad promotion credit stored for user ${userId}, plan: ${plan}`)
     }
   } catch (error) {
     console.error("Error processing ad promotion:", error)

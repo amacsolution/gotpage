@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       FROM users
       ${period !== "all" ? dateCondition : ""}
     `
-    const [usersStats]= await db.query(usersQuery)
+    const [usersStats]= await db.query(usersQuery) as UserStats[]
 
     // Pobierz statystyki ogłoszeń
     const adsQuery = `
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
         FROM ads
       ${period !== "all" ? dateCondition : ""}
     `
-    const [adsStats] = await db.query(adsQuery)
+    const [adsStats] = await db.query(adsQuery) as AdsStats[]
 
     // Pobierz statystyki komentarzy
     const commentsQuery = `
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     (SELECT COUNT(*) FROM news_comments WHERE DATE(created_at) = CURDATE()) AS today
       ${period !== "all" ? dateCondition : ""}
     `
-    const [commentsStats] = await db.query(commentsQuery)
+    const [commentsStats] = await db.query(commentsQuery) as CommentsStats[]
 
     // Pobierz statystyki zgłoszeń
     const reportsQuery = `
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
       FROM reports
       ${period !== "all" ? dateCondition : ""}
     `
-    const [reportsStats] = await db.query(reportsQuery)
+    const [reportsStats] = await db.query(reportsQuery) as ReportsStats[]
 
     // Pobierz ostatnią aktywność
     const recentActivityQuery = `
@@ -198,8 +198,6 @@ LIMIT 10;
         timeFormatted: new Date(item.time).toLocaleString("pl-PL"), // Dodaj sformatowaną datę
       })),
     }
-
-    console.log("Dane dashboardu:", dashboardData.stats)
 
     return NextResponse.json(dashboardData)
   } catch (error) {

@@ -10,8 +10,6 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    console.log("Fetching metadata for:", url)
-
     const options = {
       url,
       timeout: 10000, // 10 sekund timeout
@@ -32,12 +30,8 @@ export async function GET(req: NextRequest) {
         success: false,
       })
     }
-
-    // Dodaj URL żądania do wyniku
     result.requestUrl = url
     result.success = true
-
-    // console.log("Metadata result:", result)
     return NextResponse.json(result)
   } catch (error) {
     console.error("Error fetching metadata:", error)
