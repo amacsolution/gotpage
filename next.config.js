@@ -1,3 +1,7 @@
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err)
+})
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,

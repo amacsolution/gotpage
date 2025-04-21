@@ -26,7 +26,7 @@ export default function UsersPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [users, setUsers] = useState([])
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedUser, setSelectedUser] = useState<null | { id: number; name: string; email: string; joinedAt: string; verified: boolean }>(null)
   const [notificationTitle, setNotificationTitle] = useState("")
   const [notificationMessage, setNotificationMessage] = useState("")
   const [isSending, setIsSending] = useState(false)
@@ -91,7 +91,7 @@ export default function UsersPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: selectedUser.id,
+          userId: selectedUser?.id ?? 0,
           title: notificationTitle,
           message: notificationMessage,
         }),
@@ -111,7 +111,7 @@ export default function UsersPage() {
       if (response.ok) {
         toast({
           title: "Sukces",
-          description: `Powiadomienie zostało wysłane do użytkownika ${selectedUser.name}`,
+          description: `Powiadomienie zostało wysłane do użytkownika ${selectedUser?.name}`,
         })
         setSelectedUser(null)
       } else {

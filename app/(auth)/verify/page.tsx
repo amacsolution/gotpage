@@ -1,15 +1,17 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, AlertCircle, CheckCircle } from "lucide-react"
 
-export default function VerifyPage() {
-  const searchParams = useSearchParams()
-  const token = searchParams.get("token")
+export default function VerifyPage({
+  searchParams,
+}: {
+  searchParams: { token?: string }
+}) {
+  const token = searchParams.token
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
   const [error, setError] = useState<string | null>(null)
 
