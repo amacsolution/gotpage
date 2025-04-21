@@ -4,12 +4,12 @@ import Stripe from "stripe"
 import { query } from "@/lib/db"
 
 // Initialize Stripe with your secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2025-03-31.basil",
 })
 
 // Webhook secret for verifying events
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ""
 
 export async function POST(request: Request) {
   try {

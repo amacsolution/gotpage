@@ -4,21 +4,21 @@ import Stripe from "stripe"
 import { query } from "@/lib/db"
 
 // Initialize Stripe with your secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2025-03-31.basil", // Aktualizacja wersji API
 })
 
 // Mapa identyfikatorów cen dla różnych typów promocji i planów
 const PRICE_IDS = {
   company: {
-    business: process.env.STRIPE_COMPANY_PRICE_STANDARD ,
-    professional: process.env.STRIPE_COMPANY_PRICE_PREMIUM ,
-    enterprise: process.env.STRIPE_COMPANY_PRICE_VIP,
+    business: process.env.STRIPE_COMPANY_PRICE_STANDARD || "" ,
+    professional: process.env.STRIPE_COMPANY_PRICE_PREMIUM || "" ,
+    enterprise: process.env.STRIPE_COMPANY_PRICE_VIP || "",
   },
   ad: {
-    basic: process.env.STRIPE_AD_PRICE_STANDARD,
-    standard: process.env.STRIPE_AD_PRICE_PREMIUM,
-    premium: process.env.STRIPE_AD_PRICE_VIP,
+    basic: process.env.STRIPE_AD_PRICE_STANDARD || "",
+    standard: process.env.STRIPE_AD_PRICE_PREMIUM || "",
+    premium: process.env.STRIPE_AD_PRICE_VIP || "",
   },
 }
 
