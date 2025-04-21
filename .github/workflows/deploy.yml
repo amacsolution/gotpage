@@ -37,7 +37,9 @@ jobs:
             package.json
             package-lock.json
             next.config.js
+            .env.production
           target: /home/${{ secrets.CF_USER }}/domains/gotpage.pl/public_html
+
 
       - name: Install node modules & restart PM2 on CyberFolks
         uses: appleboy/ssh-action@master
