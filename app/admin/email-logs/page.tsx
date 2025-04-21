@@ -118,8 +118,6 @@ export default function EmailLogsPage() {
     }
   }, [isAuthenticated, page])
 
-  console.log("Logs:", logs)
-
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto py-10">

@@ -20,20 +20,15 @@ export default function AdminLayout({
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log("Sprawdzanie uwierzytelnienia administratora")
-
         const response = await fetch("/api/admin/check", {
           credentials: "include", // Ważne: dołącz ciasteczka
         })
 
         const data = await response.json()
-        console.log("Odpowiedź z /api/admin/check:", data)
 
         if (response.ok && data.authenticated) {
-          console.log("Administrator jest uwierzytelniony")
           setIsAuthenticated(true)
         } else {
-          console.log("Administrator nie jest uwierzytelniony, przekierowanie do logowania")
           router.push("/admin/login")
         }
       } catch (error) {

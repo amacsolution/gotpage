@@ -60,7 +60,6 @@ export default function ReportsPage() {
 
   const handleStatusChange = async ({reportId, newStatus } : {reportId : number, newStatus : string}) => {
     try {
-      console.log(reportId, newStatus)
 
       const response = await fetch("/api/admin/reports", {
         method: "PATCH",
@@ -76,8 +75,6 @@ export default function ReportsPage() {
 
       // Aktualizuj lokalny stan
       setReports(reports.map((report) => (report.id === reportId ? { ...report, status: newStatus } : report)))
-
-      console.log(reports)
 
       toast({
         title: "Sukces",

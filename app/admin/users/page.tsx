@@ -69,8 +69,6 @@ export default function UsersPage() {
     setSelectedUser(user!)
     setNotificationTitle("")
     setNotificationMessage("")
-    console.log("Otwieranie powiadomienia dla użytkownika:", user)
-    console.log("ID użytkownika:", user.id)
   }
 
   const handleSendNotification = async () => {
@@ -85,11 +83,6 @@ export default function UsersPage() {
 
     setIsSending(true)
     try {
-      console.log("Wysyłanie powiadomienia:", {
-        userId: selectedUser?.id!,
-        title: notificationTitle,
-        message: notificationMessage,
-      })
 
       // Użyjmy fetch z opcją text() zamiast json() aby zobaczyć dokładną odpowiedź
       const response = await fetch("/api/admin/notifications/send", {
@@ -106,16 +99,12 @@ export default function UsersPage() {
 
       // Najpierw pobierzmy surowy tekst odpowiedzi
       const responseText = await response.text()
-      console.log("Surowa odpowiedź:", responseText)
 
       // Spróbujmy sparsować JSON tylko jeśli to faktycznie JSON
       let data
       try {
         data = JSON.parse(responseText)
-        console.log("Sparsowane dane:", data)
       } catch (e) {
-        console.log(responseText);
-        console.error("Odpowiedź nie jest prawidłowym JSON:", e)
         throw new Error("Otrzymano nieprawidłową odpowiedź z serwera")
       }
 

@@ -10,44 +10,26 @@ async function isAdmin(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Dodajmy szczegółowe logowanie
-    console.log("Otrzymano żądanie wysłania powiadomienia")
 
     // Sprawdź, czy użytkownik jest administratorem
     const isAdminUser = await isAdmin(request)
-    console.log("Czy użytkownik jest administratorem:", isAdminUser)
 
     if (!isAdminUser) {
-      console.log("Brak uprawnień administratora")
       return NextResponse.json({ error: "Brak uprawnień" }, { status: 401 })
     }
 
     // Pobierz dane z żądania
     const body = await request.json()
-    console.log("Otrzymane dane:", body)
 
     const { userId, title, message } = body
 
     // Walidacja danych
     if (!userId || !title || !message) {
-      console.log("Brakujące dane:", { userId, title, message })
       return NextResponse.json({ error: "Brakujące dane: userId, title lub message" }, { status: 400 })
     }
 
     // Sprawdź, czy użytkownik istnieje - użyjmy prostszego zapytania
     try {
-      // Zamiast pełnego zapytania SQL, użyjmy mocka dla testów
-      console.log("Symulacja sprawdzania użytkownika o ID:", userId)
-
-      // Zakładamy, że użytkownik istnieje (dla uproszczenia)
-      // W rzeczywistej aplikacji, tutaj byłoby zapytanie do bazy danych
-
-      // Symulacja zapisywania powiadomienia
-      console.log("Symulacja zapisywania powiadomienia:", {
-        userId,
-        title,
-        message,
-        timestamp: new Date().toISOString(),
-      })
 
       // Zwróć sukces
       return NextResponse.json({
