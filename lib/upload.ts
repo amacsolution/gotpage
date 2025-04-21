@@ -1,74 +1,110 @@
-import { v4 as uuidv4 } from "uuid"
-import fs from "fs"
+import fs from "fs/promises"
 import path from "path"
-import { mkdir, writeFile, unlink } from "fs/promises"
+import sharp from "sharp"
 
-/**
- * Funkcja do przesyłania zdjęcia na serwer lokalny
- *
- * @param file Plik do przesłania
- * @returns URL przesłanego pliku
- */
-export async function uploadImage(file: File): Promise<string> {
+export async function uploadImage(file: File, type = "avatar"): Promise<string> {
   try {
-    // Ścieżka do folderu, gdzie będą przechowywane zdjęcia
-    const uploadDir = path.join(process.cwd(), "public", "adimages")
+    // Create unique filename
+    const fileName = `${type}_${Date.now()}_${file.name.replace(/\s+/g, "_")}`
 
-    // Sprawdzenie, czy folder istnieje, jeśli nie - utworzenie go
-    if (!fs.existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
+    // Define the upload directory based on type
+    const uploadDir = type === "background" ? "backgrounds" : "avatars"
+
+    // Ensure the directory exists
+    const dirPath = path.join(process.cwd(), "public", "uploads", uploadDir)
+    await fs.mkdir(dirPath, { recursive: true })
+
+    // Get file buffer
+    const buffer = Buffer.from(await file.arrayBuffer())
+
+    // Process the image with sharp
+    let processedBuffer = buffer
+
+    // If it's a background image, ensure it's the right size
+    if (type === "background") {
+      // Create desktop version (1336x160) with high quality
+      const desktopPath = path.join(dirPath, `desktop_${fileName}`)
+      await sharp(buffer)
+        .resize(1336, 160, { fit: "cover" })
+        .jpeg({ quality: 100, mozjpeg: true }) // Zwiększona jakość do 100
+        .toFile(desktopPath)
+
+      // Create mobile version (350x120) with high quality
+      const mobilePath = path.join(dirPath, `mobile_${fileName}`)
+      await sharp(buffer)
+        .resize(350, 120, { fit: "cover" })
+        .jpeg({ quality: 100, mozjpeg: true }) // Zwiększona jakość do 100
+        .toFile(mobilePath)
+
+      // Save the original processed image with minimal compression
+      processedBuffer = await sharp(buffer)
+        .jpeg({ quality: 100, mozjpeg: true }) // Zwiększona jakość do 100
+        .toBuffer()
+    } else {
+      // For avatars, just optimize the image with high quality
+      processedBuffer = await sharp(buffer)
+        .resize(300, 300, { fit: "cover" })
+        .jpeg({ quality: 95, mozjpeg: true }) // Zwiększona jakość do 95
+        .toBuffer()
     }
 
-    // Generowanie unikalnej nazwy pliku
-    const fileExtension = file.name.split(".").pop() || "jpg"
-    const fileName = `${uuidv4()}.${fileExtension}`
-    const filePath = path.join(uploadDir, fileName)
+    // Save the processed file
+    const filePath = path.join(dirPath, fileName)
+    await fs.writeFile(filePath, processedBuffer)
 
-    // Konwersja File na Buffer
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-
-    // Zapisanie pliku
-    await writeFile(filePath, buffer)
-
-    // Zwrócenie ścieżki URL do pliku
-    return `/adimages/${fileName}`
+    // Return the public URL
+    return `/uploads/${uploadDir}/${fileName}`
   } catch (error) {
-    console.error("Błąd podczas przesyłania zdjęcia:", error)
-    throw new Error("Nie udało się przesłać zdjęcia")
+    console.error("Error uploading image:", error)
+    throw new Error("Failed to upload image")
   }
 }
 
-/**
- * Funkcja do usuwania zdjęcia z serwera lokalnego
- *
- * @param url URL zdjęcia do usunięcia
- * @returns true jeśli usunięto pomyślnie
- */
-export async function deleteImage(url: string): Promise<boolean> {
+export async function deleteImage(imageUrl: string): Promise<void> {
   try {
-    // Wyciągnięcie nazwy pliku z URL
-    const fileName = url.split("/").pop()
-    if (!fileName) {
-      throw new Error("Nieprawidłowy URL zdjęcia")
+    // Extract the file path from the URL
+    const filePath = path.join(process.cwd(), "public", imageUrl)
+
+    // Check if file exists
+    const exists = await fs
+      .access(filePath)
+      .then(() => true)
+      .catch(() => false)
+
+    if (exists) {
+      // Delete the file
+      await fs.unlink(filePath)
+
+      // If it's a background image, also delete the desktop and mobile versions
+      if (imageUrl.includes("/uploads/backgrounds/")) {
+        const dir = path.dirname(filePath)
+        const filename = path.basename(filePath)
+
+        // Try to delete desktop version
+        const desktopPath = path.join(dir, `desktop_${filename}`)
+        const desktopExists = await fs
+          .access(desktopPath)
+          .then(() => true)
+          .catch(() => false)
+
+        if (desktopExists) {
+          await fs.unlink(desktopPath)
+        }
+
+        // Try to delete mobile version
+        const mobilePath = path.join(dir, `mobile_${filename}`)
+        const mobileExists = await fs
+          .access(mobilePath)
+          .then(() => true)
+          .catch(() => false)
+
+        if (mobileExists) {
+          await fs.unlink(mobilePath)
+        }
+      }
     }
-
-    // Ścieżka do pliku
-    const filePath = path.join(process.cwd(), "public", "adimages", fileName)
-
-    // Sprawdzenie, czy plik istnieje
-    if (!fs.existsSync(filePath)) {
-      console.warn(`Plik ${filePath} nie istnieje`)
-      return true
-    }
-
-    // Usunięcie pliku
-    await unlink(filePath)
-
-    return true
   } catch (error) {
-    console.error("Błąd podczas usuwania zdjęcia:", error)
-    throw new Error("Nie udało się usunąć zdjęcia")
+    console.error("Error deleting image:", error)
+    throw new Error("Failed to delete image")
   }
 }
-

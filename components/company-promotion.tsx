@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2 } from 'lucide-react'
+import { Briefcase, Building, Crown, Loader2 } from 'lucide-react'
 import { CheckCircle } from 'lucide-react'
 import { PricingTable } from "@/components/pricing-table"
 
@@ -22,35 +22,59 @@ export function CompanyPromotion({ isPromoted = false, promotionEndDate, promoti
  const { toast } = useToast()
 
  const plans = [
-   {
-     id: "standard",
-     name: "Standard",
-     price: 49.99,
-     features: ["Wyróżnienie firmy w katalogu", "Priorytetowe wyświetlanie ogłoszeń", "30 dni promocji"],
-   },
-   {
-     id: "premium",
-     name: "Premium",
-     price: 99.99,
-     features: [
-       "Wszystkie funkcje planu Standard",
-       "Oznaczenie jako Zweryfikowana Firma",
-       "Wyświetlanie w sekcji polecanych firm",
-       "60 dni promocji",
-     ],
-   },
-   {
-     id: "vip",
-     name: "VIP",
-     price: 199.99,
-     features: [
-       "Wszystkie funkcje planu Premium",
-       "Dedykowany baner na stronie głównej",
-       "Priorytetowa obsługa klienta",
-       "90 dni promocji",
-     ],
-   },
- ]
+  {
+    id: "business",
+    name: "Business",
+    price: 80,
+    duration: "30 dni",
+    features: [
+      "Wyróżniony profil firmy",
+      "Priorytetowe wyświetlanie ogłoszeń",
+      "Ogłoszenia bez limitu",
+      "Oznaczenie jako 'Zweryfikowana Firma'",
+      "Statystyki wyświetleń i kliknięć",
+      "Dostęp do panelu analitycznego",
+    ],
+    color: "bg-blue-600",
+    icon: <Building className="h-5 w-5" />,
+    link: "/checkout?plan=business&type=company",
+  },
+  {
+    id: "professional",
+    name: "Professional",
+    price: 109,
+    duration: "30 dni",
+    features: [
+      "Wszystkie funkcje Business",
+      "Wyświetlanie w sekcji polecanych firm",
+      "Wyróżnienie w wynikach wyszukiwania",
+      "Rozszerzone statystyki i analityka",
+      "Priorytetowa obsługa klienta",
+      "Ogłoszenia wyróżnione na stronie głównej",
+    ],
+    color: "bg-purple-600",
+    popular: true,
+    icon: <Briefcase className="h-5 w-5" />,
+    link: "/checkout?plan=professional&type=company",
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    price: 149,
+    duration: "30 dni",
+    features: [
+      "Wszystkie funkcje Professional",
+      "Wyświetlanie na stronie głównej",
+      "Dedykowany baner reklamowy",
+      "Pełne statystyki i analityka biznesowa",
+      "Dedykowany opiekun klienta",
+      "Priorytetowe pozycjonowanie we wszystkich kategoriach",
+    ],
+    color: "bg-amber-600",
+    icon: <Crown className="h-5 w-5" />,
+    link: "/checkout?plan=enterprise&type=company",
+  },
+]
 
  const handlePromotion = async () => {
    setIsLoading(true)

@@ -1,18 +1,17 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 
-// Hasło administratora z zmiennych środowiskowych
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
-
 export async function GET(request: NextRequest) {
   try {
     // Pobierz parametry z URL
     const searchParams = request.nextUrl.searchParams
     const page = Number.parseInt(searchParams.get("page") || "1")
     const limit = Number.parseInt(searchParams.get("limit") || "10")
-    const search = searchParams.get("search") || ""
+    const search = searchParams.get("search")
 
     const offset = (page - 1) * limit
+
+    // Sprawdź, czy tabela email_logs istnieje
 
     // Przygotuj zapytanie z wyszukiwaniem
     let query = "SELECT * FROM email_logs"
@@ -28,29 +27,19 @@ export async function GET(request: NextRequest) {
 
     // Dodaj sortowanie i paginację
     query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
-    params.push(limit, offset)
+    const queryParams = [...params, limit, offset]
 
     // Pobierz logi
-    interface EmailLog {
-      email_to: string;
-      subject: string;
-      template_type: string;
-      created_at: string;
-    }
+    const result = await db.query(query, queryParams)
 
-    interface CountResult {
-      total: number;
-    }
-
-    const result = await db.query(query, params) as EmailLog[]
-
+    console.log("Pobrano logi emaili:", result?.rows || result)
     // Pobierz całkowitą liczbę logów
-    const countResult = await db.query(countQuery, search ? [params[0], params[1], params[2]] : [])  as CountResult[]
-    const total = countResult[0].total
-    const totalPages = Math.ceil(total / limit)
+    const countResult = await db.query(countQuery, search ? [params[0], params[1], params[2]] : []) as { rows?: { total: number }[] } 
+    const total = countResult.rows && countResult.rows.length > 0 ? countResult.rows[0].total : 0
+    const totalPages = Math.ceil(total / limit) || 1
 
     return NextResponse.json({
-      logs: result,
+      logs: result[0],
       page,
       limit,
       total,
@@ -59,7 +48,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Błąd podczas pobierania logów emaili:", error)
     return NextResponse.json(
-      { success: false, error: "Wystąpił błąd podczas pobierania logów emaili" },
+      {
+        success: false,
+        error: "Wystąpił błąd podczas pobierania logów emaili",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 },
     )
   }

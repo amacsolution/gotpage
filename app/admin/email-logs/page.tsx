@@ -17,7 +17,8 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Search, RefreshCw } from "lucide-react"
+import { Loader2, Search, RefreshCw, AlertCircle } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 interface EmailLog {
   id: number
@@ -38,10 +39,12 @@ export default function EmailLogsPage() {
   const [totalPages, setTotalPages] = useState(1)
   const [searchTerm, setSearchTerm] = useState("")
   const [isSearching, setIsSearching] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const authenticate = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError(null)
 
     try {
       const response = await fetch("/api/admin/verify", {
@@ -56,11 +59,11 @@ export default function EmailLogsPage() {
         setIsAuthenticated(true)
         fetchLogs()
       } else {
-        alert("Nieprawidłowe hasło administratora")
+        setError("Nieprawidłowe hasło administratora")
       }
     } catch (error) {
       console.error("Błąd podczas uwierzytelniania:", error)
-      alert("Wystąpił błąd podczas uwierzytelniania")
+      setError("Wystąpił błąd podczas uwierzytelniania")
     } finally {
       setLoading(false)
     }
@@ -68,6 +71,7 @@ export default function EmailLogsPage() {
 
   const fetchLogs = async () => {
     setLoading(true)
+    setError(null)
     try {
       const response = await fetch(`/api/admin/email-logs?page=${page}&search=${searchTerm}`, {
         method: "GET",
@@ -78,13 +82,19 @@ export default function EmailLogsPage() {
 
       if (response.ok) {
         const data = await response.json()
-        setLogs(data.logs)
-        setTotalPages(data.totalPages)
+        // Upewnij się, że logs jest tablicą
+        setLogs(Array.isArray(data.logs) ? data.logs : [])
+        setTotalPages(data.totalPages || 1)
       } else {
-        console.error("Błąd podczas pobierania logów:", await response.text())
+        const errorData = await response.json()
+        console.error("Błąd podczas pobierania logów:", errorData)
+        setError(errorData.error || "Błąd podczas pobierania logów")
+        setLogs([])
       }
     } catch (error) {
       console.error("Błąd podczas pobierania logów:", error)
+      setError("Wystąpił błąd podczas pobierania logów")
+      setLogs([])
     } finally {
       setLoading(false)
       setIsSearching(false)
@@ -108,6 +118,8 @@ export default function EmailLogsPage() {
     }
   }, [isAuthenticated, page])
 
+  console.log("Logs:", logs)
+
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto py-10">
@@ -129,6 +141,13 @@ export default function EmailLogsPage() {
                     required
                   />
                 </div>
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Błąd</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
               </div>
             </CardContent>
             <CardFooter>
@@ -170,6 +189,14 @@ export default function EmailLogsPage() {
         </CardContent>
       </Card>
 
+      {error && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Błąd</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       {loading ? (
         <div className="flex justify-center items-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -208,7 +235,9 @@ export default function EmailLogsPage() {
                             {log.status === "sent" ? "Wysłany" : "Błąd"}
                           </Badge>
                         </TableCell>
-                        <TableCell>{new Date(log.created_at).toLocaleString("pl-PL")}</TableCell>
+                        <TableCell>
+                          {log.created_at ? new Date(log.created_at).toLocaleString("pl-PL") : "Brak daty"}
+                        </TableCell>
                       </TableRow>
                     ))
                   )}

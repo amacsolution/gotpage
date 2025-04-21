@@ -34,12 +34,6 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
       <p style={{ color: "#4B5563", fontSize: "16px", lineHeight: "24px", margin: "24px 0 0 0" }}>
         Jeśli nie zakładałeś/aś konta w naszym serwisie, zignoruj tę wiadomość.
       </p>
-
-      <p style={{ color: "#4B5563", fontSize: "16px", lineHeight: "24px", margin: "24px 0 0 0" }}>
-        Pozdrawiamy,
-        <br />
-        Zespół Serwisu Ogłoszeniowego
-      </p>
     </Layout>
   )
 }

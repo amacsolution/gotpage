@@ -12,7 +12,7 @@ export const Button: React.FC<ButtonProps> = ({
   href,
   children,
   color = "#FFFFFF",
-  backgroundColor = "#3B82F6",
+  backgroundColor = "#f4436f",
   width = "auto",
 }) => {
   return (

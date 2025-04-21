@@ -1,41 +1,7 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
-
-interface UserData {
-  id: string
-  name: string
-  email: string
-  phone: string
-  bio: string
-  avatar: string
-  type: string
-  verified: boolean
-  joinedAt: string
-  location: string
-  categories: string
-  stats: {
-    ads: number
-    views: number
-    likes: number
-    reviews?: number
-    rating?: number
-  }
-  businessData?: {
-    nip: string
-    regon: string
-    krs: string
-  }
-  occupation?: string
-  interests?: string
-  website?: string
-  company_size?: string
-  promotion?: {
-    active: boolean
-    plan: string
-    endDate: string
-  } | null
-}
+import { UserData } from "../../profile/route"
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -55,6 +21,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         bio, 
         description,
         avatar, 
+        background_img,
         type, 
         verified, 
         website,
@@ -94,12 +61,22 @@ export async function GET(request: Request, { params }: { params: { id: string }
       [userId],
     ) as { count: string; average: string }[]
 
+    const followingCount = await query(
+      "SELECT COUNT(*) as count FROM user_follows WHERE follower_id = ?",[userId]) as { count: string }[]
+
+    const followersCount = await query(
+      "SELECT COUNT(*) as count FROM user_follows WHERE target_id = ?",[userId]) as { count: string }[]
+
+    const isFollowing = await query(
+      "SELECT COUNT(*) as count FROM user_follows WHERE target_id = ? AND follower_id = ?", [userId, user.id]) as { count: string }[]
+
     // Formatowanie danych
     const formattedUser = {
       ...user,
       // Parsowanie kategorii jeśli są przechowywane jako JSON string
       businessData: Array.isArray(businessData) && businessData.length > 0 ? businessData[0] : null,
       categories: user.categories ? JSON.parse(user.categories) : [],
+      isFollowing: isFollowing ? true : false,
       stats: {
         ads: Array.isArray(adsCountResult) && adsCountResult[0]?.count ? Number.parseInt(adsCountResult[0].count) : 0,
         views:
@@ -118,6 +95,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
           Array.isArray(reviewsCountResult) && reviewsCountResult[0]?.average
             ? Number.parseFloat(reviewsCountResult[0].average)
             : 0,
+        followers:
+          Array.isArray(followersCount) && followersCount[0]?.count
+            ? Number.parseInt(followersCount[0].count)
+            : 0,
+        following:
+          Array.isArray(followingCount) && followingCount[0]?.count 
+              ? Number.parseInt(followingCount[0].count)
+              : 0,
       },
     }
 

@@ -4,14 +4,15 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PageLayout } from "@/components/page-layout"
-import { NewsPost} from "@/components/news-post"
+import { NewsPost } from "@/components/news-post"
 import { NewsPostForm } from "@/components/news-post-form"
 import { useToast } from "@/hooks/use-toast"
 import { useUser } from "@/lib/user-context"
-import { ArrowRight, Loader2 } from "lucide-react"
+import { ArrowRight, Loader2, Users } from "lucide-react"
 import Script from "next/script"
 import Link from "next/link"
 import { CompanyCard } from "@/components/company-card"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const featuredCompanies = [
   {
@@ -25,6 +26,7 @@ const featuredCompanies = [
     rating: 4.8,
     reviewCount: 124,
     verified: true,
+    phone: "+48123456789"
   },
   {
     id: 2,
@@ -37,6 +39,7 @@ const featuredCompanies = [
     rating: 4.5,
     reviewCount: 87,
     verified: true,
+        phone: "+48123456789"
   },
   {
     id: 3,
@@ -49,6 +52,7 @@ const featuredCompanies = [
     rating: 4.9,
     reviewCount: 93,
     verified: true,
+        phone: "+48123456789"
   },
   {
     id: 4,
@@ -61,6 +65,7 @@ const featuredCompanies = [
     rating: 4.7,
     reviewCount: 142,
     verified: true,
+        phone: "+48123456789"
   },
 ]
 
@@ -71,21 +76,25 @@ export default function NewsPage() {
   const [hasMore, setHasMore] = useState(true)
   const { toast } = useToast()
   const { user } = useUser()
+  const [activeTab, setActiveTab] = useState<"all" | "followed">("all")
 
   useEffect(() => {
-    fetchPosts(1)
-  }, [])
+    fetchPosts(1, activeTab === "followed")
+  }, [activeTab])
 
-  const fetchPosts = async (pageNum: number) => {
+  const fetchPosts = async (pageNum: number, followedOnly = false) => {
     try {
       setIsLoading(true)
-      const response = await fetch(`/api/news?page=${pageNum}&limit=10&includeComments=true`)
+      const url = `/api/news?page=${pageNum}&limit=10&includeComments=true${followedOnly ? "&followedOnly=true" : ""}`
+      const response = await fetch(url)
 
       if (!response.ok) {
         throw new Error("Nie udało się pobrać aktualności")
       }
 
       const data = await response.json()
+
+      console.log(data)
 
       if (pageNum === 1) {
         setPosts(data.posts)
@@ -117,12 +126,12 @@ export default function NewsPage() {
       const updatedPosts = posts.map((post) => {
         if (post.id === postId && post.isPoll) {
           // Create a copy of poll options with updated vote count
-          const updatedOptions = post.pollOptions.map((option) =>
+          const updatedOptions = post.pollOptions.map((option: { id: string; votes: number }) =>
             option.id === optionId ? { ...option, votes: option.votes + 1 } : option,
           )
 
           // Calculate new total votes
-          const newTotalVotes = updatedOptions.reduce((sum, option) => sum + option.votes, 0)
+          const newTotalVotes = updatedOptions.reduce((sum: number, option: { id: string; votes: number }) => sum + option.votes, 0)
 
           return {
             ...post,
@@ -165,7 +174,7 @@ export default function NewsPage() {
       })
 
       // Revert optimistic update by refreshing posts
-      fetchPosts(1)
+      fetchPosts(1, activeTab === "followed")
     }
   }
 
@@ -208,7 +217,72 @@ export default function NewsPage() {
       })
 
       // Revert optimistic update by refreshing posts
-      fetchPosts(1)
+      fetchPosts(1, activeTab === "followed")
+    }
+  }
+
+  console.log(posts)
+
+  const handleFollow = async (userId: string) => {
+    try {
+      if (!user) {
+        toast({
+          title: "Błąd",
+          description: "Musisz być zalogowany, aby obserwować użytkowników",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Optimistic update
+      const updatedPosts = posts.map((post) => {
+        if (post.author.id === userId) {
+          return {
+            ...post,
+            author: {
+              ...post.author,
+              isFollowed: !post.author.isFollowed,
+            },
+            isFollowed: !post.isFollowed,
+          }
+        }
+        return post
+      })
+
+      setPosts(updatedPosts)
+
+      // Send follow/unfollow request to API
+      const action = posts.find((post) => post.author.id === userId)?.isFollowed ? "unfollow" : "follow"
+
+      const response = await fetch("/api/user/follow", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId,
+          action,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Nie udało się ${action === "follow" ? "obserwować" : "przestać obserwować"} użytkownika`)
+      }
+
+      toast({
+        title: "Sukces",
+        description: action === "follow" ? "Zacząłeś obserwować użytkownika" : "Przestałeś obserwować użytkownika",
+      })
+    } catch (error) {
+      console.error("Error following user:", error)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się zmienić statusu obserwacji",
+        variant: "destructive",
+      })
+
+      // Revert optimistic update by refreshing posts
+      fetchPosts(1, activeTab === "followed")
     }
   }
 
@@ -224,7 +298,7 @@ export default function NewsPage() {
       }
 
       // Optimistic update
-      const newComment: Comment = {
+      const newComment = {
         id: `temp-${Date.now()}`,
         authorId: user.id,
         authorName: user.name,
@@ -275,7 +349,7 @@ export default function NewsPage() {
       })
 
       // Revert optimistic update by refreshing posts
-      fetchPosts(1)
+      fetchPosts(1, activeTab === "followed")
     }
   }
 
@@ -285,7 +359,7 @@ export default function NewsPage() {
       setPosts(posts.filter((post) => post.id !== postId))
 
       // Send delete request to API
-      const response = await fetch(`/api/news/${postId}`, {
+      const response = await fetch(`/api/news?postId=${postId}`, {
         method: "DELETE",
       })
 
@@ -306,7 +380,7 @@ export default function NewsPage() {
       })
 
       // Revert optimistic update by refreshing posts
-      fetchPosts(1)
+      fetchPosts(1, activeTab === "followed")
     }
   }
 
@@ -353,80 +427,14 @@ export default function NewsPage() {
       })
 
       // Revert optimistic update by refreshing posts
-      fetchPosts(1)
+      fetchPosts(1, activeTab === "followed")
     }
   }
 
   const loadMore = () => {
     const nextPage = page + 1
-    fetchPosts(nextPage)
+    fetchPosts(nextPage, activeTab === "followed")
   }
-
-  // Add some sample data to demonstrate different post types
-  useEffect(() => {
-    if (posts.length === 0 && !isLoading) {
-      const samplePosts = [
-        {
-          id: "1",
-          author: {
-            id: user?.id || "user1",
-            name: "AMAC",
-            avatar: "/placeholder.svg?height=40&width=40",
-          },
-          content: "",
-          isPoll: true,
-          pollQuestion: "Czy gotpage.pl jest nowoczesna?",
-          pollOptions: [
-            { id: "opt1", text: "tak", votes: 1 },
-            { id: "opt2", text: "nie", votes: 0 },
-            { id: "opt3", text: "nie wiem", votes: 0 },
-          ],
-          pollTotalVotes: 1,
-          userVotedOption: user?.id ? "opt1" : undefined,
-          createdAt: new Date(Date.now() - 20 * 60 * 1000), // 20 minutes ago
-          likes: 0,
-          comments: 0,
-          commentsList: [],
-          isLiked: false,
-        },
-        {
-          id: "2",
-          author: {
-            id: "user2",
-            name: "Jan Kowalski",
-            avatar: "/placeholder.svg?height=40&width=40",
-          },
-          content: "Właśnie wróciłem z wakacji w Grecji. Polecam wszystkim!",
-          isPoll: false,
-          image: "/placeholder.svg?height=300&width=600&text=Wakacje+w+Grecji",
-          createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
-          likes: 5,
-          comments: 2,
-          commentsList: [
-            {
-              id: "comment1",
-              authorId: "user3",
-              authorName: "Anna Nowak",
-              authorAvatar: "/placeholder.svg?height=30&width=30",
-              content: "Super! Gdzie dokładnie byłeś?",
-              createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-            },
-            {
-              id: "comment2",
-              authorId: "user2",
-              authorName: "Jan Kowalski",
-              authorAvatar: "/placeholder.svg?height=30&width=30",
-              content: "Byłem na Krecie, przepiękna wyspa!",
-              createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
-            },
-          ],
-          isLiked: true,
-        },
-      ]
-
-      setPosts(samplePosts)
-    }
-  }, [posts.length, isLoading, user])
 
   return (
     <PageLayout>
@@ -440,11 +448,26 @@ export default function NewsPage() {
                 user={{
                   id: user.id,
                   name: user.name,
-                  avatar: user.avatar,
+                  avatar: user.avatar || "/placeholder-user.jpg",
                 }}
                 onPostCreated={handlePostCreated}
               />
             )}
+
+            <Tabs
+              defaultValue="all"
+              value={activeTab}
+              onValueChange={(value) => setActiveTab(value as "all" | "followed")}
+              className="mb-6"
+            >
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="all">Wszystkie</TabsTrigger>
+                <TabsTrigger value="followed" disabled={!user}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Obserwowane
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
 
             {isLoading && posts.length === 0 ? (
               <div className="space-y-4">
@@ -456,12 +479,15 @@ export default function NewsPage() {
               <>
                 {posts.map((post) => (
                   <NewsPost
+                    key={post.id}
                     post={post}
                     onVote={handleVote}
                     onLike={handleLike}
                     onComment={handleComment}
                     onDeletePost={handleDeletePost}
                     onEditPost={handleEditPost}
+                    onFollow={handleFollow}
+                    showFollowButton={true}
                   />
                 ))}
 
@@ -482,8 +508,19 @@ export default function NewsPage() {
               </>
             ) : (
               <div className="text-center py-12 bg-muted/30 rounded-lg">
-                <h3 className="text-lg font-medium mb-2">Brak aktualności</h3>
-                <p className="text-muted-foreground">Bądź pierwszy i dodaj nowy wpis!</p>
+                <h3 className="text-lg font-medium mb-2">
+                  {activeTab === "followed" ? "Brak aktualności od obserwowanych użytkowników" : "Brak aktualności"}
+                </h3>
+                <p className="text-muted-foreground">
+                  {activeTab === "followed"
+                    ? "Zacznij obserwować więcej użytkowników, aby zobaczyć ich aktualności"
+                    : "Bądź pierwszy i dodaj nowy wpis!"}
+                </p>
+                {activeTab === "followed" && (
+                  <Button variant="outline" className="mt-4" onClick={() => setActiveTab("all")}>
+                    Pokaż wszystkie aktualności
+                  </Button>
+                )}
               </div>
             )}
           </div>
@@ -495,6 +532,16 @@ export default function NewsPage() {
                 <p className="text-muted-foreground text-sm">
                   Tutaj możesz dzielić się swoimi przemyśleniami, linkami do ciekawych artykułów i nowościami z branży.
                 </p>
+                {user && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium mb-2">Wskazówki:</h4>
+                    <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
+                      <li>Obserwuj użytkowników, aby widzieć ich posty na górze</li>
+                      <li>Używaj zakładki "Obserwowane", aby zobaczyć tylko posty od obserwowanych użytkowników</li>
+                      <li>Reaguj na posty, aby pokazać swoje zainteresowanie</li>
+                    </ul>
+                  </div>
+                )}
               </div>
 
               {/* Tutaj można dodać więcej elementów, np. popularne hashtagi, polecane profile itp. */}
@@ -555,4 +602,3 @@ export default function NewsPage() {
     </PageLayout>
   )
 }
-

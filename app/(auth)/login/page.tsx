@@ -30,7 +30,7 @@ export default function LoginPage() {
           </Link>
         </div>
         <div className="text-sm text-muted-foreground">
-          <Link href="/forgot-password" className="text-primary hover:underline">
+          <Link href="/reset-password/request" className="text-primary hover:underline">
             Zapomniałeś hasła?
           </Link>
         </div>

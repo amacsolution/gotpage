@@ -13,6 +13,7 @@ export async function POST(request: Request) {
     // Parsowanie danych formularza
     const formData = await request.formData()
     const file = formData.get("file") as File
+    const type = (formData.get("type") as string) || "avatar"
 
     if (!file) {
       return NextResponse.json({ error: "Brak pliku" }, { status: 400 })
@@ -23,14 +24,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Nieprawidłowy format pliku. Akceptowane są tylko obrazy." }, { status: 400 })
     }
 
-    // Sprawdzenie rozmiaru pliku (max 5MB)
-    const maxSize = 5 * 1024 * 1024 // 5MB
+    // Sprawdzenie rozmiaru pliku (max 10MB)
+    const maxSize = 10 * 1024 * 1024 // 10MB
     if (file.size > maxSize) {
-      return NextResponse.json({ error: "Plik jest zbyt duży. Maksymalny rozmiar to 5MB." }, { status: 400 })
+      return NextResponse.json({ error: "Plik jest zbyt duży. Maksymalny rozmiar to 10MB." }, { status: 400 })
     }
 
     // Przesłanie zdjęcia do lokalnego folderu
-    const imageUrl = await uploadImage(file)
+    const imageUrl = await uploadImage(file, type)
 
     // Zwrócenie URL przesłanego zdjęcia
     return NextResponse.json({
@@ -84,4 +85,3 @@ export async function DELETE(request: Request) {
     )
   }
 }
-

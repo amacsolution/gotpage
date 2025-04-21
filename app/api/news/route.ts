@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { query } from "@/lib/db"
+import { db, query } from "@/lib/db"
 import { auth } from "@/lib/auth"
 
 // Funkcja pomocnicza do wyodrębniania URL z tekstu
@@ -22,7 +22,12 @@ export async function GET(request: Request) {
     const page = Number.parseInt(searchParams.get("page") || "1")
     const limit = Number.parseInt(searchParams.get("limit") || "20")
     const userId = searchParams.get("userId")
+    const followedOnly = searchParams.get("followedOnly") === "true"
     const offset = (page - 1) * limit
+
+    // Sprawdzenie, czy użytkownik jest zalogowany
+    const currentUser = await auth(request)
+    const currentUserId = currentUser?.id
 
     // Budowanie zapytania SQL
     let sql = `
@@ -41,49 +46,98 @@ export async function GET(request: Request) {
         u.name as author_name, 
         u.avatar as author_avatar, 
         u.type as author_type, 
-        u.verified as author_verified
+        u.verified as author_verified,
+        CASE 
+          WHEN f.follower_id IS NOT NULL THEN 1 
+          ELSE 0 
+        END as is_followed
+    `
+
+    // Jeśli użytkownik jest zalogowany, dodajemy informację o obserwowaniu
+    if (currentUserId) {
+      sql += `,
+        CASE 
+          WHEN f.follower_id IS NOT NULL THEN 1 
+          ELSE 0 
+        END as is_followed
+      `
+    }
+
+    sql += `
       FROM news_posts p
       JOIN users u ON p.user_id = u.id
     `
 
+    // Dodajemy LEFT JOIN dla obserwowanych użytkowników
+    if (currentUserId) {
+      sql += `
+        LEFT JOIN user_follows f ON p.user_id = f.target_id AND f.follower_id = ?
+      `
+    }
+
     const params: any[] = []
+
+    // Dodajemy parametr dla LEFT JOIN jeśli użytkownik jest zalogowany
+    if (currentUserId) {
+      params.push(currentUserId)
+    }
 
     // Filtrowanie po użytkowniku, jeśli podano
     if (userId) {
       sql += " WHERE p.user_id = ?"
       params.push(userId)
     }
+    // Filtrowanie tylko obserwowanych użytkowników
+    else if (followedOnly && currentUserId) {
+      sql += " WHERE f.follower_id = ?"
+      params.push(currentUserId)
+    }
 
-    // Sortowanie i limit
-    sql += " ORDER BY p.created_at DESC LIMIT ? OFFSET ?"
+    // Sortowanie - najpierw posty od obserwowanych użytkowników, potem najnowsze
+    if (currentUserId && !userId && !followedOnly) {
+      sql += " ORDER BY is_followed DESC, p.created_at DESC"
+    } else {
+      sql += " ORDER BY p.created_at DESC"
+    }
+
+    // Limit i offset
+    sql += " LIMIT ? OFFSET ?"
     params.push(limit, offset)
 
     // Wykonanie zapytania
-    const posts = await query(sql, params)
+
+    const posts = await query(sql, params) as NewsData[]
 
     if (!Array.isArray(posts)) {
       return NextResponse.json({ posts: [], total: 0 })
     }
 
     // Pobranie całkowitej liczby wpisów
-    let countSql = "SELECT COUNT(*) as count FROM news_posts"
+    let countSql = "SELECT COUNT(*) as count FROM news_posts p"
+    const countParams: any[] = []
+
     if (userId) {
-      countSql += " WHERE user_id = ?"
+      countSql += " WHERE p.user_id = ?"
+      countParams.push(userId)
+    } else if (followedOnly && currentUserId) {
+      countSql += " JOIN user_follows f ON p.user_id = f.target_id WHERE f.follower_id = ?"
+      countParams.push(currentUserId)
     }
 
-    const totalResult = await query(countSql, userId ? [userId] : []) as { count: string }[]
-    const total = Array.isArray(totalResult) && totalResult[0]?.count ? Number.parseInt(totalResult[0].count) : 0
+    const totalResult = await query(countSql, countParams) as {count : number}[]
+
+    const total =
+      Array.isArray(totalResult) && totalResult[0]?.count ? totalResult[0].count : 0
 
     // Sprawdzenie, czy zalogowany użytkownik polubił wpisy
-    const user = await auth(request)
     const userLikes: Record<number, boolean> = {}
 
-    if (user) {
-      const postIds = posts.map((post: any) => post.id)
+    if (currentUserId) {
+      const postIds = posts.filter((post: any) => post && post.id).map((post: any) => post.id)
       if (postIds.length > 0) {
         const likesResult = await query(
           `SELECT post_id FROM news_likes WHERE user_id = ? AND post_id IN (${postIds.map(() => "?").join(",")})`,
-          [user.id, ...postIds],
+          [currentUserId, ...postIds],
         )
 
         if (Array.isArray(likesResult)) {
@@ -93,6 +147,8 @@ export async function GET(request: Request) {
         }
       }
     }
+
+
 
     // Formatowanie danych
     const formattedPosts = posts.map((post: any) => ({
@@ -104,6 +160,7 @@ export async function GET(request: Request) {
       comments: post.comments,
       createdAt: post.createdAt,
       isLiked: userLikes[post.id] || false,
+      isFollowed: post.is_followed === 1,
       type: post.type || "text",
       imageUrl: post.imageUrl,
       pollData: post.pollData ? JSON.parse(post.pollData) : null,
@@ -207,9 +264,10 @@ export async function POST(request: Request) {
     sql += "NOW())"
 
     // Dodanie wpisu
-    const result = await query(sql, params) as { insertId: number } | null
+    const result = await query(sql, params) as any
+    const insertId = result.rows.insertId
 
-    if (!result || !result.insertId) {
+    if (!insertId) {
       throw new Error("Nie udało się dodać wpisu")
     }
 
@@ -234,7 +292,7 @@ export async function POST(request: Request) {
       FROM news_posts p
       JOIN users u ON p.user_id = u.id
       WHERE p.id = ?`,
-      [result.insertId],
+      [insertId],
     ) as NewsData[]
 
     if (!Array.isArray(posts) || posts.length === 0) {
@@ -289,17 +347,17 @@ export async function DELETE(request: Request) {
     }
 
     // Sprawdzenie, czy użytkownik jest autorem wpisu
-    const post = await query("SELECT user_id FROM news_posts WHERE id = ?", [postId]) as { user_id: number }[]
+    const post = await query("SELECT author_id FROM news_posts WHERE id = ?", [postId]) as NewsData[]
     if (!Array.isArray(post) || post.length === 0) {
       return NextResponse.json({ error: "Wpis nie istnieje" }, { status: 404 })
     }
 
-    if (post[0].user_id !== user.id) {
+    if (post[0].author_id !== user.id) {
       return NextResponse.json({ error: "Nie masz uprawnień do usunięcia tego wpisu" }, { status: 403 })
     }
 
     // Usunięcie wpisu
-    const result = await query("DELETE FROM news_posts WHERE id = ?", [postId]) as { affectedRows: number} 
+    const result = await query("DELETE FROM news_posts WHERE id = ?", [postId]) as {affectedRows: number}
     if (!result || result.affectedRows === 0) {
       throw new Error("Nie udało się usunąć wpisu")
     }
@@ -310,4 +368,3 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Wystąpił błąd podczas usuwania wpisu" }, { status: 500 })
   }
 }
-

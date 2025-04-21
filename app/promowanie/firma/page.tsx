@@ -48,18 +48,11 @@ const business = {
 
 export default function PromoteBusinessPage() {
   const { toast } = useToast()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const [selectedPlan, setSelectedPlan] = useState("professional")
 
   // Symulacja ładowania danych
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 50)
-
-    return () => clearTimeout(timer)
-  }, [])
 
 
   const handlePromote = () => {

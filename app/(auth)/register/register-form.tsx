@@ -204,7 +204,7 @@ export function RegisterForm() {
 
       toast({
         title: "Rejestracja zakończona pomyślnie",
-        description: "Możesz teraz zalogować się na swoje konto",
+        description: "Możesz teraz potwierdzić swój adres email",
       })
 
       // Przekierowanie na stronę logowania

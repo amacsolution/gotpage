@@ -26,7 +26,16 @@ export async function GET(request: Request) {
       ORDER BY created_at DESC 
       LIMIT 50`,
       [user.id],
-    )
+    ) as {
+      id: number
+      title: string
+      content: string
+      type: string
+      relatedId: number
+      relatedType: string
+      isRead: number
+      createdAt: string
+    }[]
 
     if (!Array.isArray(notifications)) {
       return NextResponse.json([])

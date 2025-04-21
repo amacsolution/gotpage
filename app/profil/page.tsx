@@ -21,9 +21,12 @@ import { LikedAdsFeed } from "@/components/liked-ads-feed"
 import { CompanyPromotion } from "@/components/company-promotion"
 import { Star, Edit, Loader2, User, Briefcase, Building, MapPin, Globe } from "lucide-react"
 import { ProfileImageUpload } from "@/components/profile-image-upload"
+import { ProfileBackgroundUpload } from "@/components/profile-background-upload"
 import { UserReviews } from "@/components/user-reviews"
 import { NewsPostForm } from "@/components/news-post-form"
 import { NewsPost } from "@/components/news-post"
+import { FollowStats } from "@/components/follow-stats"
+import { CompanyDataForm } from "@/components/company-data-form"
 
 interface UserData {
   id: number
@@ -32,6 +35,7 @@ interface UserData {
   phone: string
   bio: string
   avatar: string
+  backgroundImage?: string
   type: string
   verified: boolean
   joinedAt: string
@@ -43,6 +47,8 @@ interface UserData {
     likes: number
     reviews?: number
     rating?: number
+    followers?: number
+    following?: number
   }
   businessData?: {
     nip: string
@@ -81,12 +87,15 @@ export default function ProfilePage() {
   const { toast } = useToast()
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
+  const [isEditingCompanyData, setIsEditingCompanyData] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
   const [user, setUser] = useState<UserData | null>(null)
   const [posts, setPosts] = useState<any[]>([])
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+
+  
 
   // Pobieranie danych użytkownika - teraz z zoptymalizowanego endpointu
   const fetchUserData = async () => {
@@ -137,7 +146,6 @@ export default function ProfilePage() {
     },
   })
 
-  
   // Aktualizacja wartości formularza po pobraniu danych
   useEffect(() => {
     if (user) {
@@ -195,6 +203,25 @@ export default function ProfilePage() {
     }
   }
 
+  // Obsługa aktualizacji danych firmy
+  const handleCompanyDataUpdate = (updatedData: any) => {
+    setUser((prev) => {
+      if (!prev) return null
+
+      return {
+        ...prev,
+        businessData: {
+          ...prev.businessData,
+          ...updatedData,
+        },
+        website: updatedData.website,
+        company_size: updatedData.company_size,
+      }
+    })
+
+    setIsEditingCompanyData(false)
+  }
+
   // Pobieranie aktualności
   useEffect(() => {
     fetchPosts(1)
@@ -240,7 +267,6 @@ export default function ProfilePage() {
     const nextPage = page + 1
     fetchPosts(nextPage)
   }
-
 
   // Skeleton loading dla całej strony
   if (isFetching) {
@@ -318,7 +344,32 @@ export default function ProfilePage() {
   return (
     <PageLayout>
       <div className="container py-6">
-        <div className="relative h-40 w-full rounded-xl bg-gradient-to-r from-primary/20 to-primary/10 mb-16">
+        <div
+          className={`relative profile-background h-40 w-full rounded-xl mb-16 ${
+            user.backgroundImage ? "bg-cover bg-center" : ""
+          }`}
+          style={
+            user.backgroundImage
+              ? {
+                  backgroundImage: `url(${user.backgroundImage})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }
+              : {
+                  background: "linear-gradient(135deg, #e5308a 0%, #7c2ae8 100%)",
+                }
+          }
+        >
+          {/* Background image upload component */}
+          {isEditing ? (
+          <ProfileBackgroundUpload
+            userId={user.id}
+            currentBackground={user.backgroundImage}
+            onBackgroundUpdate={(newBackgroundUrl) => {
+              setUser((prev) => (prev ? { ...prev, backgroundImage: newBackgroundUrl } : null))
+            }}
+          />) : "" }
+
           <div className="absolute -bottom-12 left-6">
             <ProfileImageUpload
               userId={user.id}
@@ -348,12 +399,19 @@ export default function ProfilePage() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold">{user.name}</h1>
-                {user.verified && (
+                {user.verified ? (
                   <Badge variant="outline" className="text-primary border-primary/30">
-                    Zweryfikowana
+                    Zweryfikowany
                   </Badge>
+                ) : (
+                  ""
                 )}
               </div>
+              <FollowStats
+                userId={user.id}
+                followers={user.stats.followers || 0}
+                following={user.stats.following || 0}
+              />
               <p className="text-muted-foreground">{user.bio}</p>
               {user.categories && user.categories.length > 0 && (
                 <div className="flex flex-wrap gap-2">
@@ -368,23 +426,25 @@ export default function ProfilePage() {
                 <p>Dołączył: {new Date(user.joinedAt).toLocaleDateString()}</p>
                 <p>Lokalizacja: {user.location || "Nie podano"}</p>
                 <p>Typ konta: {user.type === "individual" ? "Osoba prywatna" : "Firma"}</p>
-                  {user.stats.reviews && user.stats.reviews > 0 ? (
-                    <>
-                      <div className="flex text-yellow-500 items-center gap-2 my-4">
-                        <div className="flex">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className="h-5 w-5"
-                              fill={star <= (user.stats.rating || 0) ? "currentColor" : "none"}
-                            />
-                          ))}
-                        </div>
-                        <span className="font-bold">{Number(user.stats.rating)?.toFixed(1)}</span>
-                        <span className="text-muted-foreground">({user.stats.reviews} opinii)</span>
+                {user.stats.reviews && user.stats.reviews > 0 ? (
+                  <>
+                    <div className="flex text-yellow-500 items-center gap-2 my-4">
+                      <div className="flex">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className="h-5 w-5"
+                            fill={star <= (user.stats.rating || 0) ? "currentColor" : "none"}
+                          />
+                        ))}
                       </div>
-                      </>
-                  ) : ( "" )}
+                      <span className="font-bold">{Number(user.stats.rating)?.toFixed(1)}</span>
+                      <span className="text-muted-foreground">({user.stats.reviews} opinii)</span>
+                    </div>
+                  </>
+                ) : (
+                  ""
+                )}
               </div>
               <div className="flex gap-4 text-sm">
                 <div>
@@ -519,12 +579,12 @@ export default function ProfilePage() {
           </div>
 
           <div className="md:col-span-2">
-            <Tabs defaultValue="tablica">
-              <TabsList className="w-full overflow-x-auto whitespace-nowrap no-scrollbar">
-              <TabsTrigger value="tablica" className="flex-1">
+            <Tabs defaultValue="tablica" >
+              <TabsList className="w-full overflow-x-auto whitespace-nowrap no-scrollbar ">
+                <TabsTrigger value="tablica" className="flex-1 ml-32 md:ml-0">
                   Tablica
                 </TabsTrigger>
-                <TabsTrigger value="ads" className="flex-1">
+                <TabsTrigger value="ads" className="flex-1 ">
                   Moje ogłoszenia
                 </TabsTrigger>
                 <TabsTrigger value="liked" className="flex-1">
@@ -544,7 +604,7 @@ export default function ProfilePage() {
               <TabsContent value="tablica" className="mt-4">
                 <div className="space-y-4">
                   <h2 className="text-xl font-semibold mb-4">Informacje</h2>
-                  {user.type === "individual" && (<p>{user.bio}</p>)}
+                  {user.type === "individual" && <p>{user.bio}</p>}
                   {user.type === "individual" && (
                     <>
                       {user.occupation && (
@@ -563,67 +623,95 @@ export default function ProfilePage() {
                   )}
                   {user.type === "business" && (
                     <>
-                      <Card>
-                        <CardContent className="p-4">
-                          <h3 className="text-lg font-semibold mb-2">Dane firmy</h3>
-                          {user.businessData?.nip && (
-                            <div className="flex items-center gap-2 text-muted-foreground my-1">
-                              <Briefcase className="h-4 w-4 text-muted-foreground" />
-                              <p >NIP: <span className="text-foreground">{user.businessData.nip}</span></p>
+                      {isEditingCompanyData ? (
+                        <CompanyDataForm
+                          userId={user.id}
+                          initialData={{
+                            nip: user.businessData?.nip,
+                            regon: user.businessData?.regon,
+                            krs: user.businessData?.krs,
+                            website: user.website,
+                            company_size: user.company_size,
+                          }}
+                          onUpdate={handleCompanyDataUpdate}
+                          onCancel={() => setIsEditingCompanyData(false)}
+                        />
+                      ) : (
+                        <Card>
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-center mb-2">
+                              <h3 className="text-lg font-semibold">Dane firmy</h3>
+                              <Button variant="outline" size="sm" onClick={() => setIsEditingCompanyData(true)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edytuj dane
+                              </Button>
                             </div>
-                          )}
-                          {user.businessData?.krs && (
-                            <div className="flex items-center gap-2 text-muted-foreground my-1">
-                              <Building className="h-4 w-4 text-muted-foreground" />
-                              <span>KRS: <span className="text-foreground">{user.businessData.krs}</span></span>
-                            </div>
-                          )}
-                          {user.businessData?.regon && (
-                            <div className="flex items-center gap-2 text-muted-foreground my-1">
-                              <Building className="h-4 w-4 text-muted-foreground" />
-                              <span>REGON: <span className="text-foreground">{user.businessData.regon}</span></span>
-                            </div>
-                          )}
-                          {user.location && (
-                            <div className="flex items-center gap-2 text-muted-foreground my-1">
-                              <MapPin className="h-4 w-4 text-muted-foreground" />
-                              <span>Lokalizacja: <span className="text-foreground">{user.location}</span></span>
-                            </div>
-                          )}
-                          {user.company_size && (
-                            <div className="flex items-center gap-2 text-muted-foreground my-1">
-                              <Building className="h-4 w-4 text-muted-foreground" />
-                              <span>Wielkość firmy: <span className="text-foreground">{user.company_size}</span></span>
-                            </div>
-                          )}
-                          {user.website && (
-                            <div className="flex items-center gap-2 my-1">
-                              <Globe className="h-4 w-4 text-muted-foreground" />
-                              <Link href={user.website} className="hover:underline">
-                                {user.website}
-                              </Link>
-                            </div>
-                          )}
-                          {user.categories && user.categories.length > 0 && (
-                            <div className="flex flex-wrap gap-2 my-2">
-                              <h3 className="text-sm font-medium text-muted-foreground mb-1">Kategorie</h3>
-                              {user.categories.map((category: string) => (
-                                <Badge key={category} variant="secondary">
-                                  {category}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
+                            {user.businessData?.nip && (
+                              <div className="flex items-center gap-2 text-muted-foreground my-1">
+                                <Briefcase className="h-4 w-4 text-muted-foreground" />
+                                <p>
+                                  NIP: <span className="text-foreground">{user.businessData.nip}</span>
+                                </p>
+                              </div>
+                            )}
+                            {user.businessData?.krs && (
+                              <div className="flex items-center gap-2 text-muted-foreground my-1">
+                                <Building className="h-4 w-4 text-muted-foreground" />
+                                <span>
+                                  KRS: <span className="text-foreground">{user.businessData.krs}</span>
+                                </span>
+                              </div>
+                            )}
+                            {user.businessData?.regon && (
+                              <div className="flex items-center gap-2 text-muted-foreground my-1">
+                                <Building className="h-4 w-4 text-muted-foreground" />
+                                <span>
+                                  REGON: <span className="text-foreground">{user.businessData.regon}</span>
+                                </span>
+                              </div>
+                            )}
+                            {user.location && (
+                              <div className="flex items-center gap-2 text-muted-foreground my-1">
+                                <MapPin className="h-4 w-4 text-muted-foreground" />
+                                <span>
+                                  Lokalizacja: <span className="text-foreground">{user.location}</span>
+                                </span>
+                              </div>
+                            )}
+                            {user.company_size && (
+                              <div className="flex items-center gap-2 text-muted-foreground my-1">
+                                <Building className="h-4 w-4 text-muted-foreground" />
+                                <span>
+                                  Wielkość firmy: <span className="text-foreground">{user.company_size}</span>
+                                </span>
+                              </div>
+                            )}
+                            {user.website && (
+                              <div className="flex items-center gap-2 my-1">
+                                <Globe className="h-4 w-4 text-muted-foreground" />
+                                <Link href={user.website} className="hover:underline">
+                                  {user.website}
+                                </Link>
+                              </div>
+                            )}
+                            {user.categories && user.categories.length > 0 && (
+                              <div className="flex flex-wrap gap-2 my-2">
+                                <h3 className="text-sm font-medium text-muted-foreground mb-1">Kategorie</h3>
+                                {user.categories.map((category: string) => (
+                                  <Badge key={category} variant="secondary">
+                                    {category}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      )}
                     </>
                   )}
                 </div>
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center my-4">
                   <h2 className="text-xl font-semibold">Wpisy</h2>
-                  <Link href="/aktualnosci">
-                    <Button>Dodaj wpis</Button>
-                  </Link>
                 </div>
                 {user && (
                   <NewsPostForm
@@ -637,7 +725,7 @@ export default function ProfilePage() {
                     onPostCreated={handlePostCreated}
                   />
                 )}
-    
+
                 {isLoading && posts.length === 0 ? (
                   <div className="space-y-4">
                     {[1, 2, 3].map((i) => (
@@ -649,7 +737,7 @@ export default function ProfilePage() {
                     {posts.map((post) => (
                       <NewsPost key={post.id} post={post} />
                     ))}
-    
+
                     {hasMore && (
                       <div className="flex justify-center mt-6">
                         <Button variant="outline" onClick={loadMore} disabled={isLoading}>
@@ -728,4 +816,3 @@ export default function ProfilePage() {
     </PageLayout>
   )
 }
-

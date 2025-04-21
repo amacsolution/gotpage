@@ -4,7 +4,7 @@ import Stripe from "stripe"
 import { query } from "@/lib/db"
 
 // Initialize Stripe with your secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-03-31.basil", // Aktualizacja wersji API
 })
 
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
       })
 
       const userCheck = await query(
-        `SELECT active FROM user_promotion WHERE user_id = ?`,
+        `SELECT active FROM user_promotions WHERE user_id = ?`,
         [user.id]
       ) as { active: number }[]
 
@@ -59,9 +59,18 @@ export async function GET(request: Request) {
     }
 
     //Validate ad id
-    if (type === "ad" && !itemId) {
-      return NextResponse.json({ error: "Brak wymaganego parametru: id" }, { status: 400 })
+    if (type === "ad" ) {
+      if(!itemId) NextResponse.json({ error: "Brak wymaganego parametru: id" }, { status: 400 })
+      const promotionCheck = await query(
+        `SELECT promoted FROM ads WHERE user_id = ? AND id = ?`,
+        [user.id, itemId]
+      ) as { promoted: number }[]
+
+      if (promotionCheck[0].promoted == 1 ) {
+        return NextResponse.json({ error: "Ogłoszenie jest już promowane" }, { status: 400 })
+      }
     }
+
 
     // Validate promotion type
     if (type !== "company" && type !== "ad") {

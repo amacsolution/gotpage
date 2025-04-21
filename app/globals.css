@@ -58,6 +58,27 @@
   }
 }
 
+
+@media (max-width: 768px) {
+  .profile-background {
+    height: 120px !important; /* Shorter height on mobile */
+  }
+}
+
+/* Cursor styles for image dragging */
+.cursor-move {
+  cursor: move;
+  cursor: grab;
+}
+
+.cursor-move:active {
+  cursor: grabbing;
+}
+
+.profile-background-gradient {
+  background: linear-gradient(135deg, #e5308a 0%, #7c2ae8 100%);
+}
+
 .custom-marker {
   display: flex;
   align-items: center;

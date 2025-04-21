@@ -38,7 +38,7 @@ export function NotificationsPanel() {
     try {
       setIsLoading(true)
       const response = await fetch("/api/notifications")
-      const count = await fetch("api/notifications/count")
+      const count = await fetch("/api/notifications/count")
 
       if (!response.ok || !count.ok) {
         throw new Error("Nie udało się pobrać powiadomień")

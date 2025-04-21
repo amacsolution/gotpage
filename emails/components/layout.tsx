@@ -69,6 +69,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, title, previewText = "
                   <td style={{ padding: "32px" }}>
                     <Header {...headerProps} />
                     {children}
+                    <p style={{ color: "#4B5563", fontSize: "16px", lineHeight: "24px", margin: "24px 0 0 0" }}>
+                    Pozdrawiamy,
+                    <br />
+                    Zespół Gotpage
+                  </p>
                     <Footer {...footerProps} />
                   </td>
                 </tr>

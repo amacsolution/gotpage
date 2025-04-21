@@ -185,7 +185,7 @@ export const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
         </Button>
       )}
 
-      <Button href={accountUrl} backgroundColor="#3B82F6">
+      <Button href={accountUrl} backgroundColor="#f4436f">
         Przejdź do konta
       </Button>
 
@@ -193,11 +193,6 @@ export const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
         W razie jakichkolwiek pytań dotyczących płatności lub pakietu, skontaktuj się z naszym działem obsługi klienta.
       </p>
 
-      <p style={{ color: "#4B5563", fontSize: "16px", lineHeight: "24px", margin: "24px 0 0 0" }}>
-        Dziękujemy za zaufanie,
-        <br />
-        Zespół Serwisu Ogłoszeniowego
-      </p>
     </Layout>
   )
 }

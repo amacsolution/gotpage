@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
-import { User } from "next-auth"
 import { UserData } from "../../profile/route"
 
 export async function GET(request: Request) {
@@ -45,7 +44,7 @@ export async function GET(request: Request) {
         avatar, 
         type, 
         verified, 
-        location, 
+        location
       FROM users 
       WHERE id != ? AND type = ?
     `

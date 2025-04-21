@@ -10,8 +10,8 @@ interface PasswordResetProps {
 
 export const PasswordReset: React.FC<PasswordResetProps> = ({
   userName = "Użytkowniku",
-  resetUrl = "https://twojadomena.pl/reset-password",
-  expirationTime = "1 godzina",
+  resetUrl = "https://gotpage.pl/reset-password",
+  expirationTime = "1 godzinę",
 }) => {
   return (
     <Layout title="Resetowanie hasła" previewText="Instrukcje resetowania hasła do Twojego konta">
@@ -24,7 +24,7 @@ export const PasswordReset: React.FC<PasswordResetProps> = ({
         nowe hasło:
       </p>
 
-      <Button href={resetUrl}>Resetuj hasło</Button>
+      <Button href={resetUrl} backgroundColor="#f4436f" color="#ffffff">Resetuj hasło</Button>
 
       <p style={{ color: "#4B5563", fontSize: "16px", lineHeight: "24px", margin: "24px 0 0 0" }}>
         Link jest ważny przez {expirationTime} od momentu wysłania tej wiadomości.
@@ -34,11 +34,6 @@ export const PasswordReset: React.FC<PasswordResetProps> = ({
         Jeśli nie prosiłeś/aś o reset hasła, zignoruj tę wiadomość lub skontaktuj się z naszym zespołem wsparcia.
       </p>
 
-      <p style={{ color: "#4B5563", fontSize: "16px", lineHeight: "24px", margin: "24px 0 0 0" }}>
-        Pozdrawiamy,
-        <br />
-        Zespół Serwisu Ogłoszeniowego
-      </p>
     </Layout>
   )
 }

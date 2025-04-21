@@ -13,7 +13,7 @@ export const AdExpiration: React.FC<AdExpirationProps> = ({
   userName = "Użytkowniku",
   adTitle = "Tytuł ogłoszenia",
   expirationDate = "15.05.2023",
-  renewUrl = "https://twojadomena.pl/renew/123",
+  renewUrl = "https://gotpage.pl/renew/123",
 }) => {
   return (
     <Layout
@@ -39,11 +39,7 @@ export const AdExpiration: React.FC<AdExpirationProps> = ({
         Po wygaśnięciu ogłoszenie zostanie automatycznie ukryte i nie będzie widoczne dla innych użytkowników.
       </p>
 
-      <p style={{ color: "#4B5563", fontSize: "16px", lineHeight: "24px", margin: "24px 0 0 0" }}>
-        Pozdrawiamy,
-        <br />
-        Zespół Serwisu Ogłoszeniowego
-      </p>
+
     </Layout>
   )
 }

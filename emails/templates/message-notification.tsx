@@ -48,11 +48,6 @@ export const MessageNotification: React.FC<MessageNotificationProps> = ({
         Szybka odpowiedź zwiększa szanse na finalizację transakcji!
       </p>
 
-      <p style={{ color: "#4B5563", fontSize: "16px", lineHeight: "24px", margin: "24px 0 0 0" }}>
-        Pozdrawiamy,
-        <br />
-        Zespół Serwisu Ogłoszeniowego
-      </p>
     </Layout>
   )
 }

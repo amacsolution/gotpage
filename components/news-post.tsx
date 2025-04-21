@@ -26,8 +26,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { FollowButton } from "./follow-button"
 
-interface NewsPostProps {
+export interface NewsPostProps {
   post: {
     id: number
     content: string
@@ -53,7 +54,15 @@ interface NewsPostProps {
       verified: boolean
     }
   }
+  onVote: (postId: string, optionId: string) => Promise<void>;
+  onLike: (postId: string) => Promise<void>;
+  onComment: (postId: string, content: string) => Promise<void>;
+  onDeletePost: (postId: string) => Promise<void>;
+  onEditPost: (postId: string, content: string) => Promise<void>;
+  onFollow: (userId: string) => Promise<void>;
+  showFollowButton: boolean;
 }
+
 
 // Funkcja do sprawdzania, czy tekst zawiera URL - taka sama jak w LinkPreview
 const hasUrl = (text: string): boolean => {
@@ -320,8 +329,14 @@ export function NewsPost({ post }: NewsPostProps) {
                   locale: pl,
                 })}
               </div>
-            </div>
+              
 
+            </div>
+            {post.author.id !== user?.id && (
+                <FollowButton
+                  userId={post.author.id}
+                  isFollowing={post.author.type === "following" ? true : false}
+                  size="sm"/>)}
           {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

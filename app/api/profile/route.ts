@@ -10,6 +10,8 @@ export type UserData = {
   phone: string | null
   bio: string | null
   avatar: string | null
+  background_img: string | null
+
   type: string
   verified: number
   joinedAt: string
@@ -67,6 +69,7 @@ export async function GET(request: Request) {
         u.phone, 
         u.bio, 
         u.avatar, 
+        u.background_img,
         u.type, 
         u.verified, 
         u.created_at as joinedAt, 
@@ -125,6 +128,12 @@ export async function GET(request: Request) {
     ? await query("SELECT nip, regon, krs FROM business_details WHERE user_id = ?", [user.id]) 
     : []
 
+    const followers = await query(
+      `SELECT COUNT(*) as count FROM user_follows WHERE target_id = ?`, [user.id]) as { count: string }[]
+
+    const following = await query(
+      `SELECT COUNT(*) as count FROM user_follows WHERE follower_id = ?`, [user.id]) as { count: string }[]
+
     // Formatowanie danych
     const formattedUser = {
       id: userData.id,
@@ -133,6 +142,7 @@ export async function GET(request: Request) {
       phone: userData.phone || "",
       bio: userData.bio || "",
       avatar: userData.avatar,
+      backgroundImage: userData.background_img || "",
       type: userData.type,
       verified: userData.verified === 1,
       joinedAt: userData.joinedAt,
@@ -144,6 +154,8 @@ export async function GET(request: Request) {
         likes: userData.likes_count || 0,
         reviews: userData.reviews_count || 0,
         rating: userData.rating_avg || 0,
+        followers: followers[0].count || 0,
+        following: following[0].count || 0
       },
       businessData: Array.isArray(businessData) && businessData.length > 0 ? businessData[0] : null,
       promotion: promotionData,

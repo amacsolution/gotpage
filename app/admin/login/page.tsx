@@ -33,9 +33,11 @@ export default function AdminLoginPage() {
       if (response.ok) {
         setSuccess(true)
         // Dodaj opóźnienie przed przekierowaniem, aby użytkownik zobaczył komunikat o sukcesie
-        setTimeout(() => {
-          router.push("/admin")
-        }, 500)
+        const timeoutId = setTimeout(() => {
+          router.replace("/admin")
+        }, 200) // 2-second delay
+
+        return () => clearTimeout(timeoutId) // Clear timeout if component unmounts
       } else {
         setError(data.message || "Nieprawidłowe hasło")
       }
@@ -76,7 +78,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading || success}
-            className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+            className="w-full px-4 py-2 text-white bg-primary/90 rounded-md hover:bg-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
           >
             {loading && (
               <Loader2 className="inline mr-2 w-4 h-4 animate-spin" />

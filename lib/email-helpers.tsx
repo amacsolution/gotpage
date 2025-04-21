@@ -7,6 +7,9 @@ import { AdExpiration } from "@/emails/templates/ad-expiration"
 import { MessageNotification } from "@/emails/templates/message-notification"
 import { PaymentConfirmation } from "@/emails/templates/payment-confirmation"
 
+// Dodaj ten import na górze pliku
+import { AdConfirmation } from "@/emails/templates/ad-confirmation"
+
 /**
  * Wysyła email powitalny po rejestracji
  */
@@ -170,6 +173,34 @@ export async function sendPaymentConfirmationEmail(params: {
         invoiceUrl={invoiceUrl}
         accountUrl={accountUrl}
         vatNumber={vatNumber}
+      />
+    ),
+  })
+}
+
+/**
+ * Wysyła email z potwierdzeniem dodania ogłoszenia
+ */
+export async function sendAdConfirmationEmail(params: {
+  email: string
+  userName: string
+  adTitle: string
+  adId: string
+  isPromoted: boolean
+  promotionUrl?: string
+}) {
+  const { email, userName, adTitle, adId, isPromoted, promotionUrl } = params
+
+  return emailService.sendEmail({
+    to: email,
+    subject: `Twoje ogłoszenie "${adTitle}" zostało dodane`,
+    emailComponent: (
+      <AdConfirmation
+        userName={userName}
+        adTitle={adTitle}
+        adId={adId}
+        isPromoted={isPromoted}
+        promotionUrl={promotionUrl}
       />
     ),
   })
