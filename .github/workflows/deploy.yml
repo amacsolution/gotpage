@@ -20,13 +20,7 @@ jobs:
           username: ${{ secrets.CF_USER }}
           key: ${{ secrets.CF_SSH_KEY }}
           port: 222
-          source: |
-            .
-            !node_modules
-            !.git
-            !.github
-            !.next
-            !*.log
+          source: .
           target: /home/${{ secrets.CF_USER }}/domains/gotpage.pl/public_html
 
       - name: Run npm ci + restart app via SSH
