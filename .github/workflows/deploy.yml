@@ -1,4 +1,4 @@
-name: Deploy to CyberFolks
+name: Simple Deploy to CyberFolks
 
 on:
   push:
@@ -13,35 +13,24 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build Next.js app
-        run: npm run build
-
-      - name: Upload built app to CyberFolks
-        uses: appleboy/scp-action@v0.0.8
+      - name: Upload source files via SCP
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.CF_HOST }}
           username: ${{ secrets.CF_USER }}
           key: ${{ secrets.CF_SSH_KEY }}
           port: 222
           source: |
-            .next
-            public
-            package.json
-            package-lock.json
-            next.config.js
-            .env.production
+            .
+            !node_modules
+            !.git
+            !.github
+            !.next
+            !*.log
           target: /home/${{ secrets.CF_USER }}/domains/gotpage.pl/public_html
 
-      - name: Install node modules & restart PM2 on CyberFolks
-        uses: appleboy/ssh-action@v0.0.8
+      - name: Run npm ci + restart app via SSH
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.CF_HOST }}
           username: ${{ secrets.CF_USER }}
@@ -49,5 +38,5 @@ jobs:
           port: 222
           script: |
             cd /home/${{ secrets.CF_USER }}/domains/gotpage.pl/public_html
-            npm install --production
-            pm2 restart gotpage || pm2 start npm --name gotpage -- start -- -p 4001
+            npm ci
+            pm2 restart gotpage || pm2 start npm --name gotpage -- start -- -p 4000

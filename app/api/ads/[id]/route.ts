@@ -73,18 +73,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
       isLiked = Array.isArray(likeResult) && likeResult.length > 0
     }
 
-    // Bezpieczne parsowanie pola parameters
-    // let parameters = []
-    // if (ad.parameters) {
-    //   try {
-    //     // Próba parsowania jako JSON
-    //     parameters = JSON.parse(ad.parameters)
-    //   } catch (e) {
-    //     // Jeśli nie jest prawidłowym JSON, ustaw puste parametry
-    //     parameters = [e]
-    //   }
-    // }
-
     // Formatowanie danych
     const formattedAd = {
       ...ad,
