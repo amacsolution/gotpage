@@ -36,6 +36,7 @@ export type UserData = {
     reviews: number | null
     rating: number | null
   }
+  coordinates: string
   categories: string | null
   ads_count: number | null
   views_count: number | null

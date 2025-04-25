@@ -2,8 +2,8 @@ import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { CheckCircle, Search, Tag, MessageSquare, CreditCard, Building, User, ArrowRight } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CheckCircle, Search, Tag, CreditCard, Building, ArrowRight } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Jak to działa | Gotpage",
@@ -11,7 +11,8 @@ export const metadata: Metadata = {
   keywords: "jak to działa, instrukcja, poradnik, ogłoszenia, dodawanie ogłoszeń, promowanie, gotpage",
   openGraph: {
     title: "Jak to działa | Gotpage",
-    description: "Dowiedz się, jak działa serwis Gotpage - od rejestracji, przez dodawanie ogłoszeń, po promowanie firmy",
+    description:
+      "Dowiedz się, jak działa serwis Gotpage - od rejestracji, przez dodawanie ogłoszeń, po promowanie firmy",
     type: "website",
     locale: "pl_PL",
     siteName: "Gotpage",
@@ -39,7 +40,8 @@ export default function HowItWorksPage() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Szybko i łatwo dodawaj ogłoszenia w różnych kategoriach. Dodaj zdjęcia, opis i cenę, aby przyciągnąć potencjalnych kupujących.
+                Szybko i łatwo dodawaj ogłoszenia w różnych kategoriach. Dodaj zdjęcia, opis i cenę, aby przyciągnąć
+                potencjalnych kupujących.
               </p>
             </CardContent>
           </Card>
@@ -53,7 +55,8 @@ export default function HowItWorksPage() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Przeglądaj tysiące ogłoszeń w różnych kategoriach. Korzystaj z zaawansowanych filtrów, aby znaleźć dokładnie to, czego szukasz.
+                Przeglądaj tysiące ogłoszeń w różnych kategoriach. Korzystaj z zaawansowanych filtrów, aby znaleźć
+                dokładnie to, czego szukasz.
               </p>
             </CardContent>
           </Card>
@@ -67,7 +70,8 @@ export default function HowItWorksPage() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Stwórz profil firmowy i promuj swoją działalność. Zdobywaj opinie klientów i buduj swoją reputację online.
+                Stwórz profil firmowy i promuj swoją działalność. Zdobywaj opinie klientów i buduj swoją reputację
+                online.
               </p>
             </CardContent>
           </Card>
@@ -76,27 +80,30 @@ export default function HowItWorksPage() {
 
       <div className="mb-16">
         <h2 className="text-3xl font-bold mb-8 text-center">Krok po kroku</h2>
-        
+
         <div className="space-y-12 max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row gap-8 items-center">
             <div className="md:w-1/2">
               <div className="bg-muted rounded-lg overflow-hidden">
-                <Image 
-                  src="/placeholder.svg?height=300&width=500&text=Rejestracja+konta" 
-                  alt="Rejestracja konta" 
-                  width={500} 
-                  height={300} 
-                  className="w-full h-auto"
+                <Image
+                  src="/how-it-works/registration.png"
+                  alt="Rejestracja konta"
+                  width={500}
+                  height={300}
+                  className="w-full h-auto object-cover"
                 />
               </div>
             </div>
             <div className="md:w-1/2">
               <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <span className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">1</span>
+                <span className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">
+                  1
+                </span>
                 Zarejestruj się
               </h3>
               <p className="text-muted-foreground mb-4">
-                Rozpocznij od utworzenia konta w serwisie Gotpage. Możesz zarejestrować się jako osoba prywatna lub firma. Rejestracja jest bezpłatna i zajmuje tylko kilka minut.
+                Rozpocznij od utworzenia konta w serwisie Gotpage. Możesz zarejestrować się jako osoba prywatna lub
+                firma. Rejestracja jest bezpłatna i zajmuje tylko kilka minut.
               </p>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
@@ -118,22 +125,25 @@ export default function HowItWorksPage() {
           <div className="flex flex-col md:flex-row-reverse gap-8 items-center">
             <div className="md:w-1/2">
               <div className="bg-muted rounded-lg overflow-hidden">
-                <Image 
-                  src="/placeholder.svg?height=300&width=500&text=Dodawanie+ogłoszenia" 
-                  alt="Dodawanie ogłoszenia" 
-                  width={500} 
-                  height={300} 
-                  className="w-full h-auto"
+                <Image
+                  src="/how-it-works/add-listing.png"
+                  alt="Dodawanie ogłoszenia"
+                  width={500}
+                  height={300}
+                  className="w-full h-auto object-cover"
                 />
               </div>
             </div>
             <div className="md:w-1/2">
               <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <span className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">2</span>
+                <span className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">
+                  2
+                </span>
                 Dodaj ogłoszenie
               </h3>
               <p className="text-muted-foreground mb-4">
-                Dodawanie ogłoszenia jest proste i intuicyjne. Wypełnij formularz, dodaj zdjęcia i określ cenę. Twoje ogłoszenie będzie widoczne dla tysięcy potencjalnych kupujących.
+                Dodawanie ogłoszenia jest proste i intuicyjne. Wypełnij formularz, dodaj zdjęcia i określ cenę. Twoje
+                ogłoszenie będzie widoczne dla tysięcy potencjalnych kupujących.
               </p>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
@@ -155,59 +165,25 @@ export default function HowItWorksPage() {
           <div className="flex flex-col md:flex-row gap-8 items-center">
             <div className="md:w-1/2">
               <div className="bg-muted rounded-lg overflow-hidden">
-                <Image 
-                  src="/placeholder.svg?height=300&width=500&text=Komunikacja+z+kupującymi" 
-                  alt="Komunikacja z kupującymi" 
-                  width={500} 
-                  height={300} 
-                  className="w-full h-auto"
+                <Image
+                  src="/how-it-works/promotion.png"
+                  alt="Promowanie ogłoszeń"
+                  width={500}
+                  height={300}
+                  className="w-full h-auto object-cover"
                 />
               </div>
             </div>
             <div className="md:w-1/2">
               <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <span className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">3</span>
-                Komunikuj się z kupującymi
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Odbieraj wiadomości od zainteresowanych kupujących i odpowiadaj na nie bezpośrednio przez nasz system wiadomości. Ustal szczegóły transakcji i finalizuj sprzedaż.
-              </p>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                  <span>Wbudowany system wiadomości</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                  <span>Powiadomienia o nowych wiadomościach</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                  <span>Historia konwersacji</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="flex flex-col md:flex-row-reverse gap-8 items-center">
-            <div className="md:w-1/2">
-              <div className="bg-muted rounded-lg overflow-hidden">
-                <Image 
-                  src="/placeholder.svg?height=300&width=500&text=Promowanie+ogłoszeń" 
-                  alt="Promowanie ogłoszeń" 
-                  width={500} 
-                  height={300} 
-                  className="w-full h-auto"
-                />
-              </div>
-            </div>
-            <div className="md:w-1/2">
-              <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <span className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">4</span>
+                <span className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">
+                  3
+                </span>
                 Promuj swoje ogłoszenia
               </h3>
               <p className="text-muted-foreground mb-4">
-                Zwiększ widoczność swoich ogłoszeń dzięki naszym pakietom promocyjnym. Promowane ogłoszenia są wyświetlane na górze listy wyszukiwania i mają większe szanse na szybką sprzedaż.
+                Zwiększ widoczność swoich ogłoszeń dzięki naszym pakietom promocyjnym. Promowane ogłoszenia są
+                wyświetlane na górze listy wyszukiwania i mają większe szanse na szybką sprzedaż.
               </p>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
@@ -230,7 +206,7 @@ export default function HowItWorksPage() {
 
       <div className="mb-16">
         <h2 className="text-3xl font-bold mb-8 text-center">Dla firm</h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           <Card>
             <CardHeader>
@@ -240,7 +216,19 @@ export default function HowItWorksPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="mb-4">Stwórz profesjonalny profil firmowy, który wyróżni Twoją działalność. Dodaj logo, opis firmy i kategorie działalności.</p>
+              <div className="mb-4 rounded-lg overflow-hidden">
+                <Image
+                  src="/how-it-works/business-profile.png"
+                  alt="Profil firmowy"
+                  width={400}
+                  height={200}
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+              <p className="mb-4">
+                Stwórz profesjonalny profil firmowy, który wyróżni Twoją działalność. Dodaj logo, opis firmy i kategorie
+                działalności.
+              </p>
               <ul className="space-y-2 mb-4">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
@@ -255,8 +243,10 @@ export default function HowItWorksPage() {
                   <span>Zbieranie opinii od klientów</span>
                 </li>
               </ul>
-              <Link href="/promocja/firmy">
-                <Button variant="outline" className="w-full">Dowiedz się więcej</Button>
+              <Link href="/promowanie/firma">
+                <Button variant="outline" className="w-full">
+                  Dowiedz się więcej
+                </Button>
               </Link>
             </CardContent>
           </Card>
@@ -269,7 +259,19 @@ export default function HowItWorksPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="mb-4">Wybierz pakiet promocyjny, który najlepiej odpowiada potrzebom Twojej firmy. Zwiększ widoczność i przyciągnij więcej klientów.</p>
+              <div className="mb-4 rounded-lg overflow-hidden">
+                <Image
+                  src="/how-it-works/communication.png"
+                  alt="Pakiety promocyjne"
+                  width={400}
+                  height={200}
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+              <p className="mb-4">
+                Wybierz pakiet promocyjny, który najlepiej odpowiada potrzebom Twojej firmy. Zwiększ widoczność i
+                przyciągnij więcej klientów.
+              </p>
               <ul className="space-y-2 mb-4">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
@@ -284,8 +286,10 @@ export default function HowItWorksPage() {
                   <span>Dostęp do rozszerzonych statystyk</span>
                 </li>
               </ul>
-              <Link href="/promocja">
-                <Button variant="outline" className="w-full">Zobacz pakiety</Button>
+              <Link href="/promowanie">
+                <Button variant="outline" className="w-full">
+                  Zobacz pakiety
+                </Button>
               </Link>
             </CardContent>
           </Card>

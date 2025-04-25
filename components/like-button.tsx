@@ -28,7 +28,6 @@ export function LikeButton({ adId, initialLikes, className = "", showCount = tru
         setIsLiked(data.liked)
         setIsLoading(false)
       } catch (error) {
-        console.error("Error checking like status:", error)
         setIsLoading(false)
       }
     }
@@ -62,7 +61,6 @@ export function LikeButton({ adId, initialLikes, className = "", showCount = tru
         description: data.message,
       })
     } catch (error) {
-      console.error("Error liking ad:", error)
       toast({
         title: "Błąd",
         description: error instanceof Error ? error.message : "Wystąpił błąd podczas przetwarzania polubienia",

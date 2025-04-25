@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { db, query } from "@/lib/db"
 import bcrypt from "bcryptjs"
 import crypto from "crypto"
 import { sendWelcomeEmail } from "@/lib/email-helpers"
@@ -86,9 +86,10 @@ export async function POST(request: Request) {
     const verificationToken = crypto.randomBytes(32).toString("hex")
 
     // Sprawdzenie czy email jest już zajęty
-    const existingUsers = await db.query("SELECT id FROM users WHERE email = ?", [email]) as {id: string}[]
+    const existingUsers = await query("SELECT id FROM users WHERE email = ?", [email]) as {id: string}[]
 
     if (Array.isArray(existingUsers) && existingUsers.length > 0) {
+      console.log("istniejacy: " + existingUsers + "rejestrujacy" + email )
       return NextResponse.json({ error: "Użytkownik z tym adresem email już istnieje" }, { status: 409 })
     }
 
@@ -109,7 +110,7 @@ export async function POST(request: Request) {
     const generatedBio = type === "individual" ? "Użytkownik platformy." : "Firma korzystająca z platformy Gotpage."
 
     try {
-      await db.query(
+      await query(
         `INSERT INTO users (
           id,
           name, 
@@ -161,7 +162,7 @@ export async function POST(request: Request) {
 
       // Jeśli to firma, dodaj dodatkowe informacje
       if (type === "business" && nip) {
-        await db.query("INSERT INTO business_details (user_id, nip, created_at) VALUES (?, ?, NOW())", [id, nip]) as {insertid: number}[]
+        await query("INSERT INTO business_details (user_id, nip, created_at) VALUES (?, ?, NOW())", [id, nip]) as {insertid: number}[]
       }
 
       // Wyślij email powitalny
@@ -189,4 +190,10 @@ export async function POST(request: Request) {
       { status: 500 },
     )
   }
+}
+
+import { NextApiRequest, NextApiResponse } from "next";
+
+export default function handler(_: NextApiRequest, res: NextApiResponse) {
+  res.status(200).json({ message: "Działa!" });
 }

@@ -61,6 +61,8 @@ const categories = Array.isArray(company.categories) ? company.categories : [];
                 <span className="truncate">{company.location}</span>
               </div>
               <div className="flex items-center mt-1">
+                {company.rating !== 0 ? (
+                  <>
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
@@ -72,6 +74,9 @@ const categories = Array.isArray(company.categories) ? company.categories : [];
                 <span className="text-sm ml-1">
                   {Number(company.rating).toFixed(1)} ({company.reviewCount})
                 </span>
+                  </>
+                ) : "" }
+                
               </div>
             </div>
           </div>

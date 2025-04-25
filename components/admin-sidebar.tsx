@@ -14,7 +14,6 @@ export function AdminSidebar() {
       document.cookie = "admin_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
       router.push("/admin/login")
     } catch (error) {
-      console.error("Logout error:", error)
     }
   }
 

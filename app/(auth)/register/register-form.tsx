@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -48,22 +48,45 @@ const validateNIP = (nip: string) => {
 
 // Kategorie działalności
 const businessCategories = [
-  "Motoryzacja",
-  "Nieruchomości",
-  "Elektronika",
-  "Moda",
+  "Sklep detaliczny",
+  "Sklep internetowy",
+  "Supermarket",
+  "Hurtownia",
   "Usługi",
-  "Gastronomia",
-  "Dom i ogród",
-  "Sport i hobby",
+  "Rozrywka",
+  "Transport/Logistyka",
+  "Klub nocny",
+  "Sanatorium",
+  "Piekarnia",
+  "Centrum zdrowia",
+  "Kino/Teatr",
+  "Miasto",
+  "Strona/Portal",
+  "Obiekt/Placówka",
+  "Restauracja/Bar/Kawiarnia",
+  "Blog",
+  "Gry",
+  "Turystyka/Rekreacja",
   "Edukacja",
-  "Zdrowie i uroda",
-  "Transport",
-  "Budownictwo",
-  "IT",
-  "Finanse",
-  "Inne",
-]
+  "Galeria",
+  "Finanse/Ubezpieczenia",
+  "Bank",
+  "Uroda/Zdrowie/Relaks",
+  "Nieruchomości",
+  "Reklama/Biznes",
+  "Druk/Publikacje",
+  "Salon samochodowy/Targ",
+  "Noclegi",
+  "Kasyno",
+  "Fundacja",
+  "Telekomunikacja/Internet",
+  "Fan Klub",
+  "Organizacja",
+  "Instytucja/Urząd",
+  "Znana osoba"
+];
+
+
 
 // Walidacja hasła - musi zawierać co najmniej jedną cyfrę, jedną małą literę, jedną dużą literę i jeden znak specjalny
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/
@@ -152,6 +175,7 @@ export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [accountType, setAccountType] = useState<"individual" | "business">("individual")
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [categoriesBusiness, setCategoriesBusiness] = useState(businessCategories)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -167,6 +191,10 @@ export function RegisterForm() {
       accountType: "individual" as const,
     },
   })
+
+  console.log("Kategorie:", businessCategories)
+  console.log("odczytane" + categoriesBusiness)
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)
@@ -373,7 +401,7 @@ export function RegisterForm() {
                     <FormItem>
                       <FormLabel>Lokalizacja</FormLabel>
                       <FormControl>
-                        <Input placeholder="ul.Fabryczna 2a" {...field} disabled={isLoading} />
+                        <Input placeholder="Fabryczna 2a" {...field} disabled={isLoading} />
                       </FormControl>
                       <FormDescription>Podaj ulicę i numer</FormDescription>
                       <FormMessage />
@@ -387,7 +415,7 @@ export function RegisterForm() {
                     <FormItem>
                       <FormLabel>Kategorie działalności (max. 2)</FormLabel>
                       <div className="grid grid-cols-2 gap-2 mt-2">
-                        {businessCategories.map((category) => (
+                        {categoriesBusiness.map((category) => (
                           <div key={category} className="flex items-center space-x-2">
                             <Checkbox
                               id={`category-${category}`}
@@ -472,4 +500,3 @@ export function RegisterForm() {
     </Tabs>
   )
 }
-

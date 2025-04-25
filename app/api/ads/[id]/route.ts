@@ -11,7 +11,9 @@ import sharp from "sharp"
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const adId = Number.parseInt(params.id)
+
+    const { id } = params
+    const adId = Number.parseInt(id)
 
     if (isNaN(adId)) {
       return NextResponse.json({ error: "Nieprawidłowe ID ogłoszenia" }, { status: 400 })
@@ -77,7 +79,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const formattedAd = {
       ...ad,
       images,
-      // parameters,
+      parameters: ad.parameters ? JSON.parse(ad.parameters) : null,
       author: {
         id: ad.author_id,
         name: ad.author_name,
@@ -91,7 +93,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       comments: Array.isArray(comments)
         ? comments.map((comment) => ({
             id: comment.id,
-            content: comment.content,
+            content: (comment as any).content,
             created_at: comment.created_at,
             author: {
               id: comment.author_id,

@@ -141,7 +141,6 @@ export function ImageCropper({ imageUrl, aspectRatio = 1, onCropComplete, onCanc
       const croppedImageBlob = await getCroppedImg(imgRef.current, completedCrop, scale, rotate)
       onCropComplete(croppedImageBlob)
     } catch (error) {
-      console.error("Error generating cropped image:", error)
     }
   }, [completedCrop, scale, rotate, onCropComplete])
 

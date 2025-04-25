@@ -123,7 +123,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
     }
   }
 
-
+  console.log(ad)
   // Skeleton loading dla całej strony
   if (isLoading) {
     return (
@@ -368,11 +368,13 @@ export default function AdDetailsClient({ id }: { id: string }) {
             <Card className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {ad.parameters &&
-                  ad.parameters.map((param: any, index: number) => (
-                    <div key={index} className="flex justify-between p-2 border-b">
-                      <span className="text-muted-foreground">{param.name}:</span>
-                      <span className="font-medium">{param.value}</span>
-                    </div>
+                  Object.entries(ad.parameters).map(([key, value], index) => (
+                  <div key={index} className="flex justify-between p-2 border-b">
+                    <span className="text-muted-foreground">{key}:</span>
+                    <span className="font-medium">
+                    {typeof value === "boolean" ? (value ? "Tak" : "Nie") : String(value)}
+                    </span>
+                  </div>
                   ))}
 
                 {/* Wyświetlanie pól specyficznych dla kategorii */}

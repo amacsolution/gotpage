@@ -44,7 +44,6 @@ export function UserNav() {
         const userData = await response.json()
         setUser(userData)
       } catch (error) {
-        console.error("Błąd podczas pobierania danych użytkownika:", error)
         setUser(null)
       } finally {
         setIsLoading(false)

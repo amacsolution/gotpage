@@ -27,7 +27,6 @@ const CompaniesFeedLimit = () => {
         }
 
       } catch (error) {
-        console.error("Błąd podczas pobierania danych:", error)
         toast({
           title: "Błąd",
           description: "Nie udało się pobrać danych. Spróbuj ponownie później.",

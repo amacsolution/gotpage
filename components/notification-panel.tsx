@@ -49,7 +49,6 @@ export function NotificationsPanel() {
       const countData = await count.json()
       setNotifications(data)
     } catch (error) {
-      console.error("Error fetching notifications:", error)
       toast({
         title: "Błąd",
         description: "Nie udało się pobrać powiadomień",
@@ -76,7 +75,6 @@ export function NotificationsPanel() {
       // Odświeżenie licznika powiadomień
       refetchUser()
     } catch (error) {
-      console.error("Error marking notification as read:", error)
       toast({
         title: "Błąd",
         description: "Nie udało się oznaczyć powiadomienia jako przeczytane",
@@ -107,7 +105,6 @@ export function NotificationsPanel() {
         description: "Wszystkie powiadomienia oznaczone jako przeczytane",
       })
     } catch (error) {
-      console.error("Error marking all notifications as read:", error)
       toast({
         title: "Błąd",
         description: "Nie udało się oznaczyć wszystkich powiadomień jako przeczytane",
@@ -136,7 +133,6 @@ export function NotificationsPanel() {
         description: "Powiadomienie zostało usunięte",
       })
     } catch (error) {
-      console.error("Error deleting notification:", error)
       toast({
         title: "Błąd",
         description: "Nie udało się usunąć powiadomienia",

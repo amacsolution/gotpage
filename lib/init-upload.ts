@@ -12,7 +12,6 @@ export async function initUploadsFolder() {
 
     // Sprawdzenie, czy folder istnieje, jeśli nie - utworzenie go
     if (!fs.existsSync(uploadDir)) {
-      console.log(`Tworzenie folderu na zdjęcia: ${uploadDir}`)
       await mkdir(uploadDir, { recursive: true })
     }
   } catch (error) {

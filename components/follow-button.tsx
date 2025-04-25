@@ -49,7 +49,6 @@ export function FollowButton({
       setIsFollowing(data.isFollowing )
     }
     catch (error) {
-      console.error("Error checking follow status:", error)
     } finally {
       setIsLoading(false)
     }
@@ -107,7 +106,6 @@ export function FollowButton({
         title: newIsFollowing ? "Obserwujesz użytkownika" : "Przestałeś obserwować użytkownika",
       })
     } catch (error) {
-      console.error("Error toggling follow:", error)
       toast({
         title: "Błąd",
         description: "Nie udało się zaktualizować obserwacji",

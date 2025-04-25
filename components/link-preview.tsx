@@ -185,7 +185,6 @@ const LinkPreview = ({ text }: { text: string }) => {
                     className="object-cover"
                     loading="lazy"
                     onError={(e) => {
-                    // console.error("Image failed to load:", imageUrl)
                     // Jeśli obrazek nie załaduje się, ukryj go
                     ;(e.target as HTMLImageElement).style.display = "none"
                     }}

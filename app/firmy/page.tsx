@@ -8,14 +8,14 @@ import { SearchAutocomplete } from "@/components/search-autocomplete"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
 import { Building, MapPin, Filter, Grid, MapIcon, Star, TrendingUp, Award, Loader2, ChevronRight } from "lucide-react"
 import dynamic from "next/dynamic"
 
-// Dynamiczny import komponentu mapy (bez SSR)
+// Dynamically import the map component with no SSR
 const CompanyMap = dynamic(() => import("@/components/company-map"), {
   ssr: false,
   loading: () => (
@@ -25,24 +25,46 @@ const CompanyMap = dynamic(() => import("@/components/company-map"), {
   ),
 })
 
-// Kategorie biznesowe z ikonami
+// Business categories with icons
 const businessCategories = [
-  { id: "Motoryzacja", name: "Motoryzacja", icon: "🚗", color: "bg-red-100 text-red-800" },
-  { id: "Nieruchomości", name: "Nieruchomości", icon: "🏠", color: "bg-blue-100 text-blue-800" },
-  { id: "Elektronika", name: "Elektronika", icon: "💻", color: "bg-purple-100 text-purple-800" },
-  { id: "Moda", name: "Moda", icon: "👕", color: "bg-pink-100 text-pink-800" },
-  { id: "Usługi", name: "Usługi", icon: "🔧", color: "bg-yellow-100 text-yellow-800" },
-  { id: "Gastronomia", name: "Gastronomia", icon: "🍽️", color: "bg-green-100 text-green-800" },
-  { id: "Dom i ogród", name: "Dom i ogród", icon: "🌱", color: "bg-emerald-100 text-emerald-800" },
-  { id: "Sport i hobby", name: "Sport i hobby", icon: "⚽", color: "bg-orange-100 text-orange-800" },
+  { id: "Sklep detaliczny", name: "Sklep detaliczny", icon: "🛒", color: "bg-green-100 text-green-800" },
+  { id: "Sklep internetowy", name: "Sklep internetowy", icon: "🛍️", color: "bg-blue-100 text-blue-800" },
+  { id: "Supermarket", name: "Supermarket", icon: "🏬", color: "bg-red-100 text-red-800" },
+  { id: "Hurtownia", name: "Hurtownia", icon: "📦", color: "bg-yellow-100 text-yellow-800" },
+  { id: "Usługi", name: "Usługi", icon: "🧰", color: "bg-gray-100 text-gray-800" },
+  { id: "Rozrywka", name: "Rozrywka", icon: "🎭", color: "bg-purple-100 text-purple-800" },
+  { id: "Transport/Logistyka", name: "Transport/Logistyka", icon: "🚚", color: "bg-orange-100 text-orange-800" },
+  { id: "Klub nocny", name: "Klub nocny", icon: "🎉", color: "bg-pink-100 text-pink-800" },
+  { id: "Sanatorium", name: "Sanatorium", icon: "🏥", color: "bg-teal-100 text-teal-800" },
+  { id: "Piekarnia", name: "Piekarnia", icon: "🥖", color: "bg-amber-100 text-amber-800" },
+  { id: "Centrum zdrowia", name: "Centrum zdrowia", icon: "🩺", color: "bg-emerald-100 text-emerald-800" },
+  { id: "Kino/Teatr", name: "Kino/Teatr", icon: "🎬", color: "bg-indigo-100 text-indigo-800" },
+  { id: "Miasto", name: "Miasto", icon: "🏙️", color: "bg-lime-100 text-lime-800" },
+  { id: "Strona/Portal", name: "Strona/Portal", icon: "🌐", color: "bg-sky-100 text-sky-800" },
+  { id: "Obiekt/Placówka", name: "Obiekt/Placówka", icon: "🏢", color: "bg-slate-100 text-slate-800" },
+  { id: "Restauracja/Bar/Kawiarnia", name: "Restauracja/Bar/Kawiarnia", icon: "🍽️", color: "bg-rose-100 text-rose-800" },
+  { id: "Blog", name: "Blog", icon: "✍️", color: "bg-cyan-100 text-cyan-800" },
+  { id: "Gry", name: "Gry", icon: "🎮", color: "bg-orange-100 text-orange-800" },
+  { id: "Turystyka/Rekreacja", name: "Turystyka/Rekreacja", icon: "🏖️", color: "bg-green-100 text-green-800" },
   { id: "Edukacja", name: "Edukacja", icon: "📚", color: "bg-indigo-100 text-indigo-800" },
-  { id: "Zdrowie i uroda", name: "Zdrowie i uroda", icon: "💆", color: "bg-rose-100 text-rose-800" },
-  { id: "Transport", name: "Transport", icon: "🚚", color: "bg-amber-100 text-amber-800" },
-  { id: "Budownictwo", name: "Budownictwo", icon: "🏗️", color: "bg-slate-100 text-slate-800" },
-  { id: "IT", name: "IT", icon: "🖥️", color: "bg-cyan-100 text-cyan-800" },
-  { id: "Finanse", name: "Finanse", icon: "💰", color: "bg-lime-100 text-lime-800" },
-  { id: "Inne", name: "Inne", icon: "🔍", color: "bg-gray-100 text-gray-800" },
-]
+  { id: "Galeria", name: "Galeria", icon: "🖼️", color: "bg-purple-100 text-purple-800" },
+  { id: "Finanse/Ubezpieczenia", name: "Finanse/Ubezpieczenia", icon: "💼", color: "bg-lime-100 text-lime-800" },
+  { id: "Bank", name: "Bank", icon: "🏦", color: "bg-blue-100 text-blue-800" },
+  { id: "Uroda/Zdrowie/Relaks", name: "Uroda/Zdrowie/Relaks", icon: "💆", color: "bg-pink-100 text-pink-800" },
+  { id: "Nieruchomości", name: "Nieruchomości", icon: "🏠", color: "bg-yellow-100 text-yellow-800" },
+  { id: "Reklama/Biznes", name: "Reklama/Biznes", icon: "📢", color: "bg-amber-100 text-amber-800" },
+  { id: "Druk/Publikacje", name: "Druk/Publikacje", icon: "📰", color: "bg-slate-100 text-slate-800" },
+  { id: "Salon samochodowy/Targ", name: "Salon samochodowy/Targ", icon: "🚗", color: "bg-red-100 text-red-800" },
+  { id: "Noclegi", name: "Noclegi", icon: "🛏️", color: "bg-rose-100 text-rose-800" },
+  { id: "Kasyno", name: "Kasyno", icon: "🎰", color: "bg-purple-100 text-purple-800" },
+  { id: "Fundacja", name: "Fundacja", icon: "🤝", color: "bg-emerald-100 text-emerald-800" },
+  { id: "Telekomunikacja/Internet", name: "Telekomunikacja/Internet", icon: "📡", color: "bg-cyan-100 text-cyan-800" },
+  { id: "Fan Klub", name: "Fan Klub", icon: "⭐", color: "bg-yellow-100 text-yellow-800" },
+  { id: "Organizacja", name: "Organizacja", icon: "🏛️", color: "bg-indigo-100 text-indigo-800" },
+  { id: "Instytucja/Urząd", name: "Instytucja/Urząd", icon: "🏢", color: "bg-gray-100 text-gray-800" },
+  { id: "Znana osoba", name: "Znana osoba", icon: "🌟", color: "bg-pink-100 text-pink-800" },
+];
+
 
 export default function CompaniesPage() {
   const searchParams = useSearchParams()
@@ -124,7 +146,7 @@ export default function CompaniesPage() {
 
     fetchData()
 
-    // Ustaw aktywne filtry na podstawie URL
+    // Set active filters based on URL
     const newActiveFilters = []
     if (category) newActiveFilters.push(category)
     if (location) newActiveFilters.push(location)
@@ -211,7 +233,7 @@ export default function CompaniesPage() {
     }
   }
 
-  // Scroll do filtrów
+  // Scroll to filters
   useEffect(() => {
     if (showFilters && filtersRef.current) {
       filtersRef.current.scrollIntoView({ behavior: "smooth" })
@@ -263,14 +285,14 @@ export default function CompaniesPage() {
           </div>
         </div>
 
-        {/* Wyróżnione firmy */}
+        {/* Featured companies */}
         {featuredCompanies.length > 0 && (
           <div className="mb-12">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold flex items-center">
                 <Award className="h-5 w-5 mr-2 text-amber-500" /> Wyróżnione firmy
               </h2>
-              <Button variant="link" className="text-primary" onClick={() => router.push("/promocja/firmy")}>
+              <Button variant="link" className="text-primary" onClick={() => router.push("/promowanie/firma")}>
                 Promuj swoją firmę <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
@@ -290,7 +312,7 @@ export default function CompaniesPage() {
           </div>
         )}
 
-        {/* Filtry */}
+        {/* Filters */}
         <div className="mb-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -342,7 +364,7 @@ export default function CompaniesPage() {
             </div>
           </div>
 
-          {/* Aktywne filtry */}
+          {/* Active filters */}
           {activeFilters.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-4">
               {activeFilters.map((filter) => (
@@ -373,7 +395,7 @@ export default function CompaniesPage() {
           )}
         </div>
 
-        {/* Rozszerzone filtry */}
+        {/* Extended filters */}
         {showFilters && (
           <div ref={filtersRef} className="mb-8 p-6 bg-muted/20 rounded-lg">
             <h3 className="font-medium mb-4">Filtry zaawansowane</h3>
@@ -431,122 +453,126 @@ export default function CompaniesPage() {
           </div>
         )}
 
-        {/* Widok firm */}
-        <Tabs value={viewMode} className="mt-6">
-          <TabsContent value="grid" className="mt-0">
-            {isLoading && companies.length === 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <Skeleton key={index} className="h-48 w-full rounded-lg" />
-                ))}
-              </div>
-            ) : companies.length > 0 ? (
-              <>
+        {/* Company view */}
+        <div className="mt-6">
+          {viewMode === "grid" ? (
+            <>
+              {isLoading && companies.length === 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {companies.map((company) => (
-                    <CompanyCard key={company.id} company={company} />
-                  ))}
-                </div>
-
-                {/* Przyciski paginacji */}
-                {hasMore && (
-                  <div className="flex justify-center mt-8">
-                    <Button onClick={loadMore} variant="outline" className="min-w-[200px]" disabled={isLoading}>
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Ładowanie...
-                        </>
-                      ) : (
-                        "Załaduj więcej firm"
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="text-center py-12 bg-muted/30 rounded-lg">
-                <Building className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Brak firm</h3>
-                <p className="text-muted-foreground">Nie znaleziono firm spełniających podane kryteria.</p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="map" className="mt-0">
-            <div className="h-[500px] rounded-lg overflow-hidden">
-              <CompanyMap
-                companies={companies}
-                isLoading={isLoading}
-                center={location ? undefined : { lat: 52.2297, lng: 21.0122 }} // Warszawa jako domyślne centrum
-              />
-            </div>
-
-            <div className="mt-6">
-              <h3 className="font-medium mb-4">Firmy w wybranym obszarze</h3>
-              {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <Skeleton key={index} className="h-24 w-full rounded-lg" />
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <Skeleton key={index} className="h-48 w-full rounded-lg" />
                   ))}
                 </div>
               ) : companies.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {companies.slice(0, 6).map((company) => (
-                    <Card key={company.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex-shrink-0">
-                            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                              {company.logo ? (
-                                <img
-                                  src={company.logo || "/placeholder.svg"}
-                                  alt={company.name}
-                                  className="w-12 h-12 rounded-full object-cover"
-                                />
-                              ) : (
-                                <Building className="h-6 w-6 text-muted-foreground" />
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium truncate">{company.name}</h4>
-                            <div className="flex items-center text-sm text-muted-foreground">
-                              <MapPin className="h-3 w-3 mr-1" />
-                              <span className="truncate">{company.location}</span>
-                            </div>
-                            <div className="flex items-center mt-1">
-                              {Array.from({ length: 5 }).map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className="h-3 w-3"
-                                  fill={i < Math.floor(company.rating) ? "currentColor" : "none"}
-                                  color={i < Math.floor(company.rating) ? "#FFB800" : "#D1D5DB"}
-                                />
-                              ))}
-                              <span className="text-xs ml-1">
-                                {Number(company.rating).toFixed(1)} ({company.reviewCount})
-                              </span>
-                            </div>
-                          </div>
-                          <Button size="sm" variant="outline" asChild>
-                            <a href={`/profil/${company.id}`}>Szczegóły</a>
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {companies.map((company) => (
+                      <CompanyCard key={company.id} company={company} />
+                    ))}
+                  </div>
+
+                  {/* Pagination buttons */}
+                  {hasMore && (
+                    <div className="flex justify-center mt-8">
+                      <Button onClick={loadMore} variant="outline" className="min-w-[200px]" disabled={isLoading}>
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Ładowanie...
+                          </>
+                        ) : (
+                          "Załaduj więcej firm"
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>Brak firm w wybranym obszarze</p>
+                <div className="text-center py-12 bg-muted/30 rounded-lg">
+                  <Building className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Brak firm</h3>
+                  <p className="text-muted-foreground">Nie znaleziono firm spełniających podane kryteria.</p>
                 </div>
               )}
-            </div>
-          </TabsContent>
-        </Tabs>
+            </>
+          ) : (
+            <>
+              <div className="h-[500px] rounded-lg overflow-hidden">
+                {/* Only render the map when in map view mode */}
+                <CompanyMap
+                  key={`map-view-${viewMode}-${Date.now()}`}
+                  companies={companies}
+                  isLoading={isLoading}
+                  center={location ? undefined : { lat: 52.2297, lng: 21.0122 }} // Warsaw as default center
+                />
+              </div>
 
-        {/* Sekcja statystyk */}
+              <div className="mt-6">
+                <h3 className="font-medium mb-4">Firmy w wybranym obszarze</h3>
+                {isLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <Skeleton key={index} className="h-24 w-full rounded-lg" />
+                    ))}
+                  </div>
+                ) : companies.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {companies.slice(0, 6).map((company) => (
+                      <Card key={company.id} className="hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-shrink-0">
+                              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                                {company.logo ? (
+                                  <img
+                                    src={company.logo || "/placeholder.svg"}
+                                    alt={company.name}
+                                    className="w-12 h-12 rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <Building className="h-6 w-6 text-muted-foreground" />
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium truncate">{company.name}</h4>
+                              <div className="flex items-center text-sm text-muted-foreground">
+                                <MapPin className="h-3 w-3 mr-1" />
+                                <span className="truncate">{company.location}</span>
+                              </div>
+                              <div className="flex items-center mt-1">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className="h-3 w-3"
+                                    fill={i < Math.floor(company.rating) ? "currentColor" : "none"}
+                                    color={i < Math.floor(company.rating) ? "#FFB800" : "#D1D5DB"}
+                                  />
+                                ))}
+                                <span className="text-xs ml-1">
+                                  {Number(company.rating).toFixed(1)} ({company.reviewCount})
+                                </span>
+                              </div>
+                            </div>
+                            <Button size="sm" variant="outline" asChild>
+                              <a href={`/profil/${company.id}`}>Szczegóły</a>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>Brak firm w wybranym obszarze</p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Statistics section */}
         <div className="mt-16 py-12 px-6 bg-muted/20 rounded-lg">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold mb-2">Dlaczego warto dołączyć do katalogu?</h2>
@@ -600,7 +626,7 @@ export default function CompaniesPage() {
           </div>
 
           <div className="text-center mt-8">
-            <Button size="lg" onClick={() => router.push("/promocja/firmy")}>
+            <Button size="lg" onClick={() => router.push("/promowanie/firma")}>
               Promuj swoją firmę
             </Button>
           </div>
@@ -609,4 +635,3 @@ export default function CompaniesPage() {
     </PageLayout>
   )
 }
-

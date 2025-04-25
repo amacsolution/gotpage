@@ -63,7 +63,7 @@ export default function AboutPage() {
       name: "Rafał Antoniak",
       role: "CEO & Founder",
       bio: "Rafał założył Gotpage w 2015 roku z misją stworzenia nowoczesnej platformy ogłoszeniowej, która będzie łączyć ludzi i ułatwiać im codzienne życie.",
-      avatar: "/4.jpg?placeholder.svg?height=200&width=200&text=JK",
+      avatar: "/4.jpeg?placeholder.svg?height=200&width=200&text=JK",
     },
     {
       name: "Antoni Maciejowski",
@@ -83,7 +83,7 @@ export default function AboutPage() {
       </div>
 
       {/* Hero section */}
-      <div className="relative h-[400px] rounded-xl overflow-hidden mb-12">
+      <div className="relative md:h-[400px] h-[600px] rounded-xl overflow-hidden mb-12">
         <Image
           src="/pexels-jibarofoto-2014773.jpg?height=400&width=1200&text=Gotpage+Team"
           alt="Zespół Gotpage"
@@ -198,7 +198,7 @@ export default function AboutPage() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                   {team.map((member, index) => (
                     <Card key={index} className="bg-background hover:shadow-md transition-shadow">
                       <CardHeader className="flex flex-col items-center">

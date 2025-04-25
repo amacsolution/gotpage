@@ -144,7 +144,6 @@ export function BackgroundImageEditor({ isOpen, onClose, onSave, imageFile }: Ba
       canvas.toBlob(
         (blob) => {
           if (!blob) {
-            console.error("Canvas is empty")
             return
           }
           resolve(blob)
@@ -166,7 +165,6 @@ export function BackgroundImageEditor({ isOpen, onClose, onSave, imageFile }: Ba
         await onSave(croppedImage)
       }
     } catch (error) {
-      console.error("Błąd podczas zapisywania zdjęcia:", error)
     } finally {
       setIsLoading(false)
       onClose()

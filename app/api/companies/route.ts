@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
+import { UserData } from "../profile/route"
+import { RowDataPacket } from "mysql2"
+
 
 export async function GET(request: Request) {
   try {
@@ -25,6 +28,7 @@ export async function GET(request: Request) {
         u.verified, 
         u.created_at as joinedAt, 
         u.location, 
+        u.coordinates,
         u.categories,
         (SELECT COUNT(*) FROM user_reviews WHERE user_id = u.id) as reviewCount,
         (SELECT AVG(rating) FROM user_reviews WHERE user_id = u.id) as rating
@@ -73,7 +77,7 @@ export async function GET(request: Request) {
     sql += " LIMIT ? OFFSET ?"
     params.push(limit, offset)
 
-    const companies = await query(sql, params)
+    const companies = await query(sql, params) as UserData[]
 
     if (!Array.isArray(companies)) {
       return NextResponse.json({ companies: [], total: 0 })
@@ -100,30 +104,41 @@ export async function GET(request: Request) {
 
     if (searchQuery) {
       countSql += " AND (u.name LIKE ? OR u.bio LIKE ?)"
-      countParams.push(`%${searchQuery}%`, `%${searchQuery}%`)
+      countParams.push(`%${searchQuery}%`, `%${searchQuery}%`) 
     }
 
     const totalResult = await query(countSql, countParams)
-    const total = Array.isArray(totalResult) && totalResult[0]?.count ? Number.parseInt(totalResult[0].count) : 0
+    const total = Array.isArray(totalResult) && (totalResult as RowDataPacket[])[0]?.count ? Number.parseInt((totalResult as RowDataPacket[])[0].count as string) : 0
 
     // Formatowanie danych
     const formattedCompanies = companies.map((company) => {
-      let categories = []
+      let categories = [];
+      let coordinates = null;
+
       try {
-        if (company.categories) {
-          categories = JSON.parse(company.categories)
-        }
+      if (company.categories) {
+        categories = JSON.parse(company.categories);
+      }
       } catch (e) {
-        console.error("Błąd parsowania kategorii:", e)
+      console.error("Błąd parsowania kategorii:", e);
+      }
+
+      try {
+      if (company.coordinates) {
+        coordinates = JSON.parse(company.coordinates);
+      }
+      } catch (e) {
+      console.error("Błąd parsowania współrzędnych:", e);
       }
 
       return {
-        ...company,
-        categories: categories,
-        rating: company.rating || 0,
-        reviewCount: company.reviewCount || 0,
-      }
-    })
+      ...company,
+      categories: categories,
+      coordinates: coordinates,
+      rating: company.rating || 0,
+      reviewCount: company.reviewCount || 0,
+      };
+    });
 
     return NextResponse.json({
       companies: formattedCompanies,

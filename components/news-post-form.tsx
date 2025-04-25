@@ -203,7 +203,6 @@ export function NewsPostForm({ user, onPostCreated }: NewsPostFormProps) {
         description: "Wpis został dodany pomyślnie",
       })
     } catch (error) {
-      console.error("Error creating post:", error)
       toast({
         title: "Błąd",
         description: error instanceof Error ? error.message : "Wystąpił błąd podczas dodawania wpisu",

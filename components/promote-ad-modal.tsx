@@ -103,7 +103,6 @@ export function PromoteAdModal({ adId, adTitle }: PromoteAdModalProps) {
         }
       }
     } catch (error) {
-      console.error("Błąd podczas promocji ogłoszenia:", error)
       toast({
         title: "Wystąpił błąd",
         description: "Nie udało się utworzyć płatności. Spróbuj ponownie później.",

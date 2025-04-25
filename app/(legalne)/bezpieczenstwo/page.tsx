@@ -5,11 +5,24 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Shield, AlertTriangle, Lock, Eye, UserCheck, CreditCard, MessageSquare, Flag, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import {
+  Shield,
+  AlertTriangle,
+  Lock,
+  Eye,
+  UserCheck,
+  CreditCard,
+  MessageSquare,
+  Flag,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+} from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Bezpieczeństwo | Gotpage",
-  description: "Dowiedz się, jak bezpiecznie korzystać z serwisu Gotpage. Poznaj nasze zasady bezpieczeństwa, porady dotyczące bezpiecznych transakcji i ochrony danych osobowych.",
+  description:
+    "Dowiedz się, jak bezpiecznie korzystać z serwisu Gotpage. Poznaj nasze zasady bezpieczeństwa, porady dotyczące bezpiecznych transakcji i ochrony danych osobowych.",
   keywords: "bezpieczeństwo, ochrona danych, bezpieczne transakcje, oszustwa, prywatność, gotpage",
 }
 
@@ -17,34 +30,36 @@ export default function SecurityPage() {
   const securityTips = [
     {
       title: "Sprawdzaj profil sprzedającego",
-      description: "Zwróć uwagę na datę rejestracji, oceny i opinie innych użytkowników. Zweryfikowani sprzedawcy są oznaczeni specjalną ikoną.",
+      description:
+        "Zwróć uwagę na datę rejestracji, oceny i opinie innych użytkowników. Zweryfikowani sprzedawcy są oznaczeni specjalną ikoną.",
       icon: <UserCheck className="h-8 w-8 text-primary" />,
       do: [
         "Sprawdź datę rejestracji konta",
         "Przeczytaj opinie innych użytkowników",
         "Zwróć uwagę na oznaczenie 'Zweryfikowany'",
-        "Sprawdź inne ogłoszenia sprzedającego"
+        "Sprawdź inne ogłoszenia sprzedającego",
       ],
       dont: [
         "Nie ufaj kontom założonym niedawno bez żadnych opinii",
-        "Nie ignoruj negatywnych opinii od innych użytkowników"
-      ]
+        "Nie ignoruj negatywnych opinii od innych użytkowników",
+      ],
     },
     {
       title: "Zachowaj ostrożność przy płatnościach",
-      description: "Unikaj płatności z góry, zwłaszcza przelewów na nieznane konta. Preferuj płatność przy odbiorze lub bezpieczne metody płatności.",
+      description:
+        "Unikaj płatności z góry, zwłaszcza przelewów na nieznane konta. Preferuj płatność przy odbiorze lub bezpieczne metody płatności.",
       icon: <CreditCard className="h-8 w-8 text-primary" />,
       do: [
         "Preferuj płatność przy odbiorze",
         "Korzystaj z bezpiecznych metod płatności",
         "Zachowaj potwierdzenia transakcji",
-        "Unikaj przelewów na prywatne konta"
+        "Unikaj przelewów na prywatne konta",
       ],
       dont: [
         "Nie wysyłaj pieniędzy z góry nieznanym osobom",
         "Nie korzystaj z podejrzanych systemów płatności",
-        "Nie podawaj danych karty na niezaufanych stronach"
-      ]
+        "Nie podawaj danych karty na niezaufanych stronach",
+      ],
     },
     {
       title: "Komunikuj się przez platformę",
@@ -54,45 +69,47 @@ export default function SecurityPage() {
         "Używaj systemu wiadomości Gotpage",
         "Zachowaj historię rozmów",
         "Wyjaśnij wszystkie szczegóły przed spotkaniem",
-        "Bądź uprzejmy i profesjonalny"
+        "Bądź uprzejmy i profesjonalny",
       ],
       dont: [
         "Nie podawaj zbyt szybko swojego numeru telefonu",
         "Nie klikaj w podejrzane linki przesłane przez innych użytkowników",
-        "Nie zgadzaj się na rozmowy poza platformą na wczesnym etapie"
-      ]
+        "Nie zgadzaj się na rozmowy poza platformą na wczesnym etapie",
+      ],
     },
     {
       title: "Uważaj na podejrzane oferty",
-      description: "Jeśli oferta wydaje się zbyt dobra, aby była prawdziwa, prawdopodobnie tak jest. Unikaj ogłoszeń z nienaturalnie niskimi cenami.",
+      description:
+        "Jeśli oferta wydaje się zbyt dobra, aby była prawdziwa, prawdopodobnie tak jest. Unikaj ogłoszeń z nienaturalnie niskimi cenami.",
       icon: <AlertTriangle className="h-8 w-8 text-primary" />,
       do: [
         "Porównuj ceny z podobnymi ofertami",
         "Pytaj o szczegóły i dodatkowe zdjęcia",
         "Sprawdzaj dokładnie opis i zdjęcia",
-        "Zweryfikuj autentyczność produktu przed zakupem"
+        "Zweryfikuj autentyczność produktu przed zakupem",
       ],
       dont: [
         "Nie daj się zwieść nienaturalnie niskim cenom",
         "Nie ignoruj błędów w opisie lub niskiej jakości zdjęć",
-        "Nie pomijaj sprawdzenia szczegółów oferty"
-      ]
+        "Nie pomijaj sprawdzenia szczegółów oferty",
+      ],
     },
     {
       title: "Zgłaszaj podejrzane ogłoszenia",
-      description: "Jeśli zauważysz podejrzane ogłoszenie lub zachowanie innego użytkownika, zgłoś to do naszego zespołu moderacji. Pomożesz w ten sposób chronić innych użytkowników.",
+      description:
+        "Jeśli zauważysz podejrzane ogłoszenie lub zachowanie innego użytkownika, zgłoś to do naszego zespołu moderacji. Pomożesz w ten sposób chronić innych użytkowników.",
       icon: <Flag className="h-8 w-8 text-primary" />,
       do: [
         "Zgłaszaj podejrzane ogłoszenia",
         "Informuj o nieuczciwych praktykach",
         "Podaj szczegółowy powód zgłoszenia",
-        "Zachowaj dowody oszustwa (np. zrzuty ekranu)"
+        "Zachowaj dowody oszustwa (np. zrzuty ekranu)",
       ],
       dont: [
         "Nie ignoruj podejrzanych zachowań",
         "Nie wdawaj się w konflikty z podejrzanymi użytkownikami",
-        "Nie podawaj swoich danych osobom, które wzbudzają Twoje podejrzenia"
-      ]
+        "Nie podawaj swoich danych osobom, które wzbudzają Twoje podejrzenia",
+      ],
     },
   ]
 
@@ -105,7 +122,7 @@ export default function SecurityPage() {
     "Zdjęcia są niskiej jakości, skopiowane z internetu lub nie pokazują faktycznego stanu produktu",
     "Sprzedający proponuje transakcję poza platformą Gotpage",
     "Sprzedający twierdzi, że mieszka za granicą i prosi o przesłanie pieniędzy",
-    "Sprzedający wywiera presję i pośpiech przy podejmowaniu decyzji"
+    "Sprzedający wywiera presję i pośpiech przy podejmowaniu decyzji",
   ]
 
   return (
@@ -122,7 +139,8 @@ export default function SecurityPage() {
         <div className="space-y-6">
           <h2 className="text-3xl font-bold mb-4">Nasze zasady bezpieczeństwa</h2>
           <p className="text-lg text-muted-foreground">
-            W Gotpage bezpieczeństwo naszych użytkowników jest priorytetem. Stosujemy najnowsze technologie i procedury, aby chronić Twoje dane i zapewnić bezpieczne korzystanie z serwisu.
+            W Gotpage bezpieczeństwo naszych użytkowników jest priorytetem. Stosujemy najnowsze technologie i procedury,
+            aby chronić Twoje dane i zapewnić bezpieczne korzystanie z serwisu.
           </p>
 
           <div className="space-y-4">
@@ -165,12 +183,7 @@ export default function SecurityPage() {
         </div>
 
         <div className="relative h-[400px] rounded-lg overflow-hidden">
-          <Image
-            src="/placeholder.svg?height=400&width=600&text=Bezpieczeństwo"
-            alt="Bezpieczeństwo"
-            fill
-            className="object-cover"
-          />
+          <Image src="/security/online-security.png" alt="Bezpieczeństwo online" fill className="object-cover" />
         </div>
       </div>
 
@@ -194,33 +207,35 @@ export default function SecurityPage() {
                 <Card key={index} className="hover:shadow-md transition-shadow">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-primary/10">
-                        {tip.icon}
-                      </div>
+                      <div className="p-2 rounded-full bg-primary/10">{tip.icon}</div>
                       <CardTitle>{tip.title}</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <CardDescription className="text-base">{tip.description}</CardDescription>
-                    
+
                     <div>
                       <h4 className="font-medium flex items-center gap-2 mb-2">
                         <CheckCircle className="h-4 w-4 text-green-500" /> Co robić
                       </h4>
                       <ul className="space-y-1 pl-6 text-sm">
                         {tip.do.map((item, i) => (
-                          <li key={i} className="list-disc text-muted-foreground">{item}</li>
+                          <li key={i} className="list-disc text-muted-foreground">
+                            {item}
+                          </li>
                         ))}
                       </ul>
                     </div>
-                    
+
                     <div>
                       <h4 className="font-medium flex items-center gap-2 mb-2">
                         <XCircle className="h-4 w-4 text-red-500" /> Czego unikać
                       </h4>
                       <ul className="space-y-1 pl-6 text-sm">
                         {tip.dont.map((item, i) => (
-                          <li key={i} className="list-disc text-muted-foreground">{item}</li>
+                          <li key={i} className="list-disc text-muted-foreground">
+                            {item}
+                          </li>
                         ))}
                       </ul>
                     </div>
@@ -241,30 +256,49 @@ export default function SecurityPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="mb-4 rounded-lg overflow-hidden">
+                    <Image
+                      src="/security/verify-buyers.png"
+                      alt="Weryfikacja kupujących"
+                      width={400}
+                      height={200}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
                   <CardDescription className="text-base">
                     Sprawdzaj profile kupujących, ich historię i opinie. Bądź ostrożny wobec podejrzanych zapytań.
                   </CardDescription>
-                  
+
                   <div>
                     <h4 className="font-medium flex items-center gap-2 mb-2">
                       <CheckCircle className="h-4 w-4 text-green-500" /> Co robić
                     </h4>
                     <ul className="space-y-1 pl-6 text-sm">
-                      <li className="list-disc text-muted-foreground">Sprawdzaj profil kupującego przed finalizacją transakcji</li>
-                      <li className="list-disc text-muted-foreground">Zadawaj pytania, aby zweryfikować intencje kupującego</li>
+                      <li className="list-disc text-muted-foreground">
+                        Sprawdzaj profil kupującego przed finalizacją transakcji
+                      </li>
+                      <li className="list-disc text-muted-foreground">
+                        Zadawaj pytania, aby zweryfikować intencje kupującego
+                      </li>
                       <li className="list-disc text-muted-foreground">Zachowaj całą historię rozmów</li>
                       <li className="list-disc text-muted-foreground">Ustal jasne warunki transakcji</li>
                     </ul>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium flex items-center gap-2 mb-2">
                       <XCircle className="h-4 w-4 text-red-500" /> Czego unikać
                     </h4>
                     <ul className="space-y-1 pl-6 text-sm">
-                      <li className="list-disc text-muted-foreground">Nie wysyłaj produktu przed otrzymaniem płatności</li>
-                      <li className="list-disc text-muted-foreground">Nie akceptuj czeków ani podejrzanych form płatności</li>
-                      <li className="list-disc text-muted-foreground">Nie podawaj danych osobowych, które nie są niezbędne do transakcji</li>
+                      <li className="list-disc text-muted-foreground">
+                        Nie wysyłaj produktu przed otrzymaniem płatności
+                      </li>
+                      <li className="list-disc text-muted-foreground">
+                        Nie akceptuj czeków ani podejrzanych form płatności
+                      </li>
+                      <li className="list-disc text-muted-foreground">
+                        Nie podawaj danych osobowych, które nie są niezbędne do transakcji
+                      </li>
                     </ul>
                   </div>
                 </CardContent>
@@ -280,30 +314,48 @@ export default function SecurityPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="mb-4 rounded-lg overflow-hidden">
+                    <Image
+                      src="/security/secure-payments.png"
+                      alt="Bezpieczne płatności"
+                      width={400}
+                      height={200}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
                   <CardDescription className="text-base">
-                    Wybieraj bezpieczne metody płatności i zawsze wydawaj potwierdzenia. Unikaj podejrzanych propozycji płatności.
+                    Wybieraj bezpieczne metody płatności i zawsze wydawaj potwierdzenia. Unikaj podejrzanych propozycji
+                    płatności.
                   </CardDescription>
-                  
+
                   <div>
                     <h4 className="font-medium flex items-center gap-2 mb-2">
                       <CheckCircle className="h-4 w-4 text-green-500" /> Co robić
                     </h4>
                     <ul className="space-y-1 pl-6 text-sm">
-                      <li className="list-disc text-muted-foreground">Preferuj płatności przy odbiorze lub przez bezpieczne platformy</li>
+                      <li className="list-disc text-muted-foreground">
+                        Preferuj płatności przy odbiorze lub przez bezpieczne platformy
+                      </li>
                       <li className="list-disc text-muted-foreground">Zawsze wydawaj potwierdzenia płatności</li>
                       <li className="list-disc text-muted-foreground">Dokładnie sprawdzaj otrzymane przelewy</li>
-                      <li className="list-disc text-muted-foreground">Informuj o dostępnych metodach płatności w opisie ogłoszenia</li>
+                      <li className="list-disc text-muted-foreground">
+                        Informuj o dostępnych metodach płatności w opisie ogłoszenia
+                      </li>
                     </ul>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium flex items-center gap-2 mb-2">
                       <XCircle className="h-4 w-4 text-red-500" /> Czego unikać
                     </h4>
                     <ul className="space-y-1 pl-6 text-sm">
                       <li className="list-disc text-muted-foreground">Nie akceptuj płatności z podejrzanych źródeł</li>
-                      <li className="list-disc text-muted-foreground">Nie zgadzaj się na płatności w ratach bez zabezpieczenia</li>
-                      <li className="list-disc text-muted-foreground">Nie wysyłaj produktu przed zaksięgowaniem płatności</li>
+                      <li className="list-disc text-muted-foreground">
+                        Nie zgadzaj się na płatności w ratach bez zabezpieczenia
+                      </li>
+                      <li className="list-disc text-muted-foreground">
+                        Nie wysyłaj produktu przed zaksięgowaniem płatności
+                      </li>
                     </ul>
                   </div>
                 </CardContent>
@@ -319,10 +371,19 @@ export default function SecurityPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="mb-4 rounded-lg overflow-hidden">
+                    <Image
+                      src="/security/clear-communication.png"
+                      alt="Jasna komunikacja"
+                      width={400}
+                      height={200}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
                   <CardDescription className="text-base">
                     Komunikuj się jasno i profesjonalnie. Podawaj dokładne informacje o produkcie i warunkach sprzedaży.
                   </CardDescription>
-                  
+
                   <div>
                     <h4 className="font-medium flex items-center gap-2 mb-2">
                       <CheckCircle className="h-4 w-4 text-green-500" /> Co robić
@@ -331,17 +392,21 @@ export default function SecurityPage() {
                       <li className="list-disc text-muted-foreground">Dokładnie opisuj produkty, w tym wady</li>
                       <li className="list-disc text-muted-foreground">Dodawaj wysokiej jakości zdjęcia</li>
                       <li className="list-disc text-muted-foreground">Szybko odpowiadaj na pytania</li>
-                      <li className="list-disc text-muted-foreground">Jasno określaj warunki sprzedaży, dostawy i zwrotów</li>
+                      <li className="list-disc text-muted-foreground">
+                        Jasno określaj warunki sprzedaży, dostawy i zwrotów
+                      </li>
                     </ul>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium flex items-center gap-2 mb-2">
                       <XCircle className="h-4 w-4 text-red-500" /> Czego unikać
                     </h4>
                     <ul className="space-y-1 pl-6 text-sm">
                       <li className="list-disc text-muted-foreground">Nie ukrywaj wad produktu</li>
-                      <li className="list-disc text-muted-foreground">Nie używaj wprowadzających w błąd opisów lub zdjęć</li>
+                      <li className="list-disc text-muted-foreground">
+                        Nie używaj wprowadzających w błąd opisów lub zdjęć
+                      </li>
                       <li className="list-disc text-muted-foreground">Nie ignoruj pytań potencjalnych kupujących</li>
                     </ul>
                   </div>
@@ -358,10 +423,20 @@ export default function SecurityPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="mb-4 rounded-lg overflow-hidden">
+                    <Image
+                      src="/security/safe-meetings.png"
+                      alt="Bezpieczne spotkania"
+                      width={400}
+                      height={200}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
                   <CardDescription className="text-base">
-                    Jeśli spotykasz się z kupującym osobiście, wybieraj bezpieczne, publiczne miejsca i zachowaj ostrożność.
+                    Jeśli spotykasz się z kupującym osobiście, wybieraj bezpieczne, publiczne miejsca i zachowaj
+                    ostrożność.
                   </CardDescription>
-                  
+
                   <div>
                     <h4 className="font-medium flex items-center gap-2 mb-2">
                       <CheckCircle className="h-4 w-4 text-green-500" /> Co robić
@@ -373,7 +448,7 @@ export default function SecurityPage() {
                       <li className="list-disc text-muted-foreground">Miej przy sobie telefon</li>
                     </ul>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium flex items-center gap-2 mb-2">
                       <XCircle className="h-4 w-4 text-red-500" /> Czego unikać
@@ -400,11 +475,19 @@ export default function SecurityPage() {
           </p>
         </div>
 
+        <div className="relative mb-8 rounded-lg overflow-hidden">
+        
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end p-6">
+            <h3 className="text-2xl font-bold text-white">Bądź czujny na oznaki oszustwa</h3>
+          </div>
+        </div>
+
         <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Uwaga</AlertTitle>
           <AlertDescription>
-            Jeśli zauważysz którykolwiek z poniższych sygnałów ostrzegawczych, zachowaj szczególną ostrożność i rozważ rezygnację z transakcji.
+            Jeśli zauważysz którykolwiek z poniższych sygnałów ostrzegawczych, zachowaj szczególną ostrożność i rozważ
+            rezygnację z transakcji.
           </AlertDescription>
         </Alert>
 
@@ -428,15 +511,13 @@ export default function SecurityPage() {
         </div>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Button size="lg" asChild>
-            <Link href="/centrum-pomocy#kontakt">
+            <Link href="/kontakt">
               <Flag className="mr-2 h-5 w-5" />
               Zgłoś problem
             </Link>
           </Button>
           <Button variant="outline" size="lg" asChild>
-            <Link href="/centrum-pomocy">
-              Centrum pomocy
-            </Link>
+            <Link href="/pomoc">Centrum pomocy</Link>
           </Button>
         </div>
       </div>

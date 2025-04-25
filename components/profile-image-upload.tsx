@@ -101,7 +101,6 @@ export function ProfileImageUpload({ userId, currentAvatar, userName, onAvatarUp
         description: "Zdjęcie profilowe zostało zaktualizowane",
       })
     } catch (error) {
-      console.error("Błąd podczas przesyłania zdjęcia:", error)
       toast({
         title: "Błąd",
         description: error instanceof Error ? error.message : "Wystąpił błąd podczas przesyłania zdjęcia",

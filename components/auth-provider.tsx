@@ -46,7 +46,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsAuthenticated(false)
         }
       } catch (error) {
-        console.error("Błąd sprawdzania uwierzytelnienia:", error)
         setUser(null)
         setIsAuthenticated(false)
       } finally {
@@ -83,7 +82,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return false
     } catch (error) {
-      console.error("Błąd logowania:", error)
       return false
     }
   }
@@ -98,7 +96,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(false)
       router.push("/admin/login")
     } catch (error) {
-      console.error("Błąd wylogowania:", error)
     }
   }
 

@@ -70,7 +70,6 @@ export function SearchAutocomplete({
         setSuggestions(data.suggestions || [])
         setShowSuggestions(true)
       } catch (error) {
-        console.error("Error fetching suggestions:", error)
         setSuggestions([])
       } finally {
         setIsLoading(false)

@@ -136,7 +136,6 @@ export function NewsPost({ post }: NewsPostProps) {
       setLikesCount((prev) => (data.liked ? prev + 1 : prev - 1))
 
     } catch (error) {
-      console.error("Error liking post:", error)
       toast({
         title: "Błąd",
         description: error instanceof Error ? error.message : "Wystąpił błąd podczas przetwarzania polubienia",
@@ -156,7 +155,6 @@ export function NewsPost({ post }: NewsPostProps) {
           url: `${window.location.origin}/aktualnosci/post/${post.id}`,
         })
       } catch (error) {
-        console.error("Błąd podczas udostępniania:", error)
       }
     } else {
       // Fallback dla przeglądarek bez API Web Share
@@ -215,7 +213,6 @@ export function NewsPost({ post }: NewsPostProps) {
         description: "Twój głos został zapisany",
       })
     } catch (error) {
-      console.error("Error voting:", error)
       toast({
         title: "Błąd",
         description: error instanceof Error ? error.message : "Wystąpił błąd podczas głosowania",
@@ -274,7 +271,6 @@ export function NewsPost({ post }: NewsPostProps) {
       })
       router.refresh()
     } catch (error) {
-      //console.error("Error deleting post:", error)
       toast({
         title: "Błąd",
         description: error instanceof Error ? error.message : "Wystąpił błąd podczas usuwania wpisu",

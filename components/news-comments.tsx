@@ -64,7 +64,6 @@ export function NewsComments({ postId, user }: NewsCommentsProps) {
         const data = await response.json()
         setComments(data)
       } catch (error) {
-        console.error("Error fetching comments:", error)
         toast({
           title: "Błąd",
           description: "Nie udało się pobrać komentarzy",
@@ -118,7 +117,6 @@ export function NewsComments({ postId, user }: NewsCommentsProps) {
       setComments((prev) => [newComment, ...prev])
       setCommentText("")
     } catch (error) {
-      console.error("Error adding comment:", error)
       toast({
         title: "Błąd",
         description: error instanceof Error ? error.message : "Wystąpił błąd podczas dodawania komentarza",

@@ -5,6 +5,7 @@ import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import { db } from "./db"
+import { UserData } from "@/app/api/profile/route"
 
 export interface User {
   id: number
@@ -51,7 +52,6 @@ export async function auth(request?: Request): Promise<User | null> {
 
     return users[0] as User
   } catch (error) {
-    console.error("Błąd autentykacji:", error)
     return null
   }
 }
@@ -70,7 +70,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          const [users] = await db.query("SELECT * FROM users WHERE email = ?", [credentials.email])
+          const [users] = await db.query("SELECT * FROM users WHERE email = ?", [credentials.email]) as UserData[]
 
           if (!users || users.length === 0) {
             return null
@@ -83,8 +83,6 @@ export const authOptions: NextAuthOptions = {
             return null
           }
 
-          // console.log("Zalogowano pomyślnie:", user)
-
           return {
             id: user.id.toString(),
             name: user.username,
@@ -93,7 +91,6 @@ export const authOptions: NextAuthOptions = {
             image: user.avatar 
           }
         } catch (error) {
-          // console.error("Auth error:", error)
           return null
         }
       },
@@ -129,7 +126,7 @@ export const authOptions: NextAuthOptions = {
 // Funkcja pomocnicza do sprawdzania, czy użytkownik jest administratorem
 export async function isAdmin(userId: string) {
   try {
-    const [users] = await db.query("SELECT role FROM users WHERE id = ?", [userId])
+    const [users] = await db.query("SELECT role FROM users WHERE id = ?", [userId]) as UserData[]
 
     if (!users || users.length === 0) {
       return false
@@ -137,7 +134,6 @@ export async function isAdmin(userId: string) {
 
     return users[0].role === "admin"
   } catch (error) {
-    console.error("Error checking admin status:", error)
     return false
   }
 }
@@ -145,9 +141,5 @@ export async function isAdmin(userId: string) {
 // Funkcja do weryfikacji hasła administratora
 export function verifyAdminPassword(password: string): boolean {
   const adminPassword = process.env.ADMIN_PASSWORD
-  if (!adminPassword) {
-    console.error("ADMIN_PASSWORD not set in environment variables")
-    return false
-  }
   return password === adminPassword
 }

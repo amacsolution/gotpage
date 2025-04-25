@@ -114,6 +114,62 @@ const categories = [
       { name: "dojazd", label: "Możliwość dojazdu", type: "checkbox", required: false, dbField: "has_garage" }, // Używamy has_garage do przechowywania informacji o możliwości dojazdu
     ],
   },
+  {
+    id: 6,
+    name: "Praca",
+    subcategories: ["Etaty", "Freelance", "Zdalna", "Dorywcza", "Sezonowa"],
+    fields: [
+      { name: "stanowisko", label: "Stanowisko", type: "text", required: true, dbField: "position" },
+      { name: "firma", label: "Firma", type: "text", required: false, dbField: "company" },
+      { name: "rodzaj_umowy", label: "Rodzaj umowy", type: "select", options: ["Umowa o pracę", "Zlecenie", "Dzieło", "B2B"], required: false, dbField: "contract_type" },
+      { name: "wynagrodzenie", label: "Wynagrodzenie (PLN)", type: "number", required: false, dbField: "salary" },
+      { name: "lokalizacja", label: "Lokalizacja", type: "text", required: false, dbField: "location" }
+    ]
+  },
+  {
+    id: 7,
+    name: "Zwierzęta",
+    subcategories: ["Psy", "Koty", "Ptaki", "Gryzonie", "Ryby", "Akcesoria"],
+    fields: [
+      { name: "gatunek", label: "Gatunek", type: "text", required: true, dbField: "species" },
+      { name: "rasa", label: "Rasa", type: "text", required: false, dbField: "breed" },
+      { name: "wiek", label: "Wiek (lata)", type: "number", required: false, dbField: "age" },
+      { name: "szczepienia", label: "Szczepienia", type: "checkbox", required: false, dbField: "vaccinated" }
+    ]
+  },
+  {
+    id: 8,
+    name: "Sport i Hobby",
+    subcategories: ["Rowery", "Fitness", "Wędkarstwo", "Instrumenty", "Kolekcje"],
+    fields: [
+      { name: "typ", label: "Typ", type: "text", required: true, dbField: "type" },
+      { name: "marka", label: "Marka", type: "text", required: false, dbField: "brand" },
+      { name: "stan", label: "Stan", type: "select", options: ["Nowy", "Używany"], required: false, dbField: "condition" }
+    ]
+  },
+  {
+    id: 9,
+    name: "Dla dzieci",
+    subcategories: ["Zabawki", "Wózki", "Ubrania", "Foteliki", "Meble dziecięce"],
+    fields: [
+      { name: "wiek", label: "Wiek dziecka (lata)", type: "number", required: false, dbField: "child_age" },
+      { name: "marka", label: "Marka", type: "text", required: false, dbField: "brand" },
+      { name: "kolor", label: "Kolor", type: "text", required: false, dbField: "color" }
+    ]
+  }
+,
+{
+  id: 10,
+  name: "Rolnictwo",
+  subcategories: ["Maszyny rolnicze", "Zwierzęta hodowlane", "Nawozy", "Zboża", "Usługi rolnicze"],
+  fields: [
+    { name: "typ", label: "Typ", type: "text", required: true, dbField: "type" },
+    { name: "rok", label: "Rok produkcji", type: "number", required: false, dbField: "year" },
+    { name: "moc", label: "Moc (KM)", type: "number", required: false, dbField: "power" }
+  ]
+}
+
+      
 ]
 
 // Dynamiczne budowanie schematu walidacji

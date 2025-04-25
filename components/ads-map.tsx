@@ -203,7 +203,6 @@ function MarkerClusterHandler({ ads }: { ads: any[] }) {
         map.addLayer(clusterGroup)
         clusterGroupRef.current = clusterGroup
       } catch (error) {
-        console.error("Błąd podczas ładowania klastrów markerów:", error)
       }
     }
 
@@ -233,11 +232,11 @@ const getCoordinates = async (address: string) => {
     if (data.length > 0) {
       return { lat: Number.parseFloat(data[0].lat), lng: Number.parseFloat(data[0].lon) }
     } else {
-      console.warn("Nie znaleziono współrzędnych dla adresu:", address)
+
       return null
     }
   } catch (error) {
-    console.error("Błąd podczas pobierania współrzędnych:", error)
+
     return null
   }
 }

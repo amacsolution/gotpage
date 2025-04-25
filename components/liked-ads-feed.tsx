@@ -44,7 +44,6 @@ export function LikedAdsFeed({ userId }: LikedAdsFeedProps) {
       setHasMore(pageNum < data.totalPages)
       setPage(pageNum)
     } catch (error) {
-      console.error("Błąd podczas pobierania polubionych ogłoszeń:", error)
       toast({
         title: "Błąd",
         description: "Nie udało się pobrać polubionych ogłoszeń. Spróbuj ponownie później.",

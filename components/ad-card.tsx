@@ -77,7 +77,6 @@ export function AdCard({ ad, image}: AdCardProps) {
         setIsAuthor(user.id === ad.author.id)
       }
     } catch (error) {
-      console.error("Błąd podczas sprawdzania autora:", error)
     }
   }, [ad.author.id])
 
@@ -119,7 +118,7 @@ export function AdCard({ ad, image}: AdCardProps) {
       // Odświeżenie strony po usunięciu
       router.refresh()
     } catch (error) {
-      console.error("Błąd podczas usuwania ogłoszenia:", error)
+
       toast({
         title: "Błąd",
         description: "Nie udało się usunąć ogłoszenia",

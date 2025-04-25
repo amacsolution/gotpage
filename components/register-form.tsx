@@ -50,22 +50,44 @@ const validateNIP = (nip: string) => {
 
 // Kategorie działalności
 const businessCategories = [
-  "Motoryzacja",
-  "Nieruchomości",
-  "Elektronika",
-  "Moda",
+  "Sklep detaliczny",
+  "Sklep internetowy",
+  "Supermarket",
+  "Hurtownia",
   "Usługi",
-  "Gastronomia",
-  "Dom i ogród",
-  "Sport i hobby",
+  "Rozrywka",
+  "Transport/Logistyka",
+  "Klub nocny",
+  "Sanatorium",
+  "Piekarnia",
+  "Centrum zdrowia",
+  "Kino/Teatr",
+  "Miasto",
+  "Strona/Portal",
+  "Obiekt/Placówka",
+  "Restauracja/Bar/Kawiarnia",
+  "Blog",
+  "Gry",
+  "Turystyka/Rekreacja",
   "Edukacja",
-  "Zdrowie i uroda",
-  "Transport",
-  "Budownictwo",
-  "IT",
-  "Finanse",
-  "Inne",
-]
+  "Galeria",
+  "Finanse/Ubezpieczenia",
+  "Bank",
+  "Uroda/Zdrowie/Relaks",
+  "Nieruchomości",
+  "Reklama/Biznes",
+  "Druk/Publikacje",
+  "Salon samochodowy/Targ",
+  "Noclegi",
+  "Kasyno",
+  "Fundacja",
+  "Telekomunikacja/Internet",
+  "Fan Klub",
+  "Organizacja",
+  "Instytucja/Urząd",
+  "Znana osoba"
+];
+
 
 // Walidacja hasła - musi zawierać co najmniej jedną cyfrę, jedną małą literę, jedną dużą literę i jeden znak specjalny
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/

@@ -67,7 +67,6 @@ export function ReportDialog({ reportedType, reportedId, trigger }: ReportDialog
       setReason("")
       setIsOpen(false)
     } catch (error) {
-      console.error("Error submitting report:", error)
       toast.error("Nie udało się wysłać zgłoszenia")
     } finally {
       setIsSubmitting(false)

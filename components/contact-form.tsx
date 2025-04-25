@@ -72,7 +72,6 @@ export function ContactForm() {
         description: "Dziękujemy za kontakt. Odpowiemy najszybciej jak to możliwe.",
       })
     } catch (error) {
-      console.error("Error submitting form:", error)
       toast({
         title: "Błąd",
         description: "Nie udało się wysłać formularza. Spróbuj ponownie później.",

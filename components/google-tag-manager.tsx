@@ -1,44 +1,52 @@
 "use client"
 
-import { useEffect } from "react"
-import Script from "next/script"
+import { usePathname, useSearchParams } from 'next/navigation'
+import Script from 'next/script'
+import React, { useEffect } from 'react'
 
 interface GoogleTagManagerProps {
   gtmId: string
   gaId?: string
-  enableOnLocalhost?: boolean
 }
 
-export default function GoogleTagManager({ gtmId, gaId, enableOnLocalhost = false }: GoogleTagManagerProps) {
-  const isLocalhost =
-    typeof window !== "undefined" &&
-    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-
-  const shouldLoadGTM = !isLocalhost || enableOnLocalhost
-
-  useEffect(() => {
-    if (shouldLoadGTM) {
-      // Initialize dataLayer
-      window.dataLayer = window.dataLayer || []
-
-      // Jeśli mamy ID Google Analytics, dodajmy konfigurację GA4
-      if (gaId) {
+export default function GoogleTagManager({ gtmId, gaId }: GoogleTagManagerProps) {
+    const pathname = usePathname()
+  
+    return (
+      <React.Suspense fallback={null}>
+        <GoogleTagManagerContent gtmId={gtmId} gaId={gaId} pathname={pathname} />
+      </React.Suspense>
+    )
+  }
+  
+  function GoogleTagManagerContent({ gtmId, gaId, pathname }: GoogleTagManagerProps & { pathname: string }) {
+    const searchParams = useSearchParams()
+  
+    useEffect(() => {
+      if (pathname) {
+        // Wysyłanie zdarzenia wyświetlenia strony do dataLayer przy zmianie ścieżki
+        window.dataLayer = window.dataLayer || []
         window.dataLayer.push({
-          "gtm.start": new Date().getTime(),
-          event: "gtm.js",
-          config: gaId,
+          event: 'page_view',
+          page: pathname,
         })
       }
-    }
-  }, [shouldLoadGTM, gaId])
-
-  if (!shouldLoadGTM) {
-    return null
-  }
-
-  return (
+    }, [pathname, searchParams])
+  
+    return (
     <>
-      {/* Google Tag Manager - Script for head */}
+      {/* Bazowy skrypt GTM - inicjalizacja dataLayer */}
+      <Script
+        id="gtm-base"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+          `,
+        }}
+      />
+      
+      {/* Skrypt GTM */}
       <Script
         id="gtm-script"
         strategy="afterInteractive"
@@ -52,31 +60,48 @@ export default function GoogleTagManager({ gtmId, gaId, enableOnLocalhost = fals
           `,
         }}
       />
-
-      {/* Dodajemy bezpośrednio skrypt Google Analytics 4 */}
+      
+      {/* Skrypt GA4 */}
       {gaId && (
-        <Script
-          id="ga4-script"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${gaId}');
-            `,
-          }}
-        />
+        <>
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            strategy="afterInteractive"
+          />
+          <Script
+            id="ga4-config"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}', {
+                  page_path: window.location.pathname,
+                });
+              `,
+            }}
+          />
+        </>
       )}
+      
+      {/* GTM noscript iframe */}
+      <noscript>
+        <iframe
+          src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+          height="0"
+          width="0"
+          style={{ display: 'none', visibility: 'hidden' }}
+          title="gtm"
+        />
+      </noscript>
     </>
   )
 }
 
-// Add this to make TypeScript happy
 declare global {
   interface Window {
     dataLayer: any[]
-    google_tag_manager?: any
     gtag?: (...args: any[]) => void
   }
 }

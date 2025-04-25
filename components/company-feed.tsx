@@ -75,7 +75,6 @@ export function CompanyFeed({ category, location, searchQuery, sortBy = "rating"
       setTotalCompanies(data.total)
       setHasMore(pageNum < data.totalPages)
     } catch (error) {
-      console.error("Błąd podczas pobierania firm:", error)
       toast({
         title: "Błąd",
         description: "Nie udało się pobrać firm. Spróbuj ponownie później.",

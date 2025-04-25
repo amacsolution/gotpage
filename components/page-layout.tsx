@@ -12,12 +12,9 @@ export function PageLayout({ children }: PageLayoutProps) {
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID || "GTM-NDMHS7S8"
   const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-9VWE95RHPF" // Twój ID Google Analytics
 
-  // Ustaw na true, jeśli chcesz testować GTM na localhost
-  const enableGTMOnLocalhost = true
-
   return (
     <div className="flex min-h-screen flex-col">
-      <GoogleTagManager gtmId={gtmId} gaId={gaId} enableOnLocalhost={enableGTMOnLocalhost} />
+      <GoogleTagManager gtmId={gtmId} gaId={gaId}/>
 
       {/* Add debug component only in development */}
 

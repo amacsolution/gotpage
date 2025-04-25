@@ -5,6 +5,7 @@ import crypto from "crypto"
 import { uploadImage } from "@/lib/upload"
 import { emailConfig } from "@/emails/config"
 import { sendAdConfirmationEmail } from "@/lib/email-helpers"
+import { getCategoryByName } from "@/lib/ad-categories"
 
 const generateAdKey = (name: string): string => {
   const baseKey = name.replace(/\s+/g, "-").toLowerCase() // Przekształć nazwę na format sługowany
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     const content = formData.get("content") as string
     const category = formData.get("category") as string
     const subcategory = (formData.get("subcategory") as string) || null
-    const price = formData.get("price") ? Number.parseFloat(formData.get("price") as string) : null
+    const price = formData.get("price") ? Number.parseFloat(formData.get("price") as string) : 0
     const isPromoted = formData.get("isPromoted") === "true"
     const location = (formData.get("location") as string) || null
     const adres = (formData.get("adres") as string) || null
@@ -44,11 +45,48 @@ export async function POST(request: Request) {
     await query("START TRANSACTION")
 
     try {
-      // Przygotowanie zapytania SQL w zależności od kategorii
-      let sqlColumns =
-        "ad_key, title, description, category, subcategory, price, promoted, location, adress, kod, user_id, created_at, updated_at"
-      let sqlPlaceholders = "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW()"
-      const sqlValues: any[] = [
+      // Przygotowanie parametrów specyficznych dla kategorii
+      const categoryData = getCategoryByName(category)
+      const parameters: Record<string, any> = {}
+
+      if (categoryData) {
+        // Zbieranie wszystkich pól specyficznych dla kategorii
+        categoryData.fields.forEach((field) => {
+          const fieldValue = formData.get(field.name)
+          if (fieldValue !== null) {
+            // Konwertuj wartości na odpowiednie typy
+            if (field.type === "number") {
+              parameters[field.name] = fieldValue ? Number(fieldValue) : null
+            } else if (field.type === "checkbox") {
+              parameters[field.name] = fieldValue === "true"
+            } else {
+              parameters[field.name] = fieldValue
+            }
+          }
+        })
+      }
+
+      // Dodanie ogłoszenia do bazy danych
+      const sql = `
+        INSERT INTO ads (
+          ad_key, 
+          title, 
+          description, 
+          category, 
+          subcategory, 
+          price, 
+          promoted, 
+          location, 
+          adress, 
+          kod, 
+          parameters,
+          user_id, 
+          created_at, 
+          updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+      `
+
+      const values = [
         adKey,
         title,
         content,
@@ -59,109 +97,11 @@ export async function POST(request: Request) {
         location,
         adres,
         kod,
+        JSON.stringify(parameters),
         user.id,
       ]
 
-      // Dodatkowe pola w zależności od kategorii
-      if (category === "Nieruchomości") {
-        // Pola dla nieruchomości
-        const squareMeters = formData.get("powierzchnia")
-          ? Number.parseFloat(formData.get("powierzchnia") as string)
-          : null
-        const rooms = formData.get("liczba_pokoi") ? Number.parseInt(formData.get("liczba_pokoi") as string) : null
-        const floor = formData.get("pietro") ? Number.parseInt(formData.get("pietro") as string) : null
-        const yearBuilt = formData.get("rok_budowy") ? Number.parseInt(formData.get("rok_budowy") as string) : null
-        const heatingType = (formData.get("stan") as string) || null
-        const hasBalcony = formData.get("umeblowane") === "true" ? 1 : 0
-
-        // Dodanie kolumn i wartości do zapytania
-        sqlColumns += ", square_meters, rooms, floor, year_built, heating_type, has_balcony"
-        sqlPlaceholders += ", ?, ?, ?, ?, ?, ?"
-        sqlValues.push(squareMeters, rooms, floor, yearBuilt, heatingType, hasBalcony)
-      } else if (category === "Motoryzacja") {
-        // Pola dla motoryzacji
-        const make = (formData.get("marka") as string) || null
-        const model = (formData.get("model") as string) || null
-        const year = formData.get("rok") ? Number.parseInt(formData.get("rok") as string) : null
-        const mileage = formData.get("przebieg") ? Number.parseInt(formData.get("przebieg") as string) : null
-        const engineSize = formData.get("pojemnosc") ? Number.parseFloat(formData.get("pojemnosc") as string) : null
-        const fuelType = (formData.get("paliwo") as string) || null
-        const transmission = (formData.get("skrzynia") as string) || null
-
-        // Dodanie kolumn i wartości do zapytania
-        sqlColumns += ", make, model, year, mileage, engine_size, fuel_type, transmission"
-        sqlPlaceholders += ", ?, ?, ?, ?, ?, ?, ?"
-        sqlValues.push(make, model, year, mileage, engineSize, fuelType, transmission)
-      } else if (category === "Elektronika") {
-        // Pola dla elektroniki
-        const brand = (formData.get("marka") as string) || null
-        const model = (formData.get("model") as string) || null
-        const conditionType = (formData.get("stan") as string) || null
-        const warrantyMonths = formData.get("gwarancja") === "true" ? 12 : 0 // Domyślnie 12 miesięcy gwarancji
-
-        // Dodanie kolumn i wartości do zapytania
-        sqlColumns += ", brand, model, condition_type, warranty_months"
-        sqlPlaceholders += ", ?, ?, ?, ?"
-        sqlValues.push(brand, model, conditionType, warrantyMonths)
-      } else if (category === "Moda") {
-        // Pola dla mody
-        const brand = (formData.get("marka") as string) || null
-        const size = (formData.get("rozmiar") as string) || null
-        const color = (formData.get("kolor") as string) || null
-        const material = (formData.get("material") as string) || null
-        const conditionType = (formData.get("stan") as string) || null
-
-        // Dodanie kolumn i wartości do zapytania
-        sqlColumns += ", brand, condition_type, color"
-        sqlPlaceholders += ", ?, ?, ?"
-        sqlValues.push(brand, conditionType, color)
-
-        // Zapisanie dodatkowych pól jako JSON w kolumnie parameters
-        const additionalParams = { size, material }
-        sqlColumns += ", parameters"
-        sqlPlaceholders += ", ?"
-        sqlValues.push(JSON.stringify(additionalParams))
-      } else if (category === "Usługi") {
-        // Pola dla usług
-        const jobType = formData.get("doswiadczenie") ? (formData.get("doswiadczenie") as string) : null
-        const hasTransport = formData.get("dojazd") === "true" ? 1 : 0
-
-        // Dodanie kolumn i wartości do zapytania
-        sqlColumns += ", job_type, has_garage" // Używamy has_garage jako flagi dla możliwości dojazdu
-        sqlPlaceholders += ", ?, ?"
-        sqlValues.push(jobType, hasTransport)
-
-        // Zapisanie dodatkowych pól jako JSON w kolumnie parameters
-        const additionalParams = {
-          availability: (formData.get("dostepnosc") as string) || null,
-        }
-        sqlColumns += ", parameters"
-        sqlPlaceholders += ", ?"
-        sqlValues.push(JSON.stringify(additionalParams))
-      } else {
-        // Dla innych kategorii, zapisz wszystkie dodatkowe pola jako JSON w kolumnie parameters
-        const additionalFields: Record<string, any> = {}
-
-        // Iteracja po wszystkich polach formularza i dodanie tych, które nie są podstawowymi polami
-        for (const [key, value] of formData.entries()) {
-          if (
-            !["title", "content", "category", "subcategory", "price", "isPromoted", "location", "images"].includes(key)
-          ) {
-            additionalFields[key] = value
-          }
-        }
-
-        // Dodanie parametrów jako JSON
-        if (Object.keys(additionalFields).length > 0) {
-          sqlColumns += ", parameters"
-          sqlPlaceholders += ", ?"
-          sqlValues.push(JSON.stringify(additionalFields))
-        }
-      }
-
-      // Dodanie ogłoszenia do bazy danych
-      const sql = `INSERT INTO ads (${sqlColumns}) VALUES (${sqlPlaceholders})`
-      const result = (await query(sql, sqlValues)) as { insertId: number }
+      const result = (await query(sql, values)) as { insertId: number }
 
       if (!result || !result.insertId) {
         throw new Error("Nie udało się dodać ogłoszenia")
@@ -292,17 +232,9 @@ export interface AdData {
   author_verified: number
   author_email: string
   author_phone: string
-  author_joined_at : string
+  author_joined_at: string
   comments_count: number
-  comments: {
-    id: number
-    ad_id: number
-    user_id: number
-    content: string
-    created_at: string
-    updated_at: string
-  }
-  content: string
+  parameters: Record<string, any> | null
   ad_key: string
   created_at: string
   updated_at: string
@@ -337,6 +269,7 @@ export async function GET(request: Request) {
         a.location, 
         a.category, 
         a.subcategory, 
+        a.parameters,
         (SELECT image_url FROM ad_images WHERE ad_id = a.id ORDER BY id ASC LIMIT 1) as image, 
         a.created_at as createdAt, 
         a.promoted, 
@@ -359,7 +292,7 @@ export async function GET(request: Request) {
     if (category) {
       sql += " AND a.category = ?"
       params.push(category)
-    } 
+    }
 
     if (subcategory) {
       sql += " AND a.subcategory = ?"
@@ -413,7 +346,7 @@ export async function GET(request: Request) {
     params.push(limit, offset)
 
     // Wykonanie zapytania
-    const ads = await query(sql, params) as AdData[]
+    const ads = (await query(sql, params)) as AdData[]
 
     if (!Array.isArray(ads)) {
       return NextResponse.json({ ads: [], total: 0 })
@@ -451,17 +384,27 @@ export async function GET(request: Request) {
     }
 
     if (searchQuery) {
-      countSql += " AND (a.title LIKE ? OR a.content LIKE ?)"
+      countSql += " AND (a.title LIKE ? OR a.description LIKE ?)"
     }
 
-    const totalResult = await query(countSql, countParams) as { count: string }[]
+    const totalResult = (await query(countSql, countParams)) as { count: string }[]
 
     const total = Array.isArray(totalResult) && totalResult[0]?.count ? Number.parseInt(totalResult[0].count) : 0
 
     // Formatowanie danych
     const formattedAds = ads.map((ad) => {
+      // Parse parameters JSON if it exist
+      if (ad.parameters && typeof ad.parameters === "string") {
+        try {
+          ad.parameters = JSON.parse(ad.parameters)
+        } catch (e) {
+          console.warn("Nie udało się sparsować parameters:", ad.parameters)
+          ad.parameters = null
+        }
+      }
       return {
-        ...ad, // Konwersja pojedynczego zdjęcia na tablicę dla kompatybilności
+        ...ad,
+        parameters: ad.parameters,
         author: {
           id: ad.author_id,
           name: ad.author_name,
@@ -485,4 +428,3 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Wystąpił błąd podczas pobierania ogłoszeń" }, { status: 500 })
   }
 }
-
