@@ -17,7 +17,7 @@ export const AdConfirmation: React.FC<AdConfirmationProps> = ({
   isPromoted = false,
   promotionUrl,
 }) => {
-  const adUrl = `/ogloszenia/${adId}`
+  const adUrl = `https://gotpage.pl/ogloszenia/${adId}`
 
   return (
     <Layout

@@ -8,7 +8,7 @@ import { z } from "zod"
 // Schemat walidacji
 const registerSchema = z.object({
   name: z.string().min(2, "Imię musi mieć co najmniej 2 znaki"),
-  fullname: z.string().optional(),
+  fullName: z.string().optional(),
   email: z.string().email("Nieprawidłowy adres email"),
   password: z.string().min(8, "Hasło musi mieć co najmniej 8 znaków"),
   type: z.enum(["individual", "business"], {
@@ -18,12 +18,21 @@ const registerSchema = z.object({
   phone: z.string().optional(),
   nip: z.string().optional(),
   location: z.string().optional(),
-  adress: z.string().optional(),
+  address: z.string().optional(),
   categories: z.array(z.string()).optional(),
   occupation: z.string().optional(),
   interests: z.string().optional(),
+  relationshipStatus: z.string().optional(),
+  education: z.string().optional(),
   companySize: z.string().optional(),
+  foundingYear: z.string().optional(),
   website: z.string().optional(),
+  openingHours: z.string().optional(),
+  services: z.string().optional(),
+  facebookUrl: z.string().optional(),
+  instagramUrl: z.string().optional(),
+  tiktokUrl: z.string().optional(),
+  linkedinUrl: z.string().optional(),
 })
 
 const generateUserKey = (name: string): string => {
@@ -63,7 +72,7 @@ export async function POST(request: Request) {
 
     const {
       name,
-      fullname,
+      fullName,
       email,
       password,
       type,
@@ -71,12 +80,21 @@ export async function POST(request: Request) {
       phone,
       nip,
       location,
-      adress,
+      address,
       categories,
       occupation,
       interests,
+      relationshipStatus,
+      education,
       companySize,
+      foundingYear,
       website,
+      openingHours,
+      services,
+      facebookUrl,
+      instagramUrl,
+      tiktokUrl,
+      linkedinUrl,
     } = result.data
 
     // Generuj ID użytkownika
@@ -86,10 +104,9 @@ export async function POST(request: Request) {
     const verificationToken = crypto.randomBytes(32).toString("hex")
 
     // Sprawdzenie czy email jest już zajęty
-    const existingUsers = await query("SELECT id FROM users WHERE email = ?", [email]) as {id: string}[]
+    const existingUsers = await query("SELECT id FROM users WHERE email = ?", [email])
 
     if (Array.isArray(existingUsers) && existingUsers.length > 0) {
-      console.log("istniejacy: " + existingUsers + "rejestrujacy" + email )
       return NextResponse.json({ error: "Użytkownik z tym adresem email już istnieje" }, { status: 409 })
     }
 
@@ -97,20 +114,28 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // Domyślny avatar
-    const avatar = `/placeholder-user.jpg?height=100&width=100&query=${encodeURIComponent(name.substring(0, 2).toUpperCase())}`
+    const avatar = `/placeholder.svg?height=100&width=100&text=${encodeURIComponent(name.substring(0, 2).toUpperCase())}`
 
     let coordinates = null
 
-    if (type === "business" && location && adress) {
-      const fullAdress = `${location}, ${adress}`
-      coordinates = await getCoordinates(fullAdress)
+    if (type === "business" && location && address) {
+      const fullAddress = `${location}, ${address}`
+      coordinates = await getCoordinates(fullAddress)
+    }
+
+    // Przygotowanie danych społecznościowych
+    const socialMedia = {
+      facebook: facebookUrl || "",
+      instagram: instagramUrl || "",
+      tiktok: tiktokUrl || "",
+      linkedin: linkedinUrl || "",
     }
 
     // Wstawienie nowego użytkownika do bazy danych
-    const generatedBio = type === "individual" ? "Użytkownik platformy." : "Firma korzystająca z platformy Gotpage."
+    const generatedBio = type === "individual" ? "Użytkownik platformy." : "Firma korzystająca z platformy."
 
     try {
-      await query(
+      const result = await query(
         `INSERT INTO users (
           id,
           name, 
@@ -131,14 +156,20 @@ export async function POST(request: Request) {
           categories,
           occupation,
           interests,
+          relationship_status,
+          education,
           company_size,
+          founding_year,
           website,
+          opening_hours,
+          services,
+          social_media,
           verification_token
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           name,
-          fullname || null,
+          fullName || null,
           email,
           phone || null,
           hashedPassword,
@@ -147,22 +178,28 @@ export async function POST(request: Request) {
           0, // verified_email
           avatar,
           bio || generatedBio, // description
-          generatedBio, // bio ← stała treść
+          bio || generatedBio, // bio
           location || null,
-          adress || null,
+          address || null,
           coordinates ? JSON.stringify(coordinates) : null,
           JSON.stringify(categories || []),
           occupation || null,
           interests || null,
+          relationshipStatus || null,
+          education || null,
           companySize || null,
+          foundingYear || null,
           website || null,
+          openingHours || null,
+          services || null,
+          JSON.stringify(socialMedia),
           verificationToken,
         ],
       )
 
       // Jeśli to firma, dodaj dodatkowe informacje
       if (type === "business" && nip) {
-        await query("INSERT INTO business_details (user_id, nip, created_at) VALUES (?, ?, NOW())", [id, nip]) as {insertid: number}[]
+        await query("INSERT INTO business_details (user_id, nip, created_at) VALUES (?, ?, NOW())", [id, nip])
       }
 
       // Wyślij email powitalny
@@ -190,10 +227,4 @@ export async function POST(request: Request) {
       { status: 500 },
     )
   }
-}
-
-import { NextApiRequest, NextApiResponse } from "next";
-
-export default function handler(_: NextApiRequest, res: NextApiResponse) {
-  res.status(200).json({ message: "Działa!" });
 }

@@ -15,7 +15,7 @@ export const NewAdNotification: React.FC<NewAdNotificationProps> = ({
   adTitle = "Tytuł ogłoszenia",
   adDescription = "Opis ogłoszenia...",
   adImageUrl,
-  adUrl = "https://twojadomena.pl/ogloszenia/123",
+  adUrl = `https://gotpage/ogloszenia/1`,
 }) => {
   return (
     <Layout title="Nowe ogłoszenie w Twojej kategorii" previewText={`Nowe ogłoszenie: ${adTitle}`}>
@@ -32,7 +32,7 @@ export const NewAdNotification: React.FC<NewAdNotificationProps> = ({
 
         {adImageUrl && (
           <img
-            src={adImageUrl || "/placeholder.svg"}
+            src={adImageUrl}
             alt={adTitle}
             style={{
               width: "100%",
