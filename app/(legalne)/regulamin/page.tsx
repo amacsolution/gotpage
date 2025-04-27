@@ -21,9 +21,10 @@ export default function TermsPage() {
               adresem https://gotpage.pl.
             </li>
             <li>
-              Właścicielem serwisu jest Gotpage z siedzibą w Warszawie, ul. Przykładowa 123,
-              00-001 Warszawa, wpisana do rejestru przedsiębiorców Krajowego Rejestru Sądowego pod numerem KRS
-              0000123456, NIP 1234567890, REGON 123456789, kapitał zakładowy 50 000 PLN.
+              Właścicielem serwisu jest Gotpage z siedzibą w Poddębicach, ul. Łódzka 66,
+              99-200 Poddębice, 
+              {/* wpisana do rejestru przedsiębiorców Krajowego Rejestru Sądowego pod numerem KRS
+              0000123456, NIP 1234567890, REGON 123456789, kapitał zakładowy 50 000 PLN. */}
             </li>
             <li>Korzystanie z serwisu oznacza akceptację niniejszego Regulaminu.</li>
             <li>

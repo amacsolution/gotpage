@@ -238,6 +238,7 @@ export interface AdData {
   ad_key: string
   created_at: string
   updated_at: string
+  slug: string | null
 }
 
 export async function GET(request: Request) {

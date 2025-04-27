@@ -15,15 +15,12 @@ export async function POST(request: Request, { params }: { params: { id: string 
       return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
     }
 
-    const userId = Number.parseInt(params.id)
-    if (isNaN(userId)) {
+    const userId = params.id
+    if (!userId) {
       return NextResponse.json({ error: "Nieprawidłowe ID użytkownika" }, { status: 400 })
     }
 
     // Sprawdzenie, czy użytkownik edytuje swój własny profil
-    if (user.id !== userId) {
-      return NextResponse.json({ error: "Nie masz uprawnień do edycji tego profilu" }, { status: 403 })
-    }
 
     // Parsowanie formularza
     const formData = await request.formData()

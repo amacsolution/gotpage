@@ -54,13 +54,13 @@ export interface NewsPostProps {
       verified: boolean
     }
   }
-  onVote: (postId: string, optionId: string) => Promise<void>;
-  onLike: (postId: string) => Promise<void>;
-  onComment: (postId: string, content: string) => Promise<void>;
-  onDeletePost: (postId: string) => Promise<void>;
-  onEditPost: (postId: string, content: string) => Promise<void>;
-  onFollow: (userId: string) => Promise<void>;
-  showFollowButton: boolean;
+  onVote?: (postId: string, optionId: string) => Promise<void>;
+  onLike?: (postId: string) => Promise<void>;
+  onComment?: (postId: string, content: string) => Promise<void>;
+  onDeletePost?: (postId: string) => Promise<void>;
+  onEditPost?: (postId: string, content: string) => Promise<void>;
+  onFollow?: (userId: string) => Promise<void>;
+  showFollowButton?: boolean;
 }
 
 

@@ -24,7 +24,7 @@ export const emailConfig = {
   testMode: process.env.EMAIL_TEST_MODE === "true",
 
   // URL aplikacji (do linków w emailach)
-  appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://gotpage.pl",
+  appUrl: "https://gotpage.pl",
 
   // Dane firmy
   company: {

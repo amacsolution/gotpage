@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test-db": "ts-node scripts/test-db-connection.ts",
-    "seed-db": "ts-node scripts/seed-database.ts"
+    "seed-db": "ts-node scripts/seed-database.ts",
+    "postbuild": "next-sitemap"
   },
   "dependencies": {
     "@hookform/resolvers": "latest",
@@ -62,6 +63,7 @@
     "mysql2": "^3.14.0",
     "next": "^15.2.4",
     "next-auth": "^4.24.11",
+    "next-sitemap": "^4.2.3",
     "next-themes": "latest",
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.10.1",

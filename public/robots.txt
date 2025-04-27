@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://gotpage.pl
+
+# Sitemaps
+Sitemap: https://gotpage.pl/sitemap.xml

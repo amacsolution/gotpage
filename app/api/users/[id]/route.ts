@@ -16,6 +16,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       `SELECT 
         id, 
         name, 
+        fullname,
         email, 
         phone, 
         bio, 
@@ -29,6 +30,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
         location, 
         categories,
         company_size,
+        opening_hours,
+        services,
+        social_media,
         occupation,
         interests
       FROM users 
@@ -45,7 +49,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     // Pobranie statystyk użytkownika
     const adsCountResult = await query("SELECT COUNT(*) as count FROM ads WHERE user_id = ?", [userId]) as { count: string }[]
 
-    const viewsCountResult = await query("SELECT SUM(views) as count FROM ads WHERE user_id = ?", [userId]) as { count: string }[]
+    const viewsCountResult = await query("SELECT SUM(views) as count FROM user_stats WHERE user_id = ?", [userId]) as { count: string }[]
 
     const businessData = user.type === "business" 
                         ? await query("SELECT nip, regon, krs FROM business_details WHERE user_id = ?", [userId]) 
@@ -73,6 +77,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     // Formatowanie danych
     const formattedUser = {
       ...user,
+      social: user.social_media ? JSON.parse(user.social_media) : null,
       // Parsowanie kategorii jeśli są przechowywane jako JSON string
       businessData: Array.isArray(businessData) && businessData.length > 0 ? businessData[0] : null,
       categories: user.categories ? JSON.parse(user.categories) : [],
@@ -81,7 +86,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         ads: Array.isArray(adsCountResult) && adsCountResult[0]?.count ? Number.parseInt(adsCountResult[0].count) : 0,
         views:
           Array.isArray(viewsCountResult) && viewsCountResult[0]?.count
-            ? Number.parseInt(viewsCountResult[0].count)
+            ? Number.parseInt(viewsCountResult[0].count) + 1
             : 0,
         likes:
           Array.isArray(likesCountResult) && likesCountResult[0]?.count
@@ -106,6 +111,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
       },
     }
 
+    await query(
+      `UPDATE user_stats SET views = ?  WHERE user_id = ?`, [(Number.parseInt(viewsCountResult[0]?.count) + 1) || 0, userId]
+    )
+
     return NextResponse.json(formattedUser)
   } catch (error) {
     console.error("Błąd podczas pobierania danych użytkownika:", error)
@@ -129,7 +138,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 
     const body = await request.json()
-    const { name, email, phone, bio, location } = body
+    const { name, email, phone, bio, location, services, fullname, adress, occupation, interests, website } = body
 
     // Walidacja danych
     if (!name || !email) {
@@ -144,22 +153,64 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       }
     }
 
+    // Walidacja i przetwarzanie usług
+    let servicesJson = null
+    if (services) {
+      try {
+        // Jeśli services jest już stringiem JSON, użyj go bezpośrednio
+        if (typeof services === "string") {
+          // Sprawdź, czy to poprawny JSON
+          JSON.parse(services)
+          servicesJson = services
+        } else if (Array.isArray(services)) {
+          // Walidacja struktury usług
+          services.forEach((service) => {
+            if (!service.name) {
+              throw new Error("Każda usługa musi mieć nazwę")
+            }
+          })
+          servicesJson = JSON.stringify(services)
+        } else {
+          throw new Error("Nieprawidłowy format usług")
+        }
+      } catch (error : any) {
+        return NextResponse.json({ error: "Nieprawidłowy format usług: " + error.message }, { status: 400 })
+      }
+    }
+
     // Aktualizacja danych użytkownika
     await query(
       `UPDATE users 
-       SET name = ?, email = ?, phone = ?, bio = ?, location = ?, updated_at = NOW() 
+       SET name = ?, email = ?, phone = ?, description = ?, location = ?, 
+           services = ?, fullname = ?, adress = ?, occupation = ?, 
+           interests = ?, website = ?, updated_at = NOW() 
        WHERE id = ?`,
-      [name, email, phone || "", bio || "", location || "", userId],
+      [
+        name,
+        email,
+        phone || "",
+        bio || "",
+        location || "",
+        servicesJson,
+        fullname || "",
+        adress || "",
+        occupation || "",
+        interests || "",
+        website || "",
+        userId,
+      ],
     )
 
     // Pobranie zaktualizowanych danych
-    const updatedUsers = await query(
+    const updatedUsers = (await query(
       `SELECT 
-        id, name, email, phone, bio, avatar, type, verified, created_at as joinedAt, location, categories
+        id, name, email, phone, description as bio, avatar, type, verified, 
+        created_at as joinedAt, location, categories, services, fullname, 
+        adress, occupation, interests, website
        FROM users 
        WHERE id = ?`,
       [userId],
-    ) as UserData[]
+    )) as UserData[]
 
     if (!Array.isArray(updatedUsers) || updatedUsers.length === 0) {
       throw new Error("Nie udało się pobrać zaktualizowanych danych użytkownika")
@@ -171,11 +222,13 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     return NextResponse.json({
       ...updatedUser,
       categories: updatedUser.categories ? JSON.parse(updatedUser.categories) : [],
+      services: updatedUser.services ? JSON.parse(updatedUser.services) : [],
     })
   } catch (error) {
     console.error("Błąd podczas aktualizacji danych użytkownika:", error)
     return NextResponse.json({ error: "Wystąpił błąd podczas aktualizacji danych użytkownika" }, { status: 500 })
   }
 }
+
 
 

@@ -9,7 +9,7 @@ interface WelcomeEmailProps {
 
 export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
   userName = "Nowy Użytkowniku",
-  verificationUrl = "https://twojadomena.pl/verify",
+  verificationUrl = "https://gotpage.pl/verify",
 }) => {
   return (
     <Layout

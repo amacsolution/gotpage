@@ -25,6 +25,12 @@ import {
   Briefcase,
   Loader2,
   ShieldCheck,
+  AlarmClock,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Music2,
+  Wrench,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { UserReviews } from "@/components/user-reviews"
@@ -32,7 +38,6 @@ import { CompanyCard } from "@/components/company-card"
 import { NewsPost } from "@/components/news-post"
 import { FollowButton } from "@/components/follow-button"
 import { FollowStats } from "@/components/follow-stats"
-import { set } from "date-fns"
 
 export default function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params) // Unwrap the params object
@@ -48,7 +53,8 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const { toast } = useToast()
   const [isFollowing, setIsFollowing] = useState(false)
 
-  const loggedUser = JSON.parse(localStorage.getItem("userData") || "null")
+  const loggedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
+
   // Utworzenie lokalnej zmiennej dla ID do użycia w tablicy zależności
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -80,13 +86,13 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     fetchPosts(1, id)
-  }, [])
+  }, [id])
 
-  const fetchPosts = async (pageNum: number, id: string) => {
+  const fetchPosts = async (pageNum: number, userId: string) => {
     try {
       setIsLoading(true)
 
-      const response = await fetch(`/api/news?page=${pageNum}&limit=10&userId=${id}`)
+      const response = await fetch(`/api/news?page=${pageNum}&limit=10&userId=${userId}`)
 
       if (!response.ok) {
         throw new Error("Nie udało się pobrać aktualności")
@@ -113,7 +119,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       setIsLoading(false)
     }
   }
-
 
   // Pobieranie podobnych użytkowników z niższym priorytetem
   useEffect(() => {
@@ -221,7 +226,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   return (
     <PageLayout>
       <div className="container py-6">
-      <div
+        <div
           className={`relative profile-background h-40 w-full rounded-xl mb-16 ${
             user.background_img ? "bg-cover bg-center" : ""
           }`}
@@ -235,7 +240,8 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
               : {
                   background: "linear-gradient(135deg, #e5308a 0%, #7c2ae8 100%)",
                 }
-          } >
+          }
+        >
           <div className="absolute -bottom-12 left-6">
             <div className="relative">
               <Avatar className="h-24 w-24 border-4 border-background">
@@ -255,35 +261,37 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                   <Badge variant="outline" className="text-primary border-primary/30">
                     Zweryfikowana
                   </Badge>
-                ): "" }
-              </div>
-              
-                <div className="mt-2 md:mt-0 flex items-center gap-4">
-                {loggedUser.id !== id && (
-                  <FollowButton
-                  userId={user.id}
-                  isFollowing={isFollowing}
-                  onFollowChange={(following) => {
-                  setIsFollowing(following);
-                  setUser((prevUser: any) => ({
-                    ...prevUser,
-                    stats: {
-                    ...prevUser.stats,
-                    followers: following
-                      ? (prevUser.stats.followers || 0) + 1
-                      : (prevUser.stats.followers || 0) - 1,
-                    },
-                  }));
-                  }}
-                />
+                ) : (
+                  ""
                 )}
-                
+              </div>
+
+              <div className="mt-2 md:mt-0 flex items-center gap-4">
+                {loggedUser && loggedUser.id !== id && (
+                  <FollowButton
+                    userId={user.id}
+                    isFollowing={isFollowing}
+                    onFollowChange={(following) => {
+                      setIsFollowing(following)
+                      setUser((prevUser: any) => ({
+                        ...prevUser,
+                        stats: {
+                          ...prevUser.stats,
+                          followers: following
+                            ? (prevUser.stats.followers || 0) + 1
+                            : (prevUser.stats.followers || 0) - 1,
+                        },
+                      }))
+                    }}
+                  />
+                )}
+
                 <FollowStats
                   userId={user.id}
                   followers={user.stats.followers || 0}
                   following={user.stats.following || 0}
                 />
-                </div>
+              </div>
               <p className="text-muted-foreground">{user.bio}</p>
               {user.type === "business" && user.categories && user.categories.length > 0 && (
                 <div className="flex flex-wrap gap-2">
@@ -301,12 +309,18 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 </div>
                 <div className="flex items-center gap-1 mb-1">
                   <MapPin className="h-4 w-4" />
-                  <span>Lokalizacja: {user.location}</span>
+                  <span>Lokalizacja: {user.location || "Nie podano"}</span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 mb-1">
                   {user.type === "business" ? <Building className="h-4 w-4" /> : <User className="h-4 w-4" />}
                   <span>Typ konta: {user.type === "individual" ? "Osoba prywatna" : "Firma"}</span>
                 </div>
+                {user.type === "business" && user.opening_hours ?(
+                <div className="flex items-center gap-1">
+                   <AlarmClock className="h-4 w-4" />
+                  <span>Godziny otwarcia: {user.opening_hours}</span>
+                </div>
+                ) : "" }
               </div>
               <div className="flex gap-4 text-sm">
                 <div>
@@ -318,7 +332,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 <div>
                   <span className="font-bold">{user.stats.likes}</span> polubień
                 </div>
-
               </div>
 
               {user.type === "business" && user.stats.reviews > 0 && (
@@ -343,12 +356,14 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Kontakt</h3>
                   <div className="space-y-2">
-                    <a href={`tel:${user.phone}`}>
-                      <Button variant="outline" className="w-full justify-start my-1" size="sm">
-                        <Phone className="h-4 w-4 mr-2" />
-                        {user.phone}
-                      </Button>
-                    </a>
+                    {user.phone && (
+                      <a href={`tel:${user.phone}`}>
+                        <Button variant="outline" className="w-full justify-start my-1" size="sm">
+                          <Phone className="h-4 w-4 mr-2" />
+                          {user.phone}
+                        </Button>
+                      </a>
+                    )}
                     <a href={`mailto:${user.email}`}>
                       <Button variant="outline" className="w-full justify-start my-1" size="sm">
                         <Mail className="h-4 w-4 mr-2" />
@@ -370,16 +385,58 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                   <div className="space-y-2">
                     <Button variant="outline" className="w-full h-auto justify-start align-top p-4" size="sm">
                       <Book className="h-4 w-4 mr-2" />
-                      <p className="whitespace-normal break-words text-left">{user.description}</p>
+                      <p className="whitespace-normal break-words text-left">{user.description || user.bio}</p>
                     </Button>
                     {user.company_size && (
                       <Button variant="outline" className="w-full justify-start" size="sm">
                         <BookUser className="h-4 w-4 mr-2" />
-                        Ilość pracowników {user.company_size}
+                        Ilość pracowników: {user.company_size}
+                      </Button>
+                    )}
+                    {user.adress && (
+                      <Button variant="outline" className="w-full justify-start" size="sm">
+                        <MapPin className="h-4 w-4 mr-2" />
+                        Adres: {user.adress}
                       </Button>
                     )}
                   </div>
                 </div>
+
+                    {user.social && (
+                      <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1">Social media</h3>
+                      <div className="space-x-2 flex">
+                        {user.social.facebook && (
+                        <a href={user.social.facebook} target="_blank">
+                          <Button variant="outline" className="rounded-full justify-center p-3 hover:bg-blue-400" size="sm">
+                          <Facebook className="h-6 w-6" />
+                          </Button>
+                        </a>)}
+                        {user.social.instagram && (
+                          <a href={user.social.instagram} target="_blank">
+                          <Button variant="outline" className="rounded-full justify-center p-3 hover:bg-orange-400" size="sm">
+                            <Instagram className="h-6 w-6" />
+                          </Button>
+                          </a>
+                        )}
+                        {user.social.linkedin && (
+                          <a href={user.social.linkedin} target="_blank">
+                          <Button variant="outline" className="rounded-full justify-center p-3 hover:bg-blue-700" size="sm">
+                            <Linkedin className="h-6 w-6" />
+                          </Button>
+                          </a>
+                        )}
+                        {user.social.tiktok && (
+                          <a href={user.social.tiktok} target="_blank">
+                          <Button variant="outline" className="rounded-full justify-center p-3" size="sm">
+                            <Music2 className="h-6 w-6" />
+                          </Button>
+                          </a>
+                        )}
+                          </div>
+                        </div>
+                    )}
+
               </CardContent>
             </Card>
 
@@ -408,7 +465,10 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                               <div className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-3">
                                   <Avatar className="h-10 w-10">
-                                    <AvatarImage src={similarUser.avatar || "/placeholder-user.jpg"} alt={similarUser.name} />
+                                    <AvatarImage
+                                      src={similarUser.avatar || "/placeholder-user.jpg"}
+                                      alt={similarUser.name}
+                                    />
                                     <AvatarFallback>{similarUser.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                                   </Avatar>
                                   <div>
@@ -418,7 +478,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                         <span className="text-primary text-xs" title="Zweryfikowany">
                                           <ShieldCheck className="h-4 w-4" />
                                         </span>
-                                      ) : ""}
+                                      ) : (
+                                        ""
+                                      )}
                                     </div>
                                     <div className="text-xs text-muted-foreground">{similarUser.location}</div>
                                     {similarUser.categories && similarUser.categories.length > 0 && (
@@ -436,7 +498,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                   userId={similarUser.id}
                                   isFollowing={similarUser.isFollowing || false}
                                   size="sm"
-                                  />
+                                />
                               </div>
                             </CardContent>
                           </Card>
@@ -460,26 +522,38 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 </TabsTrigger>
                 {user.type === "business" && (
                   <TabsTrigger value="reviews" className="flex-1">
-                    Opinie ({user.stats.reviews})
+                    Opinie ({user.stats.reviews || 0})
                   </TabsTrigger>
                 )}
               </TabsList>
               <TabsContent value="tab" className="mt-4">
                 <div className="space-y-4">
                   <h2 className="text-xl font-semibold mb-4">Informacje</h2>
-                  {user.type === "individual" && <p>{user.bio}</p>}
                   {user.type === "individual" && (
                     <>
-                      {user.occupation && (
+                      <p>{user.bio}</p>
+                      {user.fullname && (
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4 text-muted-foreground" />
-                          <span>{user.occupation}</span>
+                          <span>Pełne imię i nazwisko: {user.fullname}</span>
+                        </div>
+                      )}
+                      {user.occupation && (
+                        <div className="flex items-center gap-2">
+                          <Briefcase className="h-4 w-4 text-muted-foreground" />
+                          <span>Zawód: {user.occupation}</span>
                         </div>
                       )}
                       {user.interests && (
                         <div className="flex items-center gap-2">
                           <Star className="h-4 w-4 text-muted-foreground" />
-                          <span>{user.interests}</span>
+                          <span>Zainteresowania: {user.interests}</span>
+                        </div>
+                      )}
+                      {user.adress && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span>Adres: {user.adress}</span>
                         </div>
                       )}
                     </>
@@ -489,6 +563,14 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                       <Card>
                         <CardContent className="p-4">
                           <h3 className="text-lg font-semibold mb-2">Dane firmy</h3>
+                          {user.fullname && (
+                            <div className="flex items-center gap-2 text-muted-foreground my-1">
+                              <User className="h-4 w-4 text-muted-foreground" />
+                              <p>
+                                Imie i nazwisko: <span className="text-foreground">{user.fullname}</span>
+                              </p>
+                            </div>
+                          )}
                           {user.businessData?.nip && (
                             <div className="flex items-center gap-2 text-muted-foreground my-1">
                               <Briefcase className="h-4 w-4 text-muted-foreground" />
@@ -521,6 +603,14 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                               </span>
                             </div>
                           )}
+                          {user.adress && (
+                            <div className="flex items-center gap-2 text-muted-foreground my-1">
+                              <MapPin className="h-4 w-4 text-muted-foreground" />
+                              <span>
+                                Adres: <span className="text-foreground">{user.adress}</span>
+                              </span>
+                            </div>
+                          )}
                           {user.company_size && (
                             <div className="flex items-center gap-2 text-muted-foreground my-1">
                               <Building className="h-4 w-4 text-muted-foreground" />
@@ -535,6 +625,14 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                               <Link href={user.website} className="hover:underline">
                                 {user.website}
                               </Link>
+                            </div>
+                          )}
+                          {user.services && (
+                            <div className="flex items-center gap-2 my-1 text-muted-foreground">
+                              <Wrench className="h-4 w-4 text-muted-foreground" />
+                              <span>
+                                Usługi: <span className="text-foreground">{user.services}</span>
+                              </span>
                             </div>
                           )}
                           {user.categories && user.categories.length > 0 && (
@@ -584,7 +682,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                   ) : (
                     <div className="text-center py-12 bg-muted/30 rounded-lg">
                       <h3 className="text-lg font-medium mb-2">Brak aktualności</h3>
-                      <p className="text-muted-foreground">Dodaj nowy wpis i daj się poznać!</p>
+                      <p className="text-muted-foreground">Ten użytkownik nie dodał jeszcze żadnych wpisów.</p>
                     </div>
                   )}
                 </div>

@@ -56,46 +56,36 @@ const validateNIP = (nip: string) => {
 // Walidacja hasła - musi zawierać co najmniej jedną cyfrę, jedną małą literę, jedną dużą literę i jeden znak specjalny
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/
 
-// Schemat walidacji dla osoby prywatnej - krok 1
-const individualStep1Schema = z
-  .object({
-    name: z.string().min(2, {
-      message: "Nazwa użytkownika musi mieć co najmniej 2 znaki",
-    }),
-    fullName: z.string().min(2, {
-      message: "Imię i nazwisko musi mieć co najmniej 2 znaki",
-    }),
-    email: z.string().email({
-      message: "Wprowadź poprawny adres email",
-    }),
-    password: z
-      .string()
-      .min(8, {
-        message: "Hasło musi mieć co najmniej 8 znaków",
-      })
-      .regex(passwordRegex, {
-        message:
-          "Hasło musi zawierać co najmniej jedną cyfrę, jedną małą literę, jedną dużą literę i jeden znak specjalny",
-      }),
-    confirmPassword: z.string(),
-    accountType: z.literal("individual"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Hasła nie są identyczne",
-    path: ["confirmPassword"],
-  })
+// Krok 1 (bez refine) - osoba prywatna
+const individualStep1BaseSchema = z.object({
+  name: z.string().min(2, { message: "Nazwa użytkownika musi mieć co najmniej 2 znaki" }),
+  fullName: z.string().min(2, { message: "Imię i nazwisko musi mieć co najmniej 2 znaki" }),
+  email: z.string().email({ message: "Wprowadź poprawny adres email" }),
+  password: z.string().min(8, {
+    message: "Hasło musi mieć co najmniej 8 znaków",
+  }).regex(passwordRegex, {
+    message: "Hasło musi zawierać co najmniej jedną cyfrę, jedną małą literę, jedną dużą literę i jeden znak specjalny",
+  }),
+  confirmPassword: z.string(),
+});
 
-// Schemat walidacji dla osoby prywatnej - krok 2
+// Finalna wersja z refine
+const individualStep1Schema = individualStep1BaseSchema.extend({
+  accountType: z.literal("individual"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Hasła nie są identyczne",
+  path: ["confirmPassword"],
+});
+
+// Krok 2 i 3 (bez accountType)
 const individualStep2Schema = z.object({
   location: z.string().optional(),
   occupation: z.string().optional(),
   interests: z.string().optional(),
   relationshipStatus: z.string().optional(),
   education: z.string().optional(),
-  accountType: z.literal("individual"),
-})
+});
 
-// Schemat walidacji dla osoby prywatnej - krok 3
 const individualStep3Schema = z.object({
   bio: z.string().optional(),
   facebookUrl: z.string().url({ message: "Wprowadź poprawny adres URL" }).optional().or(z.literal("")),
@@ -105,73 +95,40 @@ const individualStep3Schema = z.object({
   termsAccepted: z.boolean().refine((val) => val === true, {
     message: "Musisz zaakceptować regulamin",
   }),
-  accountType: z.literal("individual"),
-})
+});
 
-// Schemat walidacji dla firmy - krok 1
-const businessStep1Schema = z
-  .object({
-    name: z.string().min(2, {
-      message: "Nazwa firmy musi mieć co najmniej 2 znaki",
-    }),
-    fullName: z.string().min(2, {
-      message: "Imię i nazwisko musi mieć co najmniej 2 znaki",
-    }),
-    email: z.string().email({
-      message: "Wprowadź poprawny adres email",
-    }),
-    password: z
-      .string()
-      .min(8, {
-        message: "Hasło musi mieć co najmniej 8 znaków",
-      })
-      .regex(passwordRegex, {
-        message:
-          "Hasło musi zawierać co najmniej jedną cyfrę, jedną małą literę, jedną dużą literę i jeden znak specjalny",
-      }),
-    confirmPassword: z.string(),
-    accountType: z.literal("business"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Hasła nie są identyczne",
-    path: ["confirmPassword"],
-  })
 
-// Schemat walidacji dla firmy - krok 2
+const businessBaseStep1Schema = z.object({
+  name: z.string().min(2, { message: "Nazwa firmy musi mieć co najmniej 2 znaki" }),
+  fullName: z.string().min(2, { message: "Imię i nazwisko musi mieć co najmniej 2 znaki" }),
+  email: z.string().email({ message: "Wprowadź poprawny adres email" }),
+  password: z.string().min(8, {
+    message: "Hasło musi mieć co najmniej 8 znaków",
+  }).regex(passwordRegex, {
+    message: "Hasło musi zawierać co najmniej jedną cyfrę, jedną małą literę, jedną dużą literę i jeden znak specjalny",
+  }),
+  confirmPassword: z.string(),
+});
+
+const businessStep1Schema = businessBaseStep1Schema.extend({
+  accountType: z.literal("business"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Hasła nie są identyczne",
+  path: ["confirmPassword"],
+});
+
 const businessStep2Schema = z.object({
-  nip: z
-    .string()
-    .refine(validateNIP, {
-      message: "Wprowadź poprawny NIP",
-    })
-    .or(z.literal("")),
+  nip: z.string().refine(validateNIP, { message: "Wprowadź poprawny NIP" }).or(z.literal("")),
   regon: z.string().optional().or(z.literal("")),
   krs: z.string().optional().or(z.literal("")),
-  phone: z
-    .string()
-    .min(9, {
-      message: "Wprowadź poprawny numer telefonu",
-    })
-    .optional()
-    .or(z.literal("")),
-  location: z.string().min(1, {
-    message: "Podaj lokalizację firmy",
+  phone: z.string().min(9, { message: "Wprowadź poprawny numer telefonu" }).optional().or(z.literal("")),
+  location: z.string().min(1, { message: "Podaj lokalizację firmy" }),
+  address: z.string().min(1, { message: "Podaj dokładny adres firmy" }),
+  categories: z.array(z.string()).min(1, { message: "Wybierz co najmniej jedną kategorię" }).max(3, {
+    message: "Możesz wybrać maksymalnie 3 kategorie",
   }),
-  address: z.string().min(1, {
-    message: "Podaj dokładny adres firmy",
-  }),
-  categories: z
-    .array(z.string())
-    .min(1, {
-      message: "Wybierz co najmniej jedną kategorię",
-    })
-    .max(3, {
-      message: "Możesz wybrać maksymalnie 3 kategorie",
-    }),
-  accountType: z.literal("business"),
-})
+});
 
-// Schemat walidacji dla firmy - krok 3
 const businessStep3Schema = z.object({
   bio: z.string().optional(),
   companySize: z.string().optional(),
@@ -185,14 +142,42 @@ const businessStep3Schema = z.object({
   termsAccepted: z.boolean().refine((val) => val === true, {
     message: "Musisz zaakceptować regulamin",
   }),
-  accountType: z.literal("business"),
-})
+});
 
-// Połączony schemat
-const formSchema = z.discriminatedUnion("accountType", [
-  z.object({ ...individualStep1Schema.shape, ...individualStep2Schema.shape, ...individualStep3Schema.shape }),
-  z.object({ ...businessStep1Schema.shape, ...businessStep2Schema.shape, ...businessStep3Schema.shape }),
-])
+
+// Najpierw robimy schematy bez refine
+
+const individualFormBaseSchema = individualStep1BaseSchema
+  .merge(individualStep2Schema)
+  .merge(individualStep3Schema)
+  .extend({ accountType: z.literal("individual") });
+
+const businessFormBaseSchema = businessBaseStep1Schema
+  .merge(businessStep2Schema)
+  .merge(businessStep3Schema)
+  .extend({ accountType: z.literal("business") });
+
+// Tu tworzymy discriminatedUnion — tylko na czystych obiektach
+const rawFormSchema = z.discriminatedUnion("accountType", [
+  individualFormBaseSchema,
+  businessFormBaseSchema,
+]);
+
+// Na koniec robimy refine na wynikowym schemacie
+export const formSchema = rawFormSchema.superRefine((data, ctx) => {
+  if (data.password !== data.confirmPassword) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Hasła nie są identyczne",
+      path: ["confirmPassword"],
+    });
+  }
+});
+
+
+
+
+
 
 // Opcje dla pola "Status związku"
 const relationshipOptions = [
@@ -781,7 +766,7 @@ export function MultiStepRegisterForm() {
                             </div>
 
                             // With this: */}
-                            <div className="grid grid-cols-2 gap-2 mt-2 max-h-60 overflow-y-auto">
+                            <div className="grid grid-cols-2 gap-2 mt-2 max-h-80 overflow-y-auto">
                               {businessCategories.map((category) => (
                                 <div key={category} className="flex items-center space-x-2">
                                   <Checkbox

@@ -64,9 +64,12 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
 
+
+    console.log(body)
     // Walidacja danych
     const result = registerSchema.safeParse(body)
     if (!result.success) {
+      console.error("Validation errors:", result.error.flatten().fieldErrors) // Log validation errors for debugging
       return NextResponse.json({ error: result.error.flatten().fieldErrors }, { status: 400 })
     }
 
@@ -114,7 +117,7 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // Domyślny avatar
-    const avatar = `/placeholder.svg?height=100&width=100&text=${encodeURIComponent(name.substring(0, 2).toUpperCase())}`
+    const avatar = `/placeholder-user.jpg?height=100&width=100&text=${encodeURIComponent(name.substring(0, 2).toUpperCase())}`
 
     let coordinates = null
 

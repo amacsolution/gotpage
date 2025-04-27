@@ -37,8 +37,8 @@ export async function sendPasswordResetEmail(params: {
   resetToken: string
   expirationTime?: string
 }) {
-  const { email, userName, resetToken, expirationTime = "1 godzina" } = params
-  const resetUrl = `${emailConfig.appUrl}/reset-password?token=${resetToken}`
+  const { email, userName, resetToken, expirationTime = "1 godzinę" } = params
+  const resetUrl = `${emailConfig.appUrl}/reset-password/${resetToken}`
 
   return emailService.sendEmail({
     to: email,

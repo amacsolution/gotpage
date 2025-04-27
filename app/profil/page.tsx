@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast"
 import { AdFeed } from "@/components/ad-feed"
 import { LikedAdsFeed } from "@/components/liked-ads-feed"
 import { CompanyPromotion } from "@/components/company-promotion"
-import { Star, Edit, Loader2, User, Briefcase, Building, MapPin, Globe } from "lucide-react"
+import { Star, Edit, Loader2, User, Briefcase, Building, MapPin, Globe, Wrench } from "lucide-react"
 import { ProfileImageUpload } from "@/components/profile-image-upload"
 import { ProfileBackgroundUpload } from "@/components/profile-background-upload"
 import { UserReviews } from "@/components/user-reviews"
@@ -31,6 +31,7 @@ import { CompanyDataForm } from "@/components/company-data-form"
 interface UserData {
   id: number
   name: string
+  fullname?: string
   email: string
   phone: string
   bio: string
@@ -40,6 +41,7 @@ interface UserData {
   verified: boolean
   joinedAt: string
   location: string
+  adress?: string
   categories: string[]
   stats: {
     ads: number
@@ -64,12 +66,14 @@ interface UserData {
     plan: string
     endDate: string
   } | null
+  services?: string
 }
 
 const profileFormSchema = z.object({
   name: z.string().min(2, {
     message: "Nazwa musi mieć co najmniej 2 znaki",
   }),
+  fullname: z.string().optional(),
   email: z.string().email({
     message: "Wprowadź poprawny adres email",
   }),
@@ -81,6 +85,16 @@ const profileFormSchema = z.object({
     })
     .optional(),
   location: z.string().optional(),
+  adress: z.string().optional(),
+  occupation: z.string().optional(),
+  interests: z.string().optional(),
+  services: z.string().optional(),
+  website: z
+    .string()
+    .url({
+      message: "Wprowadź poprawny adres URL (np. https://example.com)",
+    })
+    .optional(),
 })
 
 export default function ProfilePage() {
@@ -94,8 +108,6 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<any[]>([])
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
-
-  
 
   // Pobieranie danych użytkownika - teraz z zoptymalizowanego endpointu
   const fetchUserData = async () => {
@@ -139,10 +151,16 @@ export default function ProfilePage() {
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       name: "",
+      fullname: "",
       email: "",
       phone: "",
       bio: "",
       location: "",
+      adress: "",
+      occupation: "",
+      interests: "",
+      services: "",
+      website: "",
     },
   })
 
@@ -151,10 +169,16 @@ export default function ProfilePage() {
     if (user) {
       form.reset({
         name: user.name,
+        fullname: user.fullname || "",
         email: user.email,
         phone: user.phone || "",
         bio: user.bio || "",
         location: user.location || "",
+        adress: user.adress || "",
+        occupation: user.occupation || "",
+        interests: user.interests || "",
+        services: user.services || "",
+        website: user.website || "",
       })
     }
   }, [user, form])
@@ -216,6 +240,7 @@ export default function ProfilePage() {
         },
         website: updatedData.website,
         company_size: updatedData.company_size,
+        services: updatedData.services,
       }
     })
 
@@ -361,14 +386,13 @@ export default function ProfilePage() {
           }
         >
           {/* Background image upload component */}
-          {isEditing ? (
           <ProfileBackgroundUpload
             userId={user.id}
             currentBackground={user.backgroundImage}
             onBackgroundUpdate={(newBackgroundUrl) => {
               setUser((prev) => (prev ? { ...prev, backgroundImage: newBackgroundUrl } : null))
             }}
-          />) : "" }
+          />
 
           <div className="absolute -bottom-12 left-6">
             <ProfileImageUpload
@@ -531,6 +555,85 @@ export default function ProfilePage() {
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={form.control}
+                        name="adress"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Adres</FormLabel>
+                            <FormControl>
+                              <Input {...field} disabled={isLoading} placeholder="np. ul. Przykładowa 123" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {user.type === "individual" && (
+                        <>
+                          <FormField
+                            control={form.control}
+                            name="occupation"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Zawód</FormLabel>
+                                <FormControl>
+                                  <Input {...field} disabled={isLoading} placeholder="np. Programista" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="interests"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Zainteresowania</FormLabel>
+                                <FormControl>
+                                  <Input {...field} disabled={isLoading} placeholder="np. Technologia, Sport" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
+                      )}
+                      {user.type === "business" && (
+                        <>
+                          <FormField
+                            control={form.control}
+                            name="services"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Usługi</FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    className="resize-none"
+                                    {...field}
+                                    disabled={isLoading}
+                                    placeholder="Opisz świadczone usługi"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="website"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Strona internetowa</FormLabel>
+                                <FormControl>
+                                  <Input {...field} disabled={isLoading} placeholder="np. https://example.com" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
+                      )}
                       <div className="flex justify-end gap-2">
                         <Button
                           type="button"
@@ -579,12 +682,12 @@ export default function ProfilePage() {
           </div>
 
           <div className="md:col-span-2">
-            <Tabs defaultValue="tablica" >
-              <TabsList className="w-full overflow-x-auto whitespace-nowrap no-scrollbar ">
-                <TabsTrigger value="tablica" className="flex-1 ml-32 md:ml-0">
+            <Tabs defaultValue="tablica">
+              <TabsList className="w-full overflow-x-auto whitespace-nowrap no-scrollbar">
+                <TabsTrigger value="tablica" className="flex-1">
                   Tablica
                 </TabsTrigger>
-                <TabsTrigger value="ads" className="flex-1 ">
+                <TabsTrigger value="ads" className="flex-1">
                   Moje ogłoszenia
                 </TabsTrigger>
                 <TabsTrigger value="liked" className="flex-1">
@@ -604,19 +707,31 @@ export default function ProfilePage() {
               <TabsContent value="tablica" className="mt-4">
                 <div className="space-y-4">
                   <h2 className="text-xl font-semibold mb-4">Informacje</h2>
-                  {user.type === "individual" && <p>{user.bio}</p>}
                   {user.type === "individual" && (
                     <>
-                      {user.occupation && (
+                      <p>{user.bio}</p>
+                      {user.fullname && (
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4 text-muted-foreground" />
-                          <span>{user.occupation}</span>
+                          <span>Pełne imię i nazwisko: {user.fullname}</span>
+                        </div>
+                      )}
+                      {user.occupation && (
+                        <div className="flex items-center gap-2">
+                          <Briefcase className="h-4 w-4 text-muted-foreground" />
+                          <span>Zawód: {user.occupation}</span>
                         </div>
                       )}
                       {user.interests && (
                         <div className="flex items-center gap-2">
                           <Star className="h-4 w-4 text-muted-foreground" />
-                          <span>{user.interests}</span>
+                          <span>Zainteresowania: {user.interests}</span>
+                        </div>
+                      )}
+                      {user.adress && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span>Adres: {user.adress}</span>
                         </div>
                       )}
                     </>
@@ -632,6 +747,7 @@ export default function ProfilePage() {
                             krs: user.businessData?.krs,
                             website: user.website,
                             company_size: user.company_size,
+                            services: user.services,
                           }}
                           onUpdate={handleCompanyDataUpdate}
                           onCancel={() => setIsEditingCompanyData(false)}
@@ -692,6 +808,14 @@ export default function ProfilePage() {
                                 <Link href={user.website} className="hover:underline">
                                   {user.website}
                                 </Link>
+                              </div>
+                            )}
+                            {user.services && (
+                              <div className="flex items-center gap-2 my-1 text-muted-foreground">
+                                <Wrench className="h-4 w-4 text-muted-foreground" />
+                                <span>
+                                  Usługi: <span className="text-foreground">{user.services}</span>
+                                </span>
                               </div>
                             )}
                             {user.categories && user.categories.length > 0 && (
