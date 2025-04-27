@@ -22,7 +22,11 @@ jobs:
 
       - name: Deploy via SSH
         run: |
-          ssh -i ~/.ssh/id_ed25519 -p 222 biycgepwzk@gotpage.pl << 'EOF'
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p 222 gotpage.pl >> ~/.ssh/known_hosts
+          ssh -v -i ~/.ssh/id_ed25519 -p 222 biycgepwzk@gotpage.pl << 'EOF'
             cd /domains/gotpage.pl/public_html
             git pull origin main
             pnpm install
