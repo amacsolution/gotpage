@@ -1,5 +1,5 @@
 module.exports = {
-    siteUrl: getBaseUrl(),
+    siteUrl: "https://gotpage.pl",
     generateRobotsTxt: true,
     sitemapSize: 5000,
     generateIndexSitemap: false,

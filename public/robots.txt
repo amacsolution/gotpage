@@ -2,6 +2,12 @@
 User-agent: *
 Allow: /
 
+# *
+User-agent: *
+Disallow: /checkout
+Disallow: /checkout/success
+Disallow: /admin
+
 # Host
 Host: https://gotpage.pl
 

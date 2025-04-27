@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { auth, authOptions } from "@/lib/auth"
 import { query } from "@/lib/db"
-import { auth } from "@/auth"
 
 // Define UserData interface
 interface UserData {
@@ -28,9 +27,10 @@ interface UserData {
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const userId = params.id
-    const session = await getServerSession(authOptions)
-    const currentUserId = session?.user?.id
+    const userId = (await params).id
+    if (!userId) {
+      return NextResponse.json({ error: "Nieprawidłowe ID użytkownika" }, { status: 400 })
+    }
 
     // Fetch user data
     const userData = await query(
