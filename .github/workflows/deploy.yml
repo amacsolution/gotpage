@@ -13,32 +13,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Debug SSH Key
-        run: |
-          if [ -z "${{ secrets.SERVER_SSH_KEY }}" ]; then
-            echo "Error: SERVER_SSH_KEY is not set."
-            exit 1
-          fi
-          echo "SSH Key is set."
-
-      - name: Debug SSH Key (Full content)
-        run: |
-          echo "${{ secrets.SERVER_SSH_KEY }}" | head -n 10  # Pokazuje tylko pierwsze 10 linii (nie ujawniaj całego klucza w logach)
-
-
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_ed25519
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan gotpage.pl >> ~/.ssh/known_hosts
+          ssh-keyscan -p 222 gotpage.pl >> ~/.ssh/known_hosts
 
       - name: Deploy via SSH
         run: |
-          ssh biycgepwzk@gotpage.pl -p 222 << 'EOF'
+          ssh -i ~/.ssh/id_ed25519 -p 222 biycgepwzk@gotpage.pl << 'EOF'
             cd /domains/gotpage.pl/public_html
             git pull origin main
             pnpm install
             pnpm build
             pm2 restart gotpage
           EOF
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
