@@ -21,6 +21,11 @@ jobs:
           fi
           echo "SSH Key is set."
 
+      - name: Debug SSH Key (Full content)
+        run: |
+          echo "${{ secrets.SERVER_SSH_KEY }}" | head -n 10  # Pokazuje tylko pierwsze 10 linii (nie ujawniaj całego klucza w logach)
+
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
