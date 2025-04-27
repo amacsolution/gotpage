@@ -27,7 +27,7 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p 222 gotpage.pl >> ~/.ssh/known_hosts
           ssh -v -i ~/.ssh/id_ed25519 -p 222 biycgepwzk@gotpage.pl << 'EOF'
-            cd /domains/gotpage.pl/public_html
+            cd domains/gotpage.pl/public_html
             git pull origin main
             pnpm install
             pnpm build
