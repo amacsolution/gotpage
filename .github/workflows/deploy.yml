@@ -22,7 +22,7 @@ jobs:
 
       - name: Deploy via SSH
         run: |
-          ssh biycgepwzk@gotpage.pl << 'EOF'
+          ssh biycgepwzk@gotpage.pl -p 222 << 'EOF'
             cd /domains/gotpage.pl/public_html
             git pull origin main
             pnpm install
