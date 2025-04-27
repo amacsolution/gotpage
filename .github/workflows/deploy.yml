@@ -15,7 +15,11 @@ jobs:
 
       - name: Debug SSH Key
         run: |
-          echo "${{ secrets.SERVER_SSH_KEY }}"
+          if [ -z "${{ secrets.SERVER_SSH_KEY }}" ]; then
+            echo "Error: SERVER_SSH_KEY is not set."
+            exit 1
+          fi
+          echo "SSH Key is set."
 
       - name: Setup SSH
         run: |
