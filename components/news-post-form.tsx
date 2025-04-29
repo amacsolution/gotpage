@@ -15,7 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 interface NewsPostFormProps {
   user: {
-    id: number
+    id: string
     name: string
     avatar: string
   }

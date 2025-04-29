@@ -36,3 +36,9 @@ export function validateNIP(nip: string) {
   return checkDigit === Number.parseInt(cleanedNIP[9])
 }
 
+export const sanitizeFileName = (fileName: string): string => {
+  return fileName
+    .replace(/[^\w\s.-]/g, "") // Usuń wszystkie znaki oprócz liter, cyfr, podkreśleń, kropek, myślników i spacji
+    .replace(/\s+/g, "_") // Zamień spacje na podkreślenia
+    .toLowerCase() // Konwertuj na małe litery
+}

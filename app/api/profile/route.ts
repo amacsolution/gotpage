@@ -3,8 +3,8 @@ import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
 
 export type UserData = {
-  slug: string| null
-  id: number
+  slug: string | null
+  id: string
   name: string
   fullname?: string
   password?: string
@@ -22,6 +22,11 @@ export type UserData = {
   interests: string | null
   website: string | null
   company_size: string | null
+  businessData: {
+    nip: string | null
+    regon: string | null
+    krs: string | null
+  }
   nip: string | null
   regon: string | null
   krs: string | null
@@ -51,6 +56,8 @@ export type UserData = {
   social_media: string | null
   opening_hours: string | null
   services: string | null
+  isFollowing?: boolean
+  verified_email? : number
 }
 
 type Promotions = {

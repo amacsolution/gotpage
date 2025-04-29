@@ -11,7 +11,7 @@ import { Camera, Loader2, Upload } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface ProfileImageUploadProps {
-  userId: number
+  userId: string
   currentAvatar: string
   userName: string
   onAvatarUpdate: (newAvatarUrl: string) => void
@@ -127,10 +127,6 @@ export function ProfileImageUpload({ userId, currentAvatar, userName, onAvatarUp
 
   return (
     <div className="relative">
-      <Avatar className="h-24 w-24 border-4 border-background">
-        <AvatarImage src={currentAvatar} alt={userName} />
-        <AvatarFallback>{userName.substring(0, 2).toUpperCase()}</AvatarFallback>
-      </Avatar>
 
       <Button
         size="icon"

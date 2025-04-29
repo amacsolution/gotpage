@@ -2,8 +2,10 @@ import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { query } from "@/lib/db"
 import bcrypt from "bcryptjs"
+import crypto from "crypto"
 import jwt from "jsonwebtoken"
 import { UserData } from "../../profile/route"
+import { sendWelcomeEmail } from "@/lib/email-helpers"
 
 export async function POST(request: Request) {
   try {
@@ -16,13 +18,29 @@ export async function POST(request: Request) {
     }
 
     // Sprawdzenie czy użytkownik istnieje
-    const users = await query("SELECT id, name, email, password, type, verified, avatar FROM users WHERE email = ?", [email]) as UserData[]
+    const users = await query("SELECT id, name, email, password, type,verified, verified_email, avatar FROM users WHERE email = ?", [email]) as UserData[]
 
     if (!Array.isArray(users) || users.length === 0) {
       return NextResponse.json({ error: "Nieprawidłowy email lub hasło" }, { status: 401 })
     }
 
     const user = users[0]
+
+    const isVerifiedEmail = user.verified_email === 1
+
+    console.log(isVerifiedEmail)
+
+    if (!isVerifiedEmail) {
+      const verificationToken = crypto.randomBytes(32).toString("hex")
+      await query(
+        `UPDATE users SET verification_token = ? WHERE id = ? `, [verificationToken,user.id]) as any[]
+      await sendWelcomeEmail({
+        email,
+        userName: user.name,
+        verificationToken,
+      })
+      return NextResponse.json({ error: "Potwierdź swój email" }, { status: 401 })
+    }
 
     // Weryfikacja hasła
     const isPasswordValid = user.password ? await bcrypt.compare(password, user.password) : false

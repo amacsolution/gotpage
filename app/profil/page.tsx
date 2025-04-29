@@ -27,9 +27,11 @@ import { NewsPostForm } from "@/components/news-post-form"
 import { NewsPost } from "@/components/news-post"
 import { FollowStats } from "@/components/follow-stats"
 import { CompanyDataForm } from "@/components/company-data-form"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
+// Update the UserData interface to include the new fields
 interface UserData {
-  id: number
+  id: string
   name: string
   fullname?: string
   email: string
@@ -69,6 +71,7 @@ interface UserData {
   services?: string
 }
 
+// Update the profile form schema to include the new fields
 const profileFormSchema = z.object({
   name: z.string().min(2, {
     message: "Nazwa musi mieć co najmniej 2 znaki",
@@ -92,9 +95,10 @@ const profileFormSchema = z.object({
   website: z
     .string()
     .url({
-      message: "Wprowadź poprawny adres URL (np. https://example.com)",
+      message: "Wprowadź poprawny adres URL",
     })
-    .optional(),
+    .optional()
+    .or(z.literal("")),
 })
 
 export default function ProfilePage() {
@@ -108,6 +112,7 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<any[]>([])
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const [refreshKey, setRefreshKey] = useState<number>(Date.now())
 
   // Pobieranie danych użytkownika - teraz z zoptymalizowanego endpointu
   const fetchUserData = async () => {
@@ -293,6 +298,27 @@ export default function ProfilePage() {
     fetchPosts(nextPage)
   }
 
+  // Funkcja do aktualizacji zdjęć z wymuszeniem odświeżenia
+  const handleImageUpdate = () => {
+    setRefreshKey(Date.now())
+  }
+
+  // Funkcja pomocnicza do formatowania ścieżek do zdjęć
+  const formatImagePath = (path: string | undefined): string => {
+    if (!path) return ""
+
+    // Jeśli ścieżka już zaczyna się od /api/uploads, zwróć ją bez zmian
+    if (path.startsWith("/api/uploads/")) {
+      return path
+    }
+
+    // Usuń przedrostek uploads/ jeśli istnieje
+    const cleanPath = path.startsWith("uploads/") ? path.substring(8) : path
+
+    // Dodaj przedrostek /api/uploads/
+    return `/api/uploads/${cleanPath}`
+  }
+
   // Skeleton loading dla całej strony
   if (isFetching) {
     return (
@@ -366,6 +392,10 @@ export default function ProfilePage() {
     )
   }
 
+  // Przygotuj ścieżki do zdjęć
+  const avatarPath = formatImagePath(user.avatar)
+  const backgroundPath = formatImagePath(user.backgroundImage)
+
   return (
     <PageLayout>
       <div className="container py-6">
@@ -376,7 +406,7 @@ export default function ProfilePage() {
           style={
             user.backgroundImage
               ? {
-                  backgroundImage: `url(${user.backgroundImage})`,
+                  backgroundImage: `url(${backgroundPath})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }
@@ -389,18 +419,24 @@ export default function ProfilePage() {
           <ProfileBackgroundUpload
             userId={user.id}
             currentBackground={user.backgroundImage}
-            onBackgroundUpdate={(newBackgroundUrl) => {
+            onBackgroundUpdate={(newBackgroundUrl : string) => {
               setUser((prev) => (prev ? { ...prev, backgroundImage: newBackgroundUrl } : null))
+              handleImageUpdate()
             }}
           />
 
           <div className="absolute -bottom-12 left-6">
+            <Avatar className="h-24 w-24 border-2 border-muted">
+              <AvatarImage src={avatarPath || "/placeholder.svg"} alt={user.name} />
+              <AvatarFallback>{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
             <ProfileImageUpload
               userId={user.id}
               currentAvatar={user.avatar}
               userName={user.name}
               onAvatarUpdate={(newAvatarUrl) => {
                 setUser((prev) => (prev ? { ...prev, avatar: newAvatarUrl } : null))
+                handleImageUpdate()
               }}
             />
           </div>
@@ -502,6 +538,21 @@ export default function ProfilePage() {
                           </FormItem>
                         )}
                       />
+                      {user.type === "individual" && (
+                        <FormField
+                          control={form.control}
+                          name="fullname"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Pełne imię i nazwisko</FormLabel>
+                              <FormControl>
+                                <Input {...field} disabled={isLoading} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
                       <FormField
                         control={form.control}
                         name="email"
@@ -543,6 +594,19 @@ export default function ProfilePage() {
                       />
                       <FormField
                         control={form.control}
+                        name="adress"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Adres</FormLabel>
+                            <FormControl>
+                              <Input {...field} disabled={isLoading} placeholder="np. ul. Przykładowa 123" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
                         name="bio"
                         render={({ field }) => (
                           <FormItem>
@@ -555,20 +619,6 @@ export default function ProfilePage() {
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name="adress"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Adres</FormLabel>
-                            <FormControl>
-                              <Input {...field} disabled={isLoading} placeholder="np. ul. Przykładowa 123" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
                       {user.type === "individual" && (
                         <>
                           <FormField
@@ -601,24 +651,6 @@ export default function ProfilePage() {
                       )}
                       {user.type === "business" && (
                         <>
-                          <FormField
-                            control={form.control}
-                            name="services"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Usługi</FormLabel>
-                                <FormControl>
-                                  <Textarea
-                                    className="resize-none"
-                                    {...field}
-                                    disabled={isLoading}
-                                    placeholder="Opisz świadczone usługi"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
                           <FormField
                             control={form.control}
                             name="website"
@@ -670,7 +702,7 @@ export default function ProfilePage() {
                     <p>{user.phone || "Nie podano"}</p>
                   </div>
                   <div>
-                    <Link href="/change-password">
+                    <Link href="/reset-password/request">
                       <Button variant="outline" size="sm">
                         Zmień hasło
                       </Button>
@@ -794,6 +826,14 @@ export default function ProfilePage() {
                                 </span>
                               </div>
                             )}
+                            {user.adress && (
+                              <div className="flex items-center gap-2 text-muted-foreground my-1">
+                                <MapPin className="h-4 w-4 text-muted-foreground" />
+                                <span>
+                                  Adres: <span className="text-foreground">{user.adress}</span>
+                                </span>
+                              </div>
+                            )}
                             {user.company_size && (
                               <div className="flex items-center gap-2 text-muted-foreground my-1">
                                 <Building className="h-4 w-4 text-muted-foreground" />
@@ -811,11 +851,41 @@ export default function ProfilePage() {
                               </div>
                             )}
                             {user.services && (
-                              <div className="flex items-center gap-2 my-1 text-muted-foreground">
-                                <Wrench className="h-4 w-4 text-muted-foreground" />
-                                <span>
-                                  Usługi: <span className="text-foreground">{user.services}</span>
-                                </span>
+                              <div className="flex items-start gap-2 my-1 text-muted-foreground">
+                                <Wrench className="h-4 w-4 text-muted-foreground mt-1" />
+                                <div>
+                                  <span className="block">Usługi:</span>
+                                  <div className="text-foreground mt-1">
+                                    {(() => {
+                                      try {
+                                        const services = JSON.parse(user.services)
+                                        return (
+                                          <div className="space-y-2">
+                                            {services.map((service: any, index: number) => (
+                                              <div key={index} className="border-l-2 border-muted pl-3 py-1">
+                                                <p className="font-medium">{service.name}</p>
+                                                {service.description && (
+                                                  <p className="text-sm text-muted-foreground">{service.description}</p>
+                                                )}
+                                                {service.price && (
+                                                  <p className="text-sm font-medium mt-1 ">
+                                                    <span className="text-muted-foreground">Cena:</span>
+                                                    {service.price.includes("zł") ||
+                                                    service.price.toLowerCase().includes("pln")
+                                                      ? service.price
+                                                      : ` ${service.price} zł`}
+                                                  </p>
+                                                )}
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )
+                                      } catch (e) {
+                                        return <span>{user.services}</span>
+                                      }
+                                    })()}
+                                  </div>
+                                </div>
                               </div>
                             )}
                             {user.categories && user.categories.length > 0 && (
@@ -842,9 +912,9 @@ export default function ProfilePage() {
                     user={{
                       id: user.id,
                       name: user.name,
-                      avatar:
-                        user.avatar ||
-                        `/placeholder.svg?height=40&width=40&text=${user.name.substring(0, 2).toUpperCase()}`,
+                      avatar: user.avatar
+                        ? formatImagePath(user.avatar)
+                        : `/placeholder.svg?height=40&width=40&text=${user.name.substring(0, 2).toUpperCase()}`,
                     }}
                     onPostCreated={handlePostCreated}
                   />

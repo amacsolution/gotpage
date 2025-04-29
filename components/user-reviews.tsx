@@ -13,17 +13,17 @@ import { useToast } from "@/hooks/use-toast"
 import { useUser } from "@/lib/user-context"
 
 interface UserReviewsProps {
-  userId: number
+  userId: string
   showAddReview?: boolean
 }
 
 interface Review {
-  id: number
+  id: string
   rating: number
   content: string
   createdAt: string
   reviewer: {
-    id: number
+    id: string
     name: string
     avatar: string
   }

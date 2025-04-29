@@ -1,110 +1,177 @@
-import fs from "fs/promises"
 import path from "path"
-import sharp from "sharp"
+import fs from "fs"
+import { mkdir, writeFile, unlink } from "fs/promises"
+import { existsSync } from "fs"
+import { v4 as uuidv4 } from "uuid"
 
-export async function uploadImage(file: File, type = "avatar"): Promise<string> {
-  try {
-    // Create unique filename
-    const fileName = `${type}_${Date.now()}_${file.name.replace(/\s+/g, "_")}`
+// Funkcja do znajdowania odpowiedniego katalogu do zapisu plików
+async function findUploadDirectory(type: string): Promise<string> {
+  // Lista możliwych lokalizacji katalogów
+  const possibleDirs = [
+    path.join(process.cwd(), "uploads", type),
+    path.join(process.cwd(), "public", "uploads", type),
+    path.join(process.cwd(), "public", type),
+    path.join("/tmp", "uploads", type),
+    path.join("/tmp", type)
+  ]
 
-    // Define the upload directory based on type
-    const uploadDir = type === "background" ? "backgrounds" : "avatars"
-
-    // Ensure the directory exists
-    const dirPath = path.join(process.cwd(), "public", "uploads", uploadDir)
-    await fs.mkdir(dirPath, { recursive: true })
-
-    // Get file buffer
-    const buffer = Buffer.from(await file.arrayBuffer())
-
-    // Process the image with sharp
-    let processedBuffer = buffer
-
-    // If it's a background image, ensure it's the right size
-    if (type === "background") {
-      // Create desktop version (1336x160) with high quality
-      const desktopPath = path.join(dirPath, `desktop_${fileName}`)
-      await sharp(buffer)
-        .resize(1336, 160, { fit: "cover" })
-        .jpeg({ quality: 100, mozjpeg: true }) // Zwiększona jakość do 100
-        .toFile(desktopPath)
-
-      // Create mobile version (350x120) with high quality
-      const mobilePath = path.join(dirPath, `mobile_${fileName}`)
-      await sharp(buffer)
-        .resize(350, 120, { fit: "cover" })
-        .jpeg({ quality: 100, mozjpeg: true }) // Zwiększona jakość do 100
-        .toFile(mobilePath)
-
-      // Save the original processed image with minimal compression
-      processedBuffer = await sharp(buffer)
-        .jpeg({ quality: 100, mozjpeg: true }) // Zwiększona jakość do 100
-        .toBuffer()
-    } else {
-      // For avatars, just optimize the image with high quality
-      processedBuffer = await sharp(buffer)
-        .resize(300, 300, { fit: "cover" })
-        .jpeg({ quality: 95, mozjpeg: true }) // Zwiększona jakość do 95
-        .toBuffer()
+  // Sprawdź, czy któryś z katalogów istnieje
+  for (const dir of possibleDirs) {
+    if (existsSync(dir)) {
+      console.log(`Found existing directory: ${dir}`)
+      return dir
     }
+  }
 
-    // Save the processed file
-    const filePath = path.join(dirPath, fileName)
-    await fs.writeFile(filePath, processedBuffer)
-
-    // Return the public URL
-    return `/uploads/${uploadDir}/${fileName}`
+  // Jeśli żaden katalog nie istnieje, spróbuj utworzyć pierwszy z listy
+  try {
+    const dir = possibleDirs[0]
+    console.log(`Creating directory: ${dir}`)
+    await mkdir(dir, { recursive: true })
+    return dir
   } catch (error) {
-    console.error("Error uploading image:", error)
-    throw new Error("Failed to upload image")
+    console.error(`Failed to create directory ${possibleDirs[0]}:`, error)
+    
+    // Jeśli nie udało się utworzyć pierwszego katalogu, spróbuj pozostałe
+    for (let i = 1; i < possibleDirs.length; i++) {
+      try {
+        const dir = possibleDirs[i]
+        console.log(`Trying alternative directory: ${dir}`)
+        await mkdir(dir, { recursive: true })
+        return dir
+      } catch (altError) {
+        console.error(`Failed to create directory ${possibleDirs[i]}:`, altError)
+      }
+    }
+    
+    // Jeśli wszystkie próby zawiodły, zwróć błąd
+    throw new Error("Nie można utworzyć katalogu do zapisu plików")
   }
 }
 
-export async function deleteImage(imageUrl: string): Promise<void> {
+// Funkcja do upewnienia się, że katalog istnieje
+async function ensureDirectoryExists(dirPath: string): Promise<void> {
   try {
-    // Extract the file path from the URL
-    const filePath = path.join(process.cwd(), "public", imageUrl)
-
-    // Check if file exists
-    const exists = await fs
-      .access(filePath)
-      .then(() => true)
-      .catch(() => false)
-
-    if (exists) {
-      // Delete the file
-      await fs.unlink(filePath)
-
-      // If it's a background image, also delete the desktop and mobile versions
-      if (imageUrl.includes("/uploads/backgrounds/")) {
-        const dir = path.dirname(filePath)
-        const filename = path.basename(filePath)
-
-        // Try to delete desktop version
-        const desktopPath = path.join(dir, `desktop_${filename}`)
-        const desktopExists = await fs
-          .access(desktopPath)
-          .then(() => true)
-          .catch(() => false)
-
-        if (desktopExists) {
-          await fs.unlink(desktopPath)
-        }
-
-        // Try to delete mobile version
-        const mobilePath = path.join(dir, `mobile_${filename}`)
-        const mobileExists = await fs
-          .access(mobilePath)
-          .then(() => true)
-          .catch(() => false)
-
-        if (mobileExists) {
-          await fs.unlink(mobilePath)
-        }
-      }
+    if (!existsSync(dirPath)) {
+      console.log(`Creating directory: ${dirPath}`)
+      await mkdir(dirPath, { recursive: true })
     }
   } catch (error) {
-    console.error("Error deleting image:", error)
-    throw new Error("Failed to delete image")
+    console.error(`Error creating directory ${dirPath}:`, error)
+    throw error
   }
+}
+
+// Funkcja do przesyłania obrazu
+export async function uploadImage(
+  file: File,
+  type: string = "general",
+  userId?: string,
+  cropData?: { x: number; y: number; width: number; height: number } | null
+): Promise<string> {
+  try {
+    console.log("uploadImage called with type:", type, "userId:", userId)
+    
+    // Znajdź odpowiedni katalog do zapisu
+    let uploadDir = ""
+    try {
+      uploadDir = await findUploadDirectory(type)
+    } catch (error) {
+      console.error("Error finding upload directory:", error)
+      
+      // Fallback do katalogu w bieżącym katalogu
+      uploadDir = path.join(process.cwd(), "uploads", type)
+      await ensureDirectoryExists(uploadDir)
+    }
+    
+    console.log("Upload directory:", uploadDir)
+    
+    // Generowanie unikalnej nazwy pliku
+    const fileName = `${uuidv4()}${path.extname(file.name)}`
+    const filePath = path.join(uploadDir, fileName)
+    console.log("File will be saved to:", filePath)
+    
+    // Konwersja File na Buffer
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+    
+    // Zapisz plik bezpośrednio bez przetwarzania
+    await writeFile(filePath, buffer)
+    console.log("File saved successfully")
+    
+    // Zwróć URL do pliku
+    const fileUrl = `/api/uploads/${type}/${fileName}`
+    console.log("File URL:", fileUrl)
+    
+    return fileUrl
+  } catch (error) {
+    console.error("Error in uploadImage:", error)
+    throw error
+  }
+}
+
+// Funkcja do usuwania obrazu
+export async function deleteImage(fileUrl: string): Promise<void> {
+  try {
+    console.log("deleteImage called with fileUrl:", fileUrl)
+    
+    // Wyciągnij ścieżkę pliku z URL
+    const urlParts = fileUrl.split("/")
+    const fileName = urlParts[urlParts.length - 1]
+    const fileType = urlParts[urlParts.length - 2]
+    
+    // Lista możliwych lokalizacji pliku
+    const possiblePaths = [
+      path.join(process.cwd(), "uploads", fileType, fileName),
+      path.join(process.cwd(), "public", "uploads", fileType, fileName),
+      path.join(process.cwd(), "public", fileType, fileName)
+    ]
+    
+    let fileDeleted = false
+    
+    // Spróbuj usunąć plik z każdej możliwej lokalizacji
+    for (const filePath of possiblePaths) {
+      try {
+        if (existsSync(filePath)) {
+          console.log("Deleting file:", filePath)
+          await unlink(filePath)
+          fileDeleted = true
+          break
+        }
+      } catch (error) {
+        console.error(`Error deleting file ${filePath}:`, error)
+      }
+    }
+    
+    if (!fileDeleted) {
+      console.warn("File not found in any of the expected locations")
+    }
+  } catch (error) {
+    console.error("Error in deleteImage:", error)
+    throw error
+  }
+}
+
+// Funkcja do formatowania ścieżki obrazu
+export function formatImagePath(imagePath: string | null | undefined): string {
+  if (!imagePath) return "";
+  
+  // Jeśli ścieżka już zaczyna się od /api/uploads/, zwróć ją bez zmian
+  if (imagePath.startsWith("/api/uploads/")) {
+    return imagePath;
+  }
+  
+  // Usuń przedrostek uploads/ jeśli istnieje
+  const path = imagePath.startsWith("uploads/") ? imagePath.substring(8) : imagePath;
+  
+  // Dodaj przedrostek /api/uploads/
+  return `/api/uploads/${path}`;
+}
+
+// Funkcja do generowania URL z parametrem odświeżania
+export function getRefreshableImageUrl(url: string | null | undefined, refreshKey?: number): string {
+  if (!url) return "";
+  
+  const formattedUrl = formatImagePath(url);
+  return refreshKey ? `${formattedUrl}?v=${refreshKey}` : formattedUrl;
 }

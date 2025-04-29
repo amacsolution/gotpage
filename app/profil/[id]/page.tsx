@@ -628,13 +628,42 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                             </div>
                           )}
                           {user.services && (
-                            <div className="flex items-center gap-2 my-1 text-muted-foreground">
-                              <Wrench className="h-4 w-4 text-muted-foreground" />
-                              <span>
-                                Usługi: <span className="text-foreground">{user.services}</span>
-                              </span>
-                            </div>
-                          )}
+                              <div className="flex items-start gap-2 my-1 text-muted-foreground">
+                                <Wrench className="h-4 w-4 text-muted-foreground mt-1" />
+                                <div>
+                                  <span className="block">Usługi:</span>
+                                  <div className="text-foreground mt-1">
+                                    {(() => {
+                                      try {
+                                        const services = JSON.parse(user.services)
+                                        return (
+                                          <div className="space-y-2">
+                                            {services.map((service: any, index: number) => (
+                                              <div key={index} className="border-l-2 border-muted pl-3 py-1">
+                                                <p className="font-medium">{service.name}</p>
+                                                {service.description && (
+                                                  <p className="text-sm text-muted-foreground">{service.description}</p>
+                                                )}
+                                                {service.price && (
+                                                  <p className="text-sm font-medium mt-1 ">
+                                                    <span className="text-muted-foreground">Cena:</span> 
+                                                    {service.price.includes("zł") || service.price.toLowerCase().includes("pln") 
+                                                      ? service.price 
+                                                      : ` ${service.price} zł`}
+                                                  </p>
+                                                )}
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )
+                                      } catch (e) {
+                                        return <span>{user.services}</span>
+                                      }
+                                    })()}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           {user.categories && user.categories.length > 0 && (
                             <div className="flex flex-wrap gap-2 my-2">
                               <h3 className="text-sm font-medium text-muted-foreground mb-1">Kategorie</h3>

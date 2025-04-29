@@ -10,7 +10,7 @@ import { Filter, Grid, List, Loader2 } from "lucide-react"
 
 interface AdFeedProps {
   isUserProfile?: boolean
-  userId?: number
+  userId?: string
   category?: string
   subcategory?: string
   location?: string
@@ -41,10 +41,18 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       setIsLoading(true)
 
       // Budowanie URL zapytania
-      let url =
-        isUserProfile && userId
-          ? `/api/users/${userId}/ads?page=${pageNum}&limit=6&sortBy=${sort}`
-          : `/api/ads?page=${pageNum}&limit=12&sortBy=${sort}`
+      console.log('userId:', userId);
+      console.log('pageNum:', pageNum);
+      console.log('sort:', sort);
+      
+      let url;
+      if (isUserProfile && userId) {
+        url = `/api/users/${userId}/ads?page=${pageNum || 1}&limit=6&sortBy=${sort || 'desc'}`;
+      } else {
+        url = `/api/ads?page=${pageNum || 1}&limit=12&sortBy=${sort || 'desc'}`;
+      }
+      
+      console.log('Generated URL:', url);
 
       // Dodanie parametrów filtrowania
       if (!isUserProfile) {

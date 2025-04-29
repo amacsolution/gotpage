@@ -8,7 +8,7 @@ import { Camera, Loader2, X } from "lucide-react"
 import { BackgroundImageEditor } from "./background-image-editor"
 
 interface ProfileBackgroundUploadProps {
-  userId: number
+  userId: string
   currentBackground?: string
   onBackgroundUpdate: (newBackgroundUrl: string) => void
 }
@@ -54,41 +54,33 @@ export function ProfileBackgroundUpload({
     setIsEditorOpen(true)
   }
 
+  // Funkcja do sanityzacji nazw plików
+  const sanitizeFileName = (fileName: string): string => {
+    return fileName
+      .replace(/[^\w\s.-]/g, "")
+      .replace(/\s+/g, "_")
+      .toLowerCase()
+  }
+
   const handleSaveImage = async (processedImage: Blob) => {
+    const cropData = { x: 0, y: 0, width: 0, height: 0 }; // Default crop data or retrieve it from elsewhere
     setIsUploading(true)
 
     try {
-      // Create a file from the blob
-      const file = new File([processedImage], selectedFile?.name || "background.jpg", {
+      // Create a file from the blob with sanitized name
+      const sanitizedName = selectedFile?.name ? sanitizeFileName(selectedFile.name) : "background.jpg"
+      const file = new File([processedImage], sanitizedName, {
         type: "image/jpeg",
       })
 
       const formData = new FormData()
-      formData.append("file", file)
-      formData.append("type", "background")
-      formData.append("userId", userId.toString())
+      formData.append("background", file)
+      formData.append("cropData", JSON.stringify(cropData))
 
-      // 1. Upload the image file
-      const uploadResponse = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      })
-
-      if (!uploadResponse.ok) {
-        const error = await uploadResponse.json()
-        throw new Error(error.error || "Wystąpił błąd podczas przesyłania zdjęcia")
-      }
-
-      const uploadData = await uploadResponse.json()
-      const imageUrl = uploadData.url
-
-      // 2. Update the user's background image in the database
+      // Wyślij bezpośrednio do endpointu background
       const updateResponse = await fetch(`/api/users/${userId}/background`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ backgroundImage: imageUrl }),
+        body: formData,
       })
 
       if (!updateResponse.ok) {
@@ -96,8 +88,11 @@ export function ProfileBackgroundUpload({
         throw new Error(error.error || "Wystąpił błąd podczas aktualizacji tła użytkownika")
       }
 
-      // 3. Update the UI
-      onBackgroundUpdate(imageUrl)
+      const responseData = await updateResponse.json()
+      const imageUrl = responseData.backgroundUrl
+
+      // 3. Update the UI with refresh parameter
+      onBackgroundUpdate(`${imageUrl}?v=${Date.now()}`)
 
       toast({
         title: "Zdjęcie w tle zaktualizowane",
@@ -121,17 +116,7 @@ export function ProfileBackgroundUpload({
     setIsDeleting(true)
 
     try {
-      // 1. Delete the image file
-      const deleteResponse = await fetch(`/api/upload?url=${encodeURIComponent(currentBackground)}`, {
-        method: "DELETE",
-      })
-
-      if (!deleteResponse.ok) {
-        const error = await deleteResponse.json()
-        throw new Error(error.error || "Wystąpił błąd podczas usuwania zdjęcia")
-      }
-
-      // 2. Update the user's background image in the database (set to null)
+      // Update the user's background image in the database (set to null)
       const updateResponse = await fetch(`/api/users/${userId}/background`, {
         method: "PATCH",
         headers: {

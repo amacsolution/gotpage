@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Heart, Loader2 } from "lucide-react"
 
 interface LikedAdsFeedProps {
-  userId: number
+  userId: string
 }
 
 export function LikedAdsFeed({ userId }: LikedAdsFeedProps) {

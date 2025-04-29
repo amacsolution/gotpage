@@ -265,7 +265,7 @@ export async function POST(request: Request) {
 
     // Dodanie wpisu
     const result = await query(sql, params) as any
-    const insertId = result.rows.insertId
+    const insertId = result.insertId
 
     if (!insertId) {
       throw new Error("Nie udało się dodać wpisu")
@@ -347,12 +347,12 @@ export async function DELETE(request: Request) {
     }
 
     // Sprawdzenie, czy użytkownik jest autorem wpisu
-    const post = await query("SELECT author_id FROM news_posts WHERE id = ?", [postId]) as NewsData[]
+    const post = await query("SELECT user_id FROM news_posts WHERE id = ?", [postId]) as {user_id : string}[]
     if (!Array.isArray(post) || post.length === 0) {
       return NextResponse.json({ error: "Wpis nie istnieje" }, { status: 404 })
     }
 
-    if (post[0].author_id !== user.id) {
+    if (post[0].user_id !== String(user.id)) {
       return NextResponse.json({ error: "Nie masz uprawnień do usunięcia tego wpisu" }, { status: 403 })
     }
 

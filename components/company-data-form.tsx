@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm, useFieldArray } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -19,8 +19,7 @@ const serviceSchema = z.object({
   price: z.string().optional(),
 })
 
-// Define the form schema
-const formSchema = z.object({
+const companyFormSchema = z.object({
   nip: z
     .string()
     .regex(/^\d{10}$/, {
@@ -50,19 +49,12 @@ const formSchema = z.object({
     .optional()
     .or(z.literal("")),
   company_size: z.string().optional(),
-  services: z.array(serviceSchema).nonempty({ message: "Usługi nie mogą być puste" }),
+  services: z.string().optional(),
 })
 
-// Define the service type
-type Service = {
-  name: string
-  description?: string
-  price?: string
-}
-
 // Parse services string to array of service objects
-const parseServicesString = (servicesString?: string): Service[] => {
-  if (!servicesString) return []
+const parseServicesString = (servicesString?: string) => {
+  if (!servicesString) return [{ name: "", description: "", price: "" }]
 
   try {
     return JSON.parse(servicesString)
@@ -71,17 +63,12 @@ const parseServicesString = (servicesString?: string): Service[] => {
     if (servicesString.trim()) {
       return [{ name: servicesString.trim(), description: "", price: "" }]
     }
-    return []
+    return [{ name: "", description: "", price: "" }]
   }
 }
 
-// Stringify services array to JSON string
-const stringifyServices = (services: Service[]): string => {
-  return JSON.stringify(services)
-}
-
 interface CompanyDataFormProps {
-  userId: number
+  userId: string
   initialData: {
     nip?: string
     regon?: string
@@ -90,43 +77,51 @@ interface CompanyDataFormProps {
     company_size?: string
     services?: string
   }
-  onUpdate: (data: any) => void
+  onUpdate: (data: z.infer<typeof companyFormSchema>) => void
   onCancel: () => void
 }
 
 export function CompanyDataForm({ userId, initialData, onUpdate, onCancel }: CompanyDataFormProps) {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [services, setServices] = useState<{ name: string; description: string; price: string }[]>(parseServicesString(initialData.services))
 
-  // Parse initial services
-  const initialServices = parseServicesString(initialData.services)
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof companyFormSchema>>({
+    resolver: zodResolver(companyFormSchema),
     defaultValues: {
-      nip: initialData?.nip || "",
-      regon: initialData?.regon || "",
-      krs: initialData?.krs || "",
-      website: initialData?.website || "",
-      company_size: initialData?.company_size || "",
-      services: initialServices.length > 0 ? initialServices : [],
+      nip: initialData.nip || "",
+      regon: initialData.regon || "",
+      krs: initialData.krs || "",
+      website: initialData.website || "",
+      company_size: initialData.company_size || "",
+      services: initialData.services || "",
     },
   })
 
-  // Use field array for dynamic services
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "services",
-  })
+  const addService = () => {
+    setServices([...services, { name: "", description: "", price: "" }])
+  }
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const removeService = (index: number) => {
+    const newServices = [...services]
+    newServices.splice(index, 1)
+    setServices(newServices)
+  }
+
+  const updateService = (index: number, field: string, value: string) => {
+    const newServices = [...services]
+    newServices[index] = { ...newServices[index], [field]: value }
+    setServices(newServices)
+  }
+
+  async function onSubmit(values: z.infer<typeof companyFormSchema>) {
     setIsLoading(true)
 
     try {
       // Convert services array to JSON string
       const dataToSubmit = {
         ...values,
-        services: stringifyServices(values.services),
+        services: JSON.stringify(services),
       }
 
       const response = await fetch(`/api/users/${userId}/company`, {
@@ -143,7 +138,10 @@ export function CompanyDataForm({ userId, initialData, onUpdate, onCancel }: Com
       }
 
       const updatedData = await response.json()
-      onUpdate(updatedData)
+      onUpdate({
+        ...updatedData,
+        services: JSON.stringify(services),
+      })
 
       toast({
         title: "Dane firmy zaktualizowane",
@@ -237,29 +235,23 @@ export function CompanyDataForm({ userId, initialData, onUpdate, onCancel }: Com
             <div>
               <div className="flex items-center justify-between mb-2">
                 <FormLabel className="text-base">Usługi</FormLabel>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => append({ name: "", description: "", price: "" })}
-                  disabled={isLoading}
-                >
+                <Button type="button" variant="outline" size="sm" onClick={addService} disabled={isLoading}>
                   <Plus className="h-4 w-4 mr-1" />
                   Dodaj usługę
                 </Button>
               </div>
               <FormDescription className="mb-4">Dodaj usługi oferowane przez Twoją firmę</FormDescription>
 
-              {fields.map((field, index) => (
-                <div key={field.id} className="border rounded-md p-4 mb-4">
+              {services.map((service: { name: string; description: string; price: string }, index: number) => (
+                <div key={index} className="border rounded-md p-4 mb-4">
                   <div className="flex justify-between items-center mb-2">
                     <h4 className="font-medium">Usługa {index + 1}</h4>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => remove(index)}
-                      disabled={isLoading || fields.length === 1}
+                      onClick={() => removeService(index)}
+                      disabled={isLoading || services.length === 1}
                       className="h-8 w-8 p-0"
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
@@ -267,50 +259,40 @@ export function CompanyDataForm({ userId, initialData, onUpdate, onCancel }: Com
                     </Button>
                   </div>
                   <div className="space-y-3">
-                    <FormField
-                      control={form.control}
-                      name={`services.${index}.name`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nazwa usługi</FormLabel>
-                          <FormControl>
-                            <Input {...field} disabled={isLoading} placeholder="np. Konsultacja" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`services.${index}.description`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Opis usługi</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              disabled={isLoading}
-                              placeholder="Krótki opis usługi"
-                              className="resize-none"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`services.${index}.price`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Cena</FormLabel>
-                          <FormControl>
-                            <Input {...field} disabled={isLoading} placeholder="np. 100 zł/h lub 'od 500 zł'" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <FormItem>
+                      <FormLabel>Nazwa usługi</FormLabel>
+                      <FormControl>
+                        <Input
+                          value={service.name}
+                          onChange={(e) => updateService(index, "name", e.target.value)}
+                          disabled={isLoading}
+                          placeholder="np. Konsultacja"
+                        />
+                      </FormControl>
+                    </FormItem>
+                    <FormItem>
+                      <FormLabel>Opis usługi</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          value={service.description}
+                          onChange={(e) => updateService(index, "description", e.target.value)}
+                          disabled={isLoading}
+                          placeholder="Krótki opis usługi"
+                          className="resize-none"
+                        />
+                      </FormControl>
+                    </FormItem>
+                    <FormItem>
+                      <FormLabel>Cena</FormLabel>
+                      <FormControl>
+                        <Input
+                          value={service.price}
+                          onChange={(e) => updateService(index, "price", e.target.value)}
+                          disabled={isLoading}
+                          placeholder="np. 100 zł/h lub 'od 500 zł'"
+                        />
+                      </FormControl>
+                    </FormItem>
                   </div>
                 </div>
               ))}

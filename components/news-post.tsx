@@ -241,7 +241,7 @@ export function NewsPost({ post }: NewsPostProps) {
     try {
       let response;
       try {
-        response = await fetch(`/api/news/${post.id}`, {
+        response = await fetch(`/api/news?postId=${post.id}`, {
           method: "DELETE",
         });
       } catch (networkError) {
