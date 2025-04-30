@@ -4,6 +4,7 @@ import { PasswordReset } from "./templates/password-reset"
 import { AdExpiration } from "./templates/ad-expiration"
 import { MessageNotification } from "./templates/message-notification"
 import { PaymentConfirmation } from "./templates/payment-confirmation"
+import { MigrationInvitation } from "./templates/migration-invitation"
 
 export const emailExamples = {
   welcome: <WelcomeEmail userName="Jan Kowalski" verificationUrl="https://twojadomena.pl/verify?token=example-token" />,
@@ -55,3 +56,12 @@ export const emailExamples = {
     />
   ),
 }
+
+export const MigrationInvitationExample = () => (
+  <MigrationInvitation
+    userName="Jan Kowalski"
+    registrationUrl="https://twojadomena.pl/register?source=migration"
+    oldServiceName="GotPage"
+    newServiceName="Nowy Serwis Ogłoszeniowy"
+  />
+)

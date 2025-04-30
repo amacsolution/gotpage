@@ -2,7 +2,7 @@
 export const emailConfig = {
   // Dane SMTP
   smtp: {
-    host: process.env.EMAIL_SMTP_HOST ,
+    host: "s11.cyber-folks.pl",
     port: Number.parseInt(process.env.EMAIL_SMTP_PORT!),
     secure: process.env.EMAIL_SMTP_SECURE === "true",
     auth: {
@@ -14,7 +14,7 @@ export const emailConfig = {
   // Dane nadawcy
   from: {
     name: "Gotpage",
-    email: "no-reply@gotpage.pl",
+    email: "kontakt@gotpage.pl",
   },
 
   // Adresy do testów
