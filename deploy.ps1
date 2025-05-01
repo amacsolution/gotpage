@@ -9,6 +9,7 @@ $remoteUser = "biycgepwzk"
 $remoteHost = "s11.cyber-folks.pl"
 $remotePath = "domains/gotpage.pl/public_html"
 $remoteDomain = "gotpage.pl"
+$remotePort = 222
 
 # Wypchnij zmiany do repozytorium
 Write-Host "Wypychanie zmian do repozytorium Git..." -ForegroundColor Cyan
