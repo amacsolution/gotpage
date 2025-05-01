@@ -34,7 +34,7 @@ Write-Host "Build zakonczony pomyslnie. Rozpoczynam wdrazanie..." -ForegroundCol
 
 # Przesyłanie plików
 Write-Host "Przesylanie plikow na serwer..." -ForegroundColor Cyan
-scp -P $remotePort -i $sshKeyPath -r `
+scp -i $sshKeyPath -P $remotePort -r `
   .next `
   public `
   app `
@@ -46,6 +46,7 @@ scp -P $remotePort -i $sshKeyPath -r `
   package.json `
   package-lock.json `
   "$remoteUser@${remoteHost}:${remotePath}"
+
 
 
 if ($LASTEXITCODE -ne 0) {
