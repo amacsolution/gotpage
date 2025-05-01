@@ -20,7 +20,7 @@ export const MigrationInvitation: React.FC<MigrationInvitationProps> = ({
       title="Zaproszenie do nowej odsłony Gotpage"
       previewText="Odkryj nowy, szybszy i lepszy serwis gotpage z ogłoszeniami, aktualnościami i katalogiem firm!"
       headerProps={{
-        logoUrl: "/logo.png",
+        logoUrl: "https://gotpage.pl/logo-emails.png?text=Gotpage",
         logoAlt: "Logo gotpage",
       }}
     >
@@ -379,12 +379,6 @@ export const MigrationInvitation: React.FC<MigrationInvitationProps> = ({
         <a href="mailto:kontakt@gotpage.pl" style={{ color: "#7c2ae8", textDecoration: "none" }}>
           kontakt@gotpage.pl
         </a>
-      </p>
-
-      <p style={{ color: "#4B5563", fontSize: "16px", lineHeight: "24px", margin: "24px 0 0 0" }}>
-        Pozdrawiamy,
-        <br />
-        Zespół {oldServiceName}
       </p>
     </Layout>
   )
