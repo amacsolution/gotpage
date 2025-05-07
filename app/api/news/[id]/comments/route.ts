@@ -15,7 +15,8 @@ function extractUrl(text: string): string | null {
   return null
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const postId = Number.parseInt(params.id)
     if (isNaN(postId)) {
@@ -65,7 +66,8 @@ ORDER BY c.created_at DESC`,
   }
 }
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     // Sprawdzenie, czy użytkownik jest zalogowany
     const user = await auth(request)

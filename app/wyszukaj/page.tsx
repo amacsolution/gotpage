@@ -10,11 +10,12 @@ export const metadata: Metadata = {
   description: "Wyniki wyszukiwania w serwisie Gotpage",
 }
 
-export default async function SearchPage({
-  searchParams,
-}: {
-  searchParams: { q?: string; tab?: string }
-}) {
+export default async function SearchPage(
+  props: {
+    searchParams: Promise<{ q?: string; tab?: string }>
+  }
+) {
+  const searchParams = await props.searchParams;
   const query = searchParams.q || ""
   const activeTab = searchParams.tab || "all"
 

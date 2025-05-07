@@ -1,7 +1,7 @@
 "use client"
 
 // Zmień importy i typy na polskie nazwy gdzie to możliwe
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -77,7 +77,8 @@ export async function generujMetadane({ params }: PropsStrony, rodzic: Resolving
   }
 }
 
-export default function StronaPojedynczegoWpisu({ params }: { params: { id: string } }) {
+export default function StronaPojedynczegoWpisu(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const [wpis, ustawWpis] = useState<any>(null)
   const [ladowanie, ustawLadowanie] = useState(true)
   const router = useRouter()

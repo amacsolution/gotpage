@@ -3,7 +3,8 @@ import { db, query } from "@/lib/db"
 import { auth } from "@/lib/auth"
 import { count } from "console"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const userId = params.id
     const { searchParams } = new URL(request.url)

@@ -9,7 +9,8 @@ import { AdData } from "../route"
 import { v4 as uuidv4 } from "uuid"
 import sharp from "sharp"
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
 
     const { id } = params
@@ -114,7 +115,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const adId = Number.parseInt(await params.id)
 
@@ -294,7 +296,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const adId = Number.parseInt(await params.id)
 

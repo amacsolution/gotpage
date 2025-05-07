@@ -2,7 +2,8 @@ import { Suspense } from "react"
 import { EditAdClient } from "@/components/edit-client"
 import { Skeleton } from "@/components/ui/skeleton"
 
-export default function EditAdPage({ params }: { params: { id: string } }) {
+export default async function EditAdPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   return (
     <Suspense
       fallback={

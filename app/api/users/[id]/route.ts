@@ -34,7 +34,8 @@ const profileDataSchema = z.object({
     .or(z.literal("")),
 })
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     // Sprawdzenie, czy użytkownik jest zalogowany
     const user = await auth(request)

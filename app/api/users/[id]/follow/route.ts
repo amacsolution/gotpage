@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { db, query } from "@/lib/db"
 import { auth, authOptions } from "@/lib/auth"
 
-export async function POST(request: NextRequest, context: { params: { id: string } }) {
+export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { params } = await context;
   try {
     const user = await auth(request)

@@ -7,7 +7,8 @@ async function isAdmin(request: NextRequest) {
   return adminToken && adminToken.value === "authenticated"
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     if (!(await isAdmin(req))) {
       return NextResponse.json({ error: "Brak uprawnień" }, { status: 401 })
@@ -37,7 +38,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string }}) { 
+export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }>}) {
+  const params = await props.params;
   try {
     if (!(await isAdmin(req))) {
       return NextResponse.json({ error: "Brak uprawnień" }, { status: 401 })

@@ -3,7 +3,8 @@ import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
 import { AdData } from "@/app/api/ads/route"
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     // Sprawdzenie, czy użytkownik jest zalogowany
     const currentUser = await auth(request)

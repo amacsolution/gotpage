@@ -4,7 +4,7 @@ import { cookies } from "next/headers"
 export async function GET(request: NextRequest) {
   try {
     // Debugowanie - sprawdź wszystkie ciasteczka
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const allCookies = (await cookieStore).getAll()
     console.log(
       "Wszystkie ciasteczka:",

@@ -6,7 +6,8 @@ import { existsSync } from "fs"
 import path from "path"
 import { v4 as uuidv4 } from "uuid"
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     console.log("Avatar upload started for user ID:", params.id)
 
