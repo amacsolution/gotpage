@@ -43,43 +43,35 @@ async function findFile(basePath: string, relativePath: string): Promise<string 
 
   for (const path of possiblePaths) {
     if (existsSync(path)) {
-      console.log("Found file at:", path)
       return path
     }
   }
 
   console.error("File not found in any location:", relativePath)
-  console.log("Checked paths:", possiblePaths)
   return null
 }
 
 export async function GET(request: Request, { params }: { params: { path: string[] } }) {
   try {
-    const path = params.path.join("/")
-    console.log("Requested path:", path)
+    const path = (await params).path.join("/")
 
     // Pobierz ścieżkę bazową
     const basePath = process.cwd()
-    console.log("Base path:", basePath)
 
     // Znajdź plik w różnych możliwych lokalizacjach
     const filePath = await findFile(basePath, path)
 
     if (!filePath) {
-      console.log("File not found, returning 404")
       return new Response("Plik nie istnieje", { status: 404 })
     }
 
     // Odczytaj plik
     try {
-      console.log("Reading file:", filePath)
       const fileBuffer = await fs.readFile(filePath)
-      console.log("File read successfully, size:", fileBuffer.length)
 
       // Określ typ MIME na podstawie rozszerzenia pliku
       const fileExtension = extname(filePath).toLowerCase()
       const mimeType = getMimeType(fileExtension)
-      console.log("MIME type:", mimeType)
 
       // Dodaj nagłówki cache-control, aby zapobiec buforowaniu
       return new Response(fileBuffer, {

@@ -20,6 +20,7 @@ import { LogoutButton } from "./logout-button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useUser } from "@/lib/user-context"
 import { NotificationsPanel } from "./notification-panel"
+import { GlobalSearch } from "./global-search"
 
 export function MainNav() {
   const pathname = usePathname()
@@ -87,6 +88,11 @@ export function MainNav() {
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Global Search */}
+        <div className="hidden md:block">
+          <GlobalSearch />
+        </div>
+
         <Link href="/ogloszenia/dodaj" className="hidden sm:flex">
           <Button size="sm" className="gap-1">
             <Plus className="h-4 w-4" />
@@ -108,7 +114,7 @@ export function MainNav() {
                     <AvatarImage
                       src={
                         user.avatar ||
-                        `/placeholder.svg?height=40&width=40&text=${user.name.substring(0, 2).toUpperCase()}`
+                        `/placeholder.svg?height=40&width=40&text=${user.name.substring(0, 2).toUpperCase() || "/placeholder.svg"}`
                       }
                       alt={user.name}
                     />
@@ -162,6 +168,10 @@ export function MainNav() {
           </SheetTrigger>
           <SheetContent side="right" className="w-[80%] sm:w-[350px] pr-0">
             <div className="flex flex-col h-full">
+              <div className="p-4">
+                <GlobalSearch className="w-full" />
+              </div>
+
               <div className="flex-1 py-4">
                 {user && (
                   <div className="flex items-center gap-3 mb-6 p-4 bg-muted rounded-lg">
@@ -169,7 +179,7 @@ export function MainNav() {
                       <AvatarImage
                         src={
                           user.avatar ||
-                          `/placeholder.svg?height=40&width=40&text=${user.name.substring(0, 2).toUpperCase()}`
+                          `/placeholder.svg?height=40&width=40&text=${user.name.substring(0, 2).toUpperCase() || "/placeholder.svg"}`
                         }
                         alt={user.name}
                       />
@@ -232,4 +242,3 @@ export function MainNav() {
     </div>
   )
 }
-

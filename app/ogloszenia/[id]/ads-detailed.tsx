@@ -224,7 +224,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
               <Image
                 src={ad.images[activeImageIndex]}
                 alt={ad.title}
-                className="object-fill"
+                className="object-cover" // 🔥 Zmiana tutaj!
                 priority
                 layout="fill"
               />
@@ -232,21 +232,21 @@ export default function AdDetailsClient({ id }: { id: string }) {
             {ad.images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {ad.images.map((image : string , index: number) => (
-                  <div
+                    <div
                     key={index}
                     className={`relative w-24 h-24 rounded-md overflow-hidden cursor-pointer border-2 ${
                       activeImageIndex === index ? "border-primary" : "border-transparent"
                     }`}
                     onClick={() => setActiveImageIndex(index)}
-                  >
+                    >
                     <Image
-                      src={image} // 🔥 Zmiana tutaj!
+                      src={image}
                       alt={`${ad.title} - zdjęcie ${index + 1}`}
-
                       layout="fill"
-                      priority={index === 0} // Ustaw priorytet tylko dla pierwszego zdjęcia
+                      className="object-cover" // 🔥 Zmiana tutaj!
+                      priority={index === 0}
                     />
-                  </div>
+                    </div>
                 ))}
               </div>
             )}

@@ -28,6 +28,7 @@ import { NewsPost } from "@/components/news-post"
 import { FollowStats } from "@/components/follow-stats"
 import { CompanyDataForm } from "@/components/company-data-form"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { PhotoGallery } from "@/components/photo-gallery"
 
 // Update the UserData interface to include the new fields
 interface UserData {
@@ -400,19 +401,19 @@ export default function ProfilePage() {
     <PageLayout>
       <div className="container py-6">
         <div
-          className={`relative profile-background h-40 w-full rounded-xl mb-16 ${
-            user.backgroundImage ? "bg-cover bg-center" : ""
+          className={`relative profile-background h-52 md:h-52 w-full rounded-xl mb-16 ${
+            user.backgroundImage ? "bg-cover bg-center bg-no-repeat" : ""
           }`}
           style={
             user.backgroundImage
               ? {
-                  backgroundImage: `url(${backgroundPath})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }
+            backgroundImage: `url(${backgroundPath})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }
               : {
-                  background: "linear-gradient(135deg, #e5308a 0%, #7c2ae8 100%)",
-                }
+            background: "linear-gradient(135deg, #e5308a 0%, #7c2ae8 100%)",
+          }
           }
         >
           {/* Background image upload component */}
@@ -725,6 +726,9 @@ export default function ProfilePage() {
                 <TabsTrigger value="liked" className="flex-1">
                   Polubione
                 </TabsTrigger>
+                <TabsTrigger value="photos" className="flex-1">
+                  Zdjęcia
+                </TabsTrigger>
                 {user.type === "business" && (
                   <>
                     <TabsTrigger value="reviews" className="flex-1">
@@ -994,6 +998,10 @@ export default function ProfilePage() {
                   )}
                 </TabsContent>
               )}
+              <TabsContent value="photos" className="mt-4">
+                <h2 className="text-xl font-semibold mb-4">Moje zdjęcia</h2>
+                <PhotoGallery userId={user.id} isOwnProfile={true} />
+              </TabsContent>
               {user.type === "business" && (
                 <TabsContent value="promotion" className="mt-4">
                   <CompanyPromotion

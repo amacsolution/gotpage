@@ -8,7 +8,7 @@ import { db } from "./db"
 import { UserData } from "@/app/api/profile/route"
 
 export interface User {
-  id: number
+  id: string
   name: string
   email: string
   type: string

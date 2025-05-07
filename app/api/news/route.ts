@@ -27,6 +27,9 @@ export async function GET(request: Request) {
 
     // Sprawdzenie, czy użytkownik jest zalogowany
     const currentUser = await auth(request)
+    if (!currentUser) {
+      return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
+    }
     const currentUserId = currentUser?.id
 
     // Budowanie zapytania SQL
@@ -46,11 +49,7 @@ export async function GET(request: Request) {
         u.name as author_name, 
         u.avatar as author_avatar, 
         u.type as author_type, 
-        u.verified as author_verified,
-        CASE 
-          WHEN f.follower_id IS NOT NULL THEN 1 
-          ELSE 0 
-        END as is_followed
+        u.verified as author_verified
     `
 
     // Jeśli użytkownik jest zalogowany, dodajemy informację o obserwowaniu

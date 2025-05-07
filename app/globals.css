@@ -61,7 +61,7 @@
 
 @media (max-width: 768px) {
   .profile-background {
-    height: 120px !important; /* Shorter height on mobile */
+    height: 208px !important; /* Shorter height on mobile */
   }
 }
 

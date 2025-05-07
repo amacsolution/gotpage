@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Star, MapPin, Phone, Mail, Shield, Clock, Building, ExternalLink, ShieldCheck } from "lucide-react"
 
-interface CompanyCardProps {
+export interface CompanyCardProps {
   company: {
     id: number
     name: string

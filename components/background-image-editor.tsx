@@ -33,7 +33,7 @@ export function BackgroundImageEditor({ isOpen, onClose, onSave, imageFile }: Ba
   const [desktopCrop, setDesktopCrop] = useState<Crop>({
     unit: "%",
     width: 100,
-    height: 30,
+    height: 60,
     x: 0,
     y: 0,
   })
@@ -48,7 +48,7 @@ export function BackgroundImageEditor({ isOpen, onClose, onSave, imageFile }: Ba
 
   // Dimensions for desktop and mobile
   const dimensions = {
-    desktop: { width: 1336, height: 160 },
+    desktop: { width: 1336, height: 260 },
     mobile: { width: 350, height: 120 },
   }
 
@@ -71,7 +71,7 @@ export function BackgroundImageEditor({ isOpen, onClose, onSave, imageFile }: Ba
       setDesktopCrop({
         unit: "%",
         width: 100,
-        height: 30,
+        height: 60,
         x: 0,
         y: 0,
       })
