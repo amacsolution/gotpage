@@ -7,7 +7,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  logoUrl = "https://gotpage.pl/logo.png?text=Gotpage",
+  logoUrl = "https://gotpage.pl/logo-emails.png?text=Gotpage",
   logoAlt = "Logo firmy",
   websiteUrl = "https://gotpage.pl",
 }) => {

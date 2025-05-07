@@ -9,6 +9,7 @@ import { PaymentConfirmation } from "@/emails/templates/payment-confirmation"
 
 // Dodaj ten import na górze pliku
 import { AdConfirmation } from "@/emails/templates/ad-confirmation"
+import { MigrationInvitation } from "@/emails"
 
 /**
  * Wysyła email powitalny po rejestracji
@@ -201,6 +202,32 @@ export async function sendAdConfirmationEmail(params: {
         adId={adId}
         isPromoted={isPromoted}
         promotionUrl={promotionUrl}
+      />
+    ),
+  })
+}
+
+/**
+ * Wysyła email z zaproszeniem do migracji ze starego serwisu
+ */
+export async function sendMigrationInvitationEmail(params: {
+  email: string
+  userName?: string
+  oldServiceName?: string
+  newServiceName?: string
+}) {
+  const { email, userName, oldServiceName = "gotpage", newServiceName = "Nowy Serwis Ogłoszeniowy Gotpage" } = params
+  const registrationUrl = `${emailConfig.appUrl}/register?source=migration&email=${encodeURIComponent(email)}`
+
+  return emailService.sendEmail({
+    to: email,
+    subject: `Zaproszenie do nowego serwisu ${newServiceName}`,
+    emailComponent: (
+      <MigrationInvitation
+        userName={userName}
+        registrationUrl={registrationUrl}
+        oldServiceName={oldServiceName}
+        newServiceName={newServiceName}
       />
     ),
   })

@@ -4,7 +4,11 @@
     {
       "label": "Deploy to Server",
       "type": "shell",
-      "command": "powershell -ExecutionPolicy Bypass -File ${workspaceFolder}/deploy.ps1",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy", "Bypass",
+        "-File", "${workspaceFolder}\\deploy.ps1"
+      ],
       "group": {
         "kind": "build",
         "isDefault": true
