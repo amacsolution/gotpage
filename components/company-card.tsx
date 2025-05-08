@@ -11,6 +11,7 @@ export interface CompanyCardProps {
     id: number
     name: string
     logo: string
+    avatar: string
     description: string
     phone: string
     categories: string[]
@@ -26,6 +27,10 @@ export interface CompanyCardProps {
 export function CompanyCard({ company, featured = false }: CompanyCardProps) {
 const categories = Array.isArray(company.categories) ? company.categories : [];
 
+if( !company.logo && company.avatar){
+  company.logo = company.avatar
+}
+
   return (
     <Card
       className={`overflow-hidden hover:shadow-md  transition-all flex flex-col justify-between hover:scale-[1.01] ${
@@ -37,9 +42,9 @@ const categories = Array.isArray(company.categories) ? company.categories : [];
           <div className="flex items-center gap-3 mb-3">
             <div className="relative">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                {company.logo ? (
+                {company.logo && company.avatar ? (
                   <img
-                    src={company.logo || "/placeholder.svg"}
+                    src={company.logo || company.avatar || "/placeholder.svg"}
                     alt={company.name}
                     className="w-full h-full object-cover"
                   />
@@ -60,24 +65,21 @@ const categories = Array.isArray(company.categories) ? company.categories : [];
                 <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
                 <span className="truncate">{company.location}</span>
               </div>
-              <div className="flex items-center mt-1">
-                {company.rating !== 0 ? (
-                  <>
-                {Array.from({ length: 5 }).map((_, i) => (
+                {company.rating > 0 && (
+                <div className="flex items-center mt-1">
+                  {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
                     className="h-4 w-4"
                     fill={i < Math.floor(company.rating) ? "currentColor" : "none"}
                     color={i < Math.floor(company.rating) ? "#FFB800" : "#D1D5DB"}
                   />
-                ))}
-                <span className="text-sm ml-1">
-                  {Number(company.rating).toFixed(1)} ({company.reviewCount})
-                </span>
-                  </>
-                ) : "" }
-                
-              </div>
+                  ))}
+                  <span className="text-sm ml-1">
+                  {Number(company.rating).toFixed(1)} ({!company.reviewCount ? 0 : company.reviewCount} ocen)
+                  </span>
+                </div>
+                )}
             </div>
           </div>
 

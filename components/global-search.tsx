@@ -6,10 +6,11 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Loader2, Search, Building, User, FileText } from "lucide-react"
+import { Loader2, Search, Building, User, FileText, Tag, Layers } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
 import { useClickOutside } from "@/hooks/use-click-outside"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 
 interface SearchResult {
   id: string | number
@@ -18,6 +19,15 @@ interface SearchResult {
   subtitle?: string
   image?: string
   url: string
+  category?: string
+  subcategory?: string
+}
+
+interface ApiResponse {
+  ads: any[]
+  users: any[]
+  companies: any[]
+  news: any[]
 }
 
 export function GlobalSearch({ className = "" }: { className?: string }) {
@@ -39,14 +49,78 @@ export function GlobalSearch({ className = "" }: { className?: string }) {
 
       setIsLoading(true)
       try {
-        const response = await fetch(`/api/search/global?q=${encodeURIComponent(debouncedSearchTerm)}`)
+        // Use the results API instead of global
+        const response = await fetch(`/api/search/results?q=${encodeURIComponent(debouncedSearchTerm)}&type=all`)
 
         if (!response.ok) {
           throw new Error("Failed to fetch results")
         }
 
-        const data = await response.json()
-        setResults(data.results || [])
+        const data: ApiResponse = await response.json()
+        console.log("API response:", data)
+
+        // Transform the data to the format expected by the component
+        const transformedResults: SearchResult[] = []
+
+        // Add ads
+        if (data.ads && data.ads.length > 0) {
+          transformedResults.push(
+            ...data.ads.map((ad) => ({
+              id: ad.id,
+              type: "ad" as const,
+              title: ad.title,
+              subtitle: `${ad.price ? `${ad.price} zł • ` : ""}${ad.location || ""}`,
+              image: ad.image_url || ad.image,
+              url: `/ogloszenia/${ad.id}`,
+              category: ad.category,
+              subcategory: ad.subcategory,
+            })),
+          )
+        }
+
+        // Add users
+        if (data.users && data.users.length > 0) {
+          transformedResults.push(
+            ...data.users.map((user) => ({
+              id: user.id,
+              type: "user" as const,
+              title: user.name,
+              subtitle: user.location || "",
+              image: user.avatar,
+              url: `/profil/${user.id}`,
+            })),
+          )
+        }
+
+        // Add companies
+        if (data.companies && data.companies.length > 0) {
+          transformedResults.push(
+            ...data.companies.map((company) => ({
+              id: company.id,
+              type: "company" as const,
+              title: company.name,
+              subtitle: company.location || "",
+              image: company.avatar,
+              url: `/profil/${company.id}`,
+            })),
+          )
+        }
+
+        // Add news
+        if (data.news && data.news.length > 0) {
+          transformedResults.push(
+            ...data.news.map((news) => ({
+              id: news.id,
+              type: "news" as const,
+              title: news.content.substring(0, 50) + (news.content.length > 50 ? "..." : ""),
+              subtitle: `Opublikowano: ${new Date(news.created_at).toLocaleDateString("pl-PL")}`,
+              image: news.image,
+              url: `/aktualnosci/post/${news.id}`,
+            })),
+          )
+        }
+
+        setResults(transformedResults)
         setShowResults(true)
       } catch (error) {
         console.error("Error fetching results:", error)
@@ -72,6 +146,24 @@ export function GlobalSearch({ className = "" }: { className?: string }) {
     router.push(result.url)
     setShowResults(false)
     setSearchTerm("")
+  }
+
+  // Handle category click
+  const handleCategoryClick = (e: React.MouseEvent, category: string) => {
+    e.stopPropagation() // Prevent triggering the parent click event
+    router.push(`/wyszukaj?q=${encodeURIComponent(searchTerm)}&category=${encodeURIComponent(category)}`)
+    setShowResults(false)
+  }
+
+  // Handle subcategory click
+  const handleSubcategoryClick = (e: React.MouseEvent, category: string, subcategory: string) => {
+    e.stopPropagation() // Prevent triggering the parent click event
+    router.push(
+      `/wyszukaj?q=${encodeURIComponent(searchTerm)}&category=${encodeURIComponent(
+        category,
+      )}&subcategory=${encodeURIComponent(subcategory)}`,
+    )
+    setShowResults(false)
   }
 
   // Handle key press events
@@ -138,18 +230,48 @@ export function GlobalSearch({ className = "" }: { className?: string }) {
                   ) : (
                     getIcon(result.type)
                   )}
-                  <div>
-                    <div className="font-medium">{result.title}</div>
-                    {result.subtitle && <div className="text-xs text-muted-foreground">{result.subtitle}</div>}
-                    <div className="text-xs text-primary">
-                      {result.type === "ad"
-                        ? "Ogłoszenie"
-                        : result.type === "user"
-                          ? "Użytkownik"
-                          : result.type === "company"
-                            ? "Firma"
-                            : "Aktualność"}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{result.title}</div>
+                    {result.subtitle && <div className="text-xs text-muted-foreground truncate">{result.subtitle}</div>}
+
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="text-xs text-primary">
+                        {result.type === "ad"
+                          ? "Ogłoszenie"
+                          : result.type === "user"
+                            ? "Użytkownik"
+                            : result.type === "company"
+                              ? "Firma"
+                              : "Aktualność"}
+                      </div>
                     </div>
+
+                    {/* Separate category and subcategory badges */}
+                    {result.type === "ad" && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {result.category && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs py-0 h-5 px-1.5 flex items-center gap-1 cursor-pointer hover:bg-primary/10"
+                            onClick={(e) => handleCategoryClick(e, result.category!)}
+                          >
+                            <Tag className="h-3 w-3" />
+                            {result.category}
+                          </Badge>
+                        )}
+
+                        {result.subcategory && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs py-0 h-5 px-1.5 flex items-center gap-1 cursor-pointer hover:bg-primary/10"
+                            onClick={(e) => handleSubcategoryClick(e, result.category!, result.subcategory!)}
+                          >
+                            <Layers className="h-3 w-3" />
+                            {result.subcategory}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </li>
