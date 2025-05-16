@@ -44,7 +44,7 @@ if( !company.logo && company.avatar){
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                 {company.logo && company.avatar ? (
                   <img
-                    src={company.logo || company.avatar || "/placeholder.svg"}
+                    src={company.logo || company.avatar}
                     alt={company.name}
                     className="w-full h-full object-cover"
                   />
