@@ -6,23 +6,10 @@ import { useState, useEffect } from "react"
 import { MessageCircle, X, Minimize2, Maximize2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Avatar } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Input } from "@/components/ui/input"
 import { useRouter } from "next/navigation"
 import { v4 as uuidv4 } from "uuid"
-
-type Conversation = {
-  id: string
-  user: {
-    id: string
-    name: string
-    avatar?: string
-  }
-  lastMessage: string
-  timestamp: string
-  unread: number
-}
+import { MessagesLayout, type Conversation, type Message } from "@/components/chat/messages-layout"
+import { useMediaQuery } from "@/hooks/use-media-query"
 
 export default function MessageBubble() {
   const [isOpen, setIsOpen] = useState(false)
@@ -30,9 +17,12 @@ export default function MessageBubble() {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [activeConversation, setActiveConversation] = useState<string | null>(null)
-  const [messages, setMessages] = useState<any[]>([])
+  const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState("")
+  const [activeUser, setActiveUser] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const isMobile = useMediaQuery("(max-width: 768px)")
 
   useEffect(() => {
     // Fetch conversations from API
@@ -52,27 +42,49 @@ export default function MessageBubble() {
       }
     }
 
-    fetchConversations()
+    if (isOpen) {
+      fetchConversations()
 
-    // Set up polling for new messages every 10 seconds
-    const interval = setInterval(fetchConversations, 10000)
-
-    return () => clearInterval(interval)
-  }, [])
+      // Set up polling for new messages every 10 seconds
+      const interval = setInterval(fetchConversations, 10000)
+      return () => clearInterval(interval)
+    }
+  }, [isOpen])
 
   useEffect(() => {
     // Fetch messages for active conversation
     const fetchMessages = async () => {
       if (!activeConversation) return
 
+      setIsLoading(true)
       try {
-        const response = await fetch(`/api/messages/conversation/${activeConversation}`)
+        const response = await fetch(`/api/messages/conversations/${activeConversation}`)
         if (response.ok) {
           const data = await response.json()
           setMessages(data.messages)
+          setActiveUser(data.user)
+
+          // Mark as read
+          fetch(`/api/messages/read/${activeConversation}`, { method: "POST" })
+            .then(() => {
+              // Update unread count in conversations list
+              setConversations((prev) =>
+                prev.map((conv) => (conv.id === activeConversation ? { ...conv, unread: 0 } : conv)),
+              )
+
+              // Recalculate total unread
+              const total = conversations.reduce(
+                (sum, conv) => sum + (conv.id === activeConversation ? 0 : conv.unread),
+                0,
+              )
+              setUnreadCount(total)
+            })
+            .catch((error) => console.error("Error marking as read:", error))
         }
       } catch (error) {
         console.error("Error fetching messages:", error)
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -82,8 +94,12 @@ export default function MessageBubble() {
       // Set up polling for new messages in this conversation
       const interval = setInterval(fetchMessages, 3000)
       return () => clearInterval(interval)
+    } else {
+      // Clear messages when no active conversation
+      setMessages([])
+      setActiveUser(null)
     }
-  }, [activeConversation])
+  }, [activeConversation, conversations])
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -107,6 +123,26 @@ export default function MessageBubble() {
         const data = await response.json()
         setMessages((prev) => [...prev, data.message])
         setNewMessage("")
+
+        // Update conversation in the list
+        setConversations((prev) => {
+          const updatedConversations = prev.map((conv) => {
+            if (conv.id === activeConversation) {
+              return {
+                ...conv,
+                lastMessage: newMessage,
+                timestamp: "Teraz",
+              }
+            }
+            return conv
+          })
+
+          // Sort conversations to put the active one at the top
+          return [
+            ...updatedConversations.filter((c) => c.id === activeConversation),
+            ...updatedConversations.filter((c) => c.id !== activeConversation),
+          ]
+        })
       }
     } catch (error) {
       console.error("Error sending message:", error)
@@ -116,22 +152,15 @@ export default function MessageBubble() {
   const toggleChat = () => {
     setIsOpen(!isOpen)
     setIsMinimized(false)
+    setActiveConversation(null)
   }
 
   const openConversation = (id: string) => {
     setActiveConversation(id)
+  }
 
-    // Mark conversation as read
-    fetch(`/api/messages/read/${id}`, { method: "POST" })
-      .then(() => {
-        // Update unread count
-        setConversations((prev) => prev.map((conv) => (conv.id === id ? { ...conv, unread: 0 } : conv)))
-
-        // Recalculate total unread
-        const total = conversations.reduce((sum, conv) => sum + (conv.id === id ? 0 : conv.unread), 0)
-        setUnreadCount(total)
-      })
-      .catch((error) => console.error("Error marking as read:", error))
+  const closeConversation = () => {
+    setActiveConversation(null)
   }
 
   const goToAllMessages = () => {
@@ -139,120 +168,71 @@ export default function MessageBubble() {
     setIsOpen(false)
   }
 
+  const handleReport = () => {
+    alert("Zgłoszenie zostało wysłane")
+  }
+
+  // For mobile view, show full screen conversation
+  if (isMobile && activeConversation && isOpen) {
+    return (
+      <div className="fixed inset-0 z-50 bg-background">
+        <MessagesLayout
+          conversations={conversations}
+          messages={messages}
+          activeConversation={activeConversation}
+          activeUser={activeUser}
+          newMessage={newMessage}
+          isLoading={isLoading}
+          onSendMessage={handleSendMessage}
+          onNewMessageChange={(e) => setNewMessage(e.target.value)}
+          onConversationSelect={openConversation}
+          onCloseConversation={closeConversation}
+          onReport={handleReport}
+          isMobileFullScreen={true}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end">
       {isOpen && !isMinimized ? (
-        <div className="mb-4 w-80 rounded-lg border bg-card text-card-foreground shadow-lg animate-in slide-in-from-bottom-5">
-          <div className="flex items-center justify-between border-b p-3">
-            <h3 className="font-semibold">Wiadomości</h3>
-            <div className="flex gap-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsMinimized(true)}>
-                <Minimize2 className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsOpen(false)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {activeConversation ? (
-            // Active conversation view
-            <div className="flex h-96 flex-col">
-              <div className="flex items-center justify-between border-b p-2">
-                <Button variant="ghost" size="sm" onClick={() => setActiveConversation(null)}>
-                  &larr; Wróć
+        <div className="mb-4 flex w-[640px] max-w-[calc(100vw-2rem)] rounded-lg border bg-card text-card-foreground shadow-lg animate-in slide-in-from-bottom-5">
+          <div className="w-full">
+            <div className="flex items-center justify-between border-b p-3">
+              <h3 className="font-semibold">Wiadomości</h3>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsMinimized(true)}>
+                  <Minimize2 className="h-4 w-4" />
                 </Button>
-                <span className="text-sm font-medium">
-                  {conversations.find((c) => c.id === activeConversation)?.user.name}
-                </span>
-                <Button variant="ghost" size="sm" onClick={() => router.push(`/wiadomosci/${activeConversation}`)}>
-                  Rozwiń
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsOpen(false)}>
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
-
-              <ScrollArea className="flex-1 p-3">
-                <div className="flex flex-col gap-2">
-                  {messages.map((msg, i) => (
-                    <div key={i} className={`flex ${msg.isMine ? "justify-end" : "justify-start"}`}>
-                      <div
-                        className={`max-w-[80%] rounded-lg p-2 text-sm ${
-                          msg.isMine ? "bg-primary text-primary-foreground" : "bg-muted"
-                        }`}
-                      >
-                        {msg.content}
-                        <div className="mt-1 text-xs opacity-70">
-                          {new Date(msg.timestamp).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-
-              <form onSubmit={handleSendMessage} className="flex items-center gap-2 border-t p-2">
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Napisz wiadomość..."
-                  className="flex-1"
-                />
-                <Button type="submit" size="sm">
-                  Wyślij
-                </Button>
-              </form>
             </div>
-          ) : (
-            // Conversations list view
-            <>
-              <ScrollArea className="h-80 p-2">
-                {conversations.length > 0 ? (
-                  <div className="flex flex-col gap-1">
-                    {conversations.map((conv) => (
-                      <div
-                        key={conv.id}
-                        onClick={() => openConversation(conv.id)}
-                        className={`flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-accent ${
-                          conv.unread > 0 ? "bg-accent/50" : ""
-                        }`}
-                      >
-                        <Avatar className="h-10 w-10">
-                          <div className="bg-muted flex h-full w-full items-center justify-center">
-                            {conv.user.name.charAt(0).toUpperCase()}
-                          </div>
-                        </Avatar>
-                        <div className="flex-1 overflow-hidden">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium">{conv.user.name}</span>
-                            <span className="text-xs text-muted-foreground">{conv.timestamp}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <p className="truncate text-sm text-muted-foreground">{conv.lastMessage}</p>
-                            {conv.unread > 0 && (
-                              <Badge variant="default" className="ml-1">
-                                {conv.unread}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex h-full items-center justify-center text-center text-muted-foreground">
-                    <p>Brak wiadomości</p>
-                  </div>
-                )}
-              </ScrollArea>
-              <div className="border-t p-2">
+
+            <div className="p-3">
+              <MessagesLayout
+                conversations={conversations}
+                messages={messages}
+                activeConversation={activeConversation}
+                activeUser={activeUser}
+                newMessage={newMessage}
+                isLoading={isLoading}
+                onSendMessage={handleSendMessage}
+                onNewMessageChange={(e) => setNewMessage(e.target.value)}
+                onConversationSelect={openConversation}
+                onCloseConversation={closeConversation}
+                onReport={handleReport}
+              />
+
+              <div className="mt-3 border-t pt-3">
                 <Button variant="outline" className="w-full" onClick={goToAllMessages}>
                   Wszystkie wiadomości
                 </Button>
               </div>
-            </>
-          )}
+            </div>
+          </div>
         </div>
       ) : isOpen && isMinimized ? (
         <div

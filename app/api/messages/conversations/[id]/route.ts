@@ -5,14 +5,17 @@ import { query } from "@/lib/db"
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
+    const { searchParams } = new URL(request.url)
+    const lastMessageTimestamp = searchParams.get("after")
+
     const session = await auth()
-
-    if (!session?.id) {
-        return NextResponse.json({ success: false }, { status: 401 })
-    }
-
-    const userId = session.id
-    const conversationId = params.id
+    
+        if (!session?.id) {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        }
+    
+        const userId = session.id
+    const conversationId = await params.id
 
     // Check if user is part of this conversation
     const conversations = await query(
@@ -36,7 +39,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     // Get the other user's details
     const otherUserId = conversation.user1_id === userId ? conversation.user2_id : conversation.user1_id
 
-    const users = await query(
+    const users  = await query(
       `
       SELECT id, name, email, avatar, 
       (
@@ -58,8 +61,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const isOnline = lastSeen && now.getTime() - lastSeen.getTime() < 5 * 60 * 1000 // 5 minutes
 
     // Get messages for this conversation
-    const messagesData = await query(
-      `
+    let messagesQuery = `
       SELECT 
         id,
         sender_id,
@@ -69,10 +71,19 @@ export async function GET(request: Request, { params }: { params: { id: string }
         created_at
       FROM messages
       WHERE conversation_id = ?
-      ORDER BY created_at ASC
-    `,
-      [conversationId],
-    ) as any[]
+    `
+
+    const queryParams = [conversationId]
+
+    // If lastMessageTimestamp is provided, only get messages after that timestamp
+    if (lastMessageTimestamp) {
+      messagesQuery += ` AND created_at > ?`
+      queryParams.push(lastMessageTimestamp)
+    }
+
+    messagesQuery += ` ORDER BY created_at ASC`
+
+    const messagesData = await query(messagesQuery, queryParams) as any[]
 
     const messages = messagesData.map((msg: any) => ({
       id: msg.id,
@@ -82,6 +93,18 @@ export async function GET(request: Request, { params }: { params: { id: string }
       isRead: msg.is_read,
     }))
 
+    // If we're only fetching new messages, return a different structure
+    if (lastMessageTimestamp) {
+      return NextResponse.json({
+        newMessages: messages,
+        userStatus: {
+          isOnline,
+          lastSeen: formatLastSeen(user.last_seen),
+        },
+      })
+    }
+
+    // Otherwise return the full conversation data
     return NextResponse.json({
       user: {
         id: user.id,

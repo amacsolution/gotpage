@@ -3,7 +3,8 @@ import { getServerSession } from "next-auth/next"
 import { auth, authOptions } from "@/lib/auth"
 import { query } from "@/lib/db"
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const session = await auth()
 
