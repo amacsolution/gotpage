@@ -45,6 +45,8 @@ export async function GET(request: Request) {
 
     interface Company extends User {
       categories: string
+      phone: string
+      verified: boolean
     }
 
     interface NewsPost {
@@ -146,7 +148,11 @@ export async function GET(request: Request) {
             bio,
             location,
             categories,
-            type
+            type,
+            phone,
+            verified,
+            (SELECT COUNT(*) FROM user_reviews WHERE user_id = id) as review_count,
+            (SELECT AVG(rating) FROM user_reviews WHERE user_id = id) as rating
           FROM users
           WHERE 
             type = 'business' AND

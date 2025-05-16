@@ -6,10 +6,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { User, Calendar, MapPin, AlertCircle, Filter, Tag } from "lucide-react"
 import { AdCard } from "@/components/ad-card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+<<<<<<< HEAD
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+=======
+import { useState } from "react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { CompanyCard } from "@/components/company-card"
+>>>>>>> fe1047f5738a081a8a75b147c3cb262e93085b70
 
 interface SearchResultsProps {
   query: string
@@ -73,7 +81,11 @@ export function SearchResults({ query, type }: SearchResultsProps) {
   const [showFilters, setShowFilters] = useState(false)
 
   // Fetch search results
+<<<<<<< HEAD
   useEffect(() => {
+=======
+  useState(() => {
+>>>>>>> fe1047f5738a081a8a75b147c3cb262e93085b70
     const fetchData = async () => {
       if (!query || query.length < 2) {
         setIsLoading(false)
@@ -356,6 +368,7 @@ export function SearchResults({ query, type }: SearchResultsProps) {
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {data.companies.map((company) => (
+<<<<<<< HEAD
               <Link
                 href={`/profil/${company.id}`}
                 key={company.id}
@@ -398,6 +411,51 @@ export function SearchResults({ query, type }: SearchResultsProps) {
                   )}
                 </div>
               </Link>
+=======
+              // <Link
+              //   href={`/profil/${company.id}`}
+              //   key={company.id}
+              //   className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted transition-colors"
+              // >
+              //   <Avatar className="h-12 w-12">
+              //     <AvatarImage src={company.avatar || ""} alt={company.name} />
+              //     <AvatarFallback>{company.name?.substring(0, 2).toUpperCase() || "CO"}</AvatarFallback>
+              //   </Avatar>
+              //   <div>
+              //     <h3 className="font-medium">{company.name}</h3>
+              //     {company.location && (
+              //       <div className="flex items-center text-sm text-muted-foreground">
+              //         <MapPin className="h-3 w-3 mr-1" />
+              //         {company.location}
+              //       </div>
+              //     )}
+              //     {company.bio && <p className="text-sm text-muted-foreground line-clamp-1">{company.bio}</p>}
+              //     {company.categories && company.categories !== "[]" && (
+              //       <div className="flex flex-wrap gap-1 mt-1">
+              //         {(() => {
+              //           try {
+              //             const parsedCategories = JSON.parse(company.categories)
+              //             return Array.isArray(parsedCategories)
+              //               ? parsedCategories.map((category: string, index: number) => (
+              //                   <span
+              //                     key={index}
+              //                     className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full"
+              //                   >
+              //                     {category}
+              //                   </span>
+              //                 ))
+              //               : null
+              //           } catch (e) {
+              //             console.error("Error parsing categories:", e)
+              //             return null
+              //           }
+              //         })()}
+              //       </div>
+              //     )}
+              //   </div>
+              // </Link>
+              <CompanyCard key={company.id} company={company} />
+>>>>>>> fe1047f5738a081a8a75b147c3cb262e93085b70
             ))}
           </div>
         </div>

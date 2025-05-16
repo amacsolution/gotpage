@@ -1,0 +1,120 @@
+import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth/next"
+import { auth, authOptions } from "@/lib/auth"
+import { query } from "@/lib/db"
+
+export async function GET(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const session = await auth()
+
+    if (!session?.id) {
+        return NextResponse.json({ success: false }, { status: 401 })
+    }
+
+    const userId = session.id
+    const conversationId = params.id
+
+    // Check if user is part of this conversation
+    const conversations = await query(
+      `
+      SELECT 
+        id, 
+        user1_id, 
+        user2_id
+      FROM conversations
+      WHERE id = ? AND (user1_id = ? OR user2_id = ?)
+    `,
+      [conversationId, userId, userId],
+    ) as any[]
+
+    if (conversations.length === 0) {
+      return NextResponse.json({ error: "Conversation not found" }, { status: 404 })
+    }
+
+    const conversation = conversations[0]
+
+    // Get the other user's details
+    const otherUserId = conversation.user1_id === userId ? conversation.user2_id : conversation.user1_id
+
+    const users = await query(
+      `
+      SELECT id, name, email, avatar, 
+      (
+        SELECT MAX(last_activity) FROM user_sessions WHERE user_id = users.id
+      ) as last_seen
+      FROM users
+      WHERE id = ?
+    `,
+      [otherUserId],
+    ) as any[]
+
+    if (users.length === 0) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
+
+    const user = users[0]
+    const now = new Date()
+    const lastSeen = user.last_seen ? new Date(user.last_seen) : null
+    const isOnline = lastSeen && now.getTime() - lastSeen.getTime() < 5 * 60 * 1000 // 5 minutes
+
+    // Get messages for this conversation
+    const messagesData = await query(
+      `
+      SELECT 
+        id,
+        sender_id,
+        receiver_id,
+        content,
+        is_read,
+        created_at
+      FROM messages
+      WHERE conversation_id = ?
+      ORDER BY created_at ASC
+    `,
+      [conversationId],
+    ) as any[]
+
+    const messages = messagesData.map((msg: any) => ({
+      id: msg.id,
+      content: msg.content,
+      timestamp: msg.created_at,
+      isMine: msg.sender_id === userId,
+      isRead: msg.is_read,
+    }))
+
+    return NextResponse.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        avatar: user.avatar || undefined,
+        isOnline,
+        lastSeen: formatLastSeen(user.last_seen),
+      },
+      messages,
+    })
+  } catch (error) {
+    console.error("Error fetching conversation:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
+
+function formatLastSeen(timestamp: string | null) {
+  if (!timestamp) return "Nigdy"
+
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+
+  if (diffMinutes < 1) {
+    return "Przed chwilą"
+  } else if (diffMinutes < 60) {
+    return `${diffMinutes} min temu`
+  } else if (diffMinutes < 24 * 60) {
+    const hours = Math.floor(diffMinutes / 60)
+    return `${hours} ${hours === 1 ? "godzinę" : hours < 5 ? "godziny" : "godzin"} temu`
+  } else if (diffMinutes < 48 * 60) {
+    return "Wczoraj"
+  } else {
+    return date.toLocaleDateString()
+  }
+}
