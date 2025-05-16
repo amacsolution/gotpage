@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const searchQuery = searchParams.get("q")
     const type = searchParams.get("type") || "all"
 
-    console.log("Search query:", searchQuery, "Type:", type) // Dodajemy logi dla debugowania
+    console.log("Search query:", searchQuery, "Type:", type)
 
     if (!searchQuery || searchQuery.length < 2) {
       return NextResponse.json({
@@ -16,6 +16,8 @@ export async function GET(request: Request) {
         users: [],
         companies: [],
         news: [],
+        categories: [],
+        subcategories: [],
       })
     }
 
@@ -58,11 +60,24 @@ export async function GET(request: Request) {
       [key: string]: any
     }
 
+    interface Category {
+      category: string
+      count: number
+    }
+
+    interface Subcategory {
+      subcategory: string
+      category: string
+      count: number
+    }
+
     interface Results {
       ads: Ad[]
       users: User[]
       companies: Company[]
       news: NewsPost[]
+      categories: Category[]
+      subcategories: Subcategory[]
     }
 
     const results: Results = {
@@ -70,6 +85,8 @@ export async function GET(request: Request) {
       users: [],
       companies: [],
       news: [],
+      categories: [],
+      subcategories: [],
     }
 
     // Fetch ads
@@ -96,6 +113,7 @@ export async function GET(request: Request) {
           [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`],
         )
 
+        console.log("Ad results:", adResults)
 
         if (Array.isArray(adResults)) {
           results.ads = adResults as Ad[]
@@ -127,7 +145,7 @@ export async function GET(request: Request) {
           [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`],
         )
 
-        console.log("User results:", userResults) // Dodajemy logi dla debugowania
+        console.log("User results:", userResults)
 
         if (Array.isArray(userResults)) {
           results.users = userResults as User[]
@@ -160,7 +178,7 @@ export async function GET(request: Request) {
           [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`],
         )
 
-        console.log("Company results:", companyResults) // Dodajemy logi dla debugowania
+        console.log("Company results:", companyResults)
 
         if (Array.isArray(companyResults)) {
           results.companies = companyResults as Company[]
@@ -191,7 +209,7 @@ export async function GET(request: Request) {
           [`%${searchQuery}%`],
         )
 
-        console.log("News results:", newsResults) // Dodajemy logi dla debugowania
+        console.log("News results:", newsResults)
 
         if (Array.isArray(newsResults)) {
           results.news = newsResults as NewsPost[]
@@ -201,11 +219,76 @@ export async function GET(request: Request) {
       }
     }
 
+    // Fetch categories from ads matching the search query
+    try {
+      const categoryResults = await query(
+        `
+        SELECT 
+          category,
+          COUNT(*) as count
+        FROM ads
+        WHERE 
+          title LIKE ? OR 
+          category LIKE ? OR 
+          subcategory LIKE ? OR 
+          location LIKE ? OR
+          description LIKE ?
+        GROUP BY category
+        ORDER BY count DESC
+      `,
+        [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`],
+      )
+
+      console.log("Category results:", categoryResults)
+
+      if (Array.isArray(categoryResults)) {
+        results.categories = categoryResults as Category[]
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error)
+    }
+
+    // Fetch subcategories from ads matching the search query
+    try {
+      const subcategoryResults = await query(
+        `
+        SELECT 
+          subcategory,
+          category,
+          COUNT(*) as count
+        FROM ads
+        WHERE 
+          subcategory IS NOT NULL AND
+          subcategory != '' AND
+          (
+            title LIKE ? OR 
+            category LIKE ? OR 
+            subcategory LIKE ? OR 
+            location LIKE ? OR
+            description LIKE ?
+          )
+        GROUP BY subcategory, category
+        ORDER BY count DESC
+      `,
+        [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`],
+      )
+
+      console.log("Subcategory results:", subcategoryResults)
+
+      if (Array.isArray(subcategoryResults)) {
+        results.subcategories = subcategoryResults as Subcategory[]
+      }
+    } catch (error) {
+      console.error("Error fetching subcategories:", error)
+    }
+
     console.log("Final results:", {
       adsCount: results.ads.length,
       usersCount: results.users.length,
       companiesCount: results.companies.length,
       newsCount: results.news.length,
+      categoriesCount: results.categories.length,
+      subcategoriesCount: results.subcategories.length,
     })
 
     return NextResponse.json(results)

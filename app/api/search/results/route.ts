@@ -8,7 +8,6 @@ export async function GET(request: Request) {
     const searchQuery = searchParams.get("q")
     const type = searchParams.get("type") || "all"
 
-    console.log("Search query:", searchQuery, "Type:", type)
 
     if (!searchQuery || searchQuery.length < 2) {
       return NextResponse.json({
@@ -96,7 +95,6 @@ export async function GET(request: Request) {
           [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`],
         )
 
-        console.log("Ad results:", adResults)
 
         if (Array.isArray(adResults)) {
           results.ads = adResults as Ad[]
@@ -127,8 +125,6 @@ export async function GET(request: Request) {
         `,
           [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`],
         )
-
-        console.log("User results:", userResults)
 
         if (Array.isArray(userResults)) {
           results.users = userResults as User[]
@@ -161,8 +157,6 @@ export async function GET(request: Request) {
           [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`],
         )
 
-        console.log("Company results:", companyResults)
-
         if (Array.isArray(companyResults)) {
           results.companies = companyResults as Company[]
         }
@@ -192,8 +186,6 @@ export async function GET(request: Request) {
           [`%${searchQuery}%`],
         )
 
-        console.log("News results:", newsResults)
-
         if (Array.isArray(newsResults)) {
           results.news = newsResults as NewsPost[]
         }
@@ -201,13 +193,6 @@ export async function GET(request: Request) {
         console.error("Error fetching news:", error)
       }
     }
-
-    console.log("Final results:", {
-      adsCount: results.ads.length,
-      usersCount: results.users.length,
-      companiesCount: results.companies.length,
-      newsCount: results.news.length,
-    })
 
     return NextResponse.json(results)
   } catch (error) {

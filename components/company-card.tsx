@@ -10,7 +10,7 @@ export interface CompanyCardProps {
   company: {
     id: number
     name: string
-    logo: string
+    avatar: string
     description: string
     phone: string
     categories: string[]
@@ -37,9 +37,9 @@ const categories = Array.isArray(company.categories) ? company.categories : [];
           <div className="flex items-center gap-3 mb-3">
             <div className="relative">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                {company.logo ? (
+                {company.avatar !== "/placeholder-profile.svg?height=100&width=100" && company.avatar !== "/placeholder.svg?height=100&width=100" ? (
                   <img
-                    src={company.logo || "/placeholder.svg"}
+                    src={company.avatar}
                     alt={company.name}
                     className="w-full h-full object-cover"
                   />

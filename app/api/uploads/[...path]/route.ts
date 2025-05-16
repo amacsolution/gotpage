@@ -46,8 +46,6 @@ async function findFile(basePath: string, relativePath: string): Promise<string 
       return path
     }
   }
-
-  console.error("File not found in any location:", relativePath)
   return null
 }
 
