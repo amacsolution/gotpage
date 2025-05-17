@@ -48,7 +48,7 @@ export default function RegisterClientPage() {
           <DialogTrigger asChild>
             <Button className="w-full">Zarejestruj się</Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[825px]">
+          <DialogContent className="sm:max-w-[825px] h-dvh md:h-full overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Utwórz nowe konto</DialogTitle>
               <DialogDescription>

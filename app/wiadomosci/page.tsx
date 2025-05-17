@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar } from "@/components/ui/avatar"
@@ -9,6 +9,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Search } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { auth } from "@/lib/auth"
+import { PageLayout } from "@/components/page-layout"
 
 type Conversation = {
   id: string
@@ -27,7 +29,36 @@ export default function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
+  const [user, setUser] = useState<any>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await fetch("/api/auth/me")
+      } catch (error) {
+        console.error("Error fetching user:", error)
+      }
+    }
+
+    fetchUser()
+    setUser(user)
+  }, [])
+
+  
+  // if (!user) {
+  //   return (
+  //     <PageLayout>
+  //       <div className="flex flex-col gap-5 h-screen items-center justify-center">
+  //         <p className="text-center text-muted-foreground">
+  //           Nie jesteś zalogowany. 
+  //         </p>
+  //         <Button><Link href="/login">Zaloguj się</Link></Button>
+  //         <Button className="bg-background/50 border-foreground border-1" onClick={() => window.location.reload()}>Odśwież stronę</Button>
+  //       </div>
+  //     </PageLayout>
+  //   )
+  // }
 
   useEffect(() => {
     // Fetch conversations
@@ -43,11 +74,13 @@ export default function MessagesPage() {
       }
     }
 
+    
+
     fetchConversations()
 
     // Set up polling for new messages
-    const interval = setInterval(fetchConversations, 10000)
-    return () => clearInterval(interval)
+    // const interval = setInterval(fetchConversations, 10000)
+    // return () => clearInterval(interval)
   }, [])
 
   const handleSearch = async () => {
