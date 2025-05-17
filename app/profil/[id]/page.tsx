@@ -230,12 +230,12 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       <div className="container py-6">
         <div
           className={`relative profile-background h-40 w-full rounded-xl mb-16 ${
-            user.background_img ? "bg-cover bg-center" : ""
+            user.backgroundImage ? "bg-cover bg-center" : ""
           }`}
           style={
-            user.background_img
+            user.backgroundImage
               ? {
-                  backgroundImage: `url(${user.background_img})`,
+                  backgroundImage: `url(${user.backgroundImage})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }
