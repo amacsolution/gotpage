@@ -59,12 +59,12 @@ export default function ConversationPage(props: { params: Promise<{ id: string }
     if (conversationId) {
       fetchConversation()
 
-      // Set up polling for new messages
-      const interval = setInterval(() => {
-        fetchConversation()
-      }, 5000)
+      // // Set up polling for new messages
+      // const interval = setInterval(() => {
+      //   fetchConversation()
+      // }, 5000)
 
-      return () => clearInterval(interval)
+      // return () => clearInterval(interval)
     }
   }, [conversationId, router])
 
@@ -110,7 +110,7 @@ export default function ConversationPage(props: { params: Promise<{ id: string }
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="md:container h-dvh mx-auto md:py-8">
       <div className="mb-6 flex items-center gap-4">
         <Link href="/wiadomosci">
           <Button variant="ghost" size="icon">
@@ -120,61 +120,106 @@ export default function ConversationPage(props: { params: Promise<{ id: string }
         <h1 className="text-2xl font-bold">Konwersacja z {user?.name}</h1>
       </div>
 
-      <div className="rounded-lg border">
+      <div className="rounded-lg border h-full flex flex-col">
         <div className="flex items-center gap-3 border-b p-4">
           <Avatar className="h-10 w-10">
-            <div className="bg-muted flex h-full w-full items-center justify-center">
-              {user?.name.charAt(0).toUpperCase()}
-            </div>
+        <div className="bg-muted flex h-full w-full items-center justify-center">
+          {user?.name.charAt(0).toUpperCase()}
+        </div>
           </Avatar>
           <div>
-            <p className="font-medium">{user?.name}</p>
-            {user?.isOnline ? (
-              <p className="text-sm text-green-500">Online</p>
-            ) : (
-              <p className="text-sm text-muted-foreground">Ostatnio online: {user?.lastSeen}</p>
-            )}
+        <p className="font-medium">{user?.name}</p>
+        {user?.isOnline ? (
+          <p className="text-sm text-green-500">Online</p>
+        ) : (
+          <p className="text-sm text-muted-foreground">Ostatnio online: {user?.lastSeen}</p>
+        )}
           </div>
         </div>
 
-        <ScrollArea className="h-[calc(100vh-350px)] p-4">
-          <div className="flex flex-col gap-3">
-            {messages.length > 0 ? (
-              messages.map((message) => (
-                <div key={message.id} className={`flex ${message.isMine ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[70%] rounded-lg p-3 ${
-                      message.isMine ? "bg-primary text-primary-foreground" : "bg-muted"
-                    }`}
-                  >
-                    <p>{message.content}</p>
-                    <div className="mt-1 flex items-center justify-end gap-1 text-xs opacity-70">
-                      <span>
-                        {new Date(message.timestamp).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                      {message.isMine && message.isRead && <span>✓✓</span>}
-                    </div>
-                  </div>
-                </div>
-              ))
+        <ScrollArea className="flex-1 flex flex-col-reverse overflow-y-auto p-2 justyfy-end" style={{ minHeight: 0 }}>
+          <div className="flex flex-col-reverse justify-end">
+        {messages.length > 0 ? (
+          messages
+            .slice()
+            .reverse()
+            .map((message, idx, arr) => {
+          const nextMessage = arr[idx - 1]
+          const isFirst = idx === arr.length - 1
+          const showTimestamp =
+            isFirst ||
+            !nextMessage ||
+            new Date(nextMessage.timestamp).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }) !==
+              new Date(message.timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+              })
+
+          return (
+            <div
+              key={message.id}
+              className={`flex items-center ${message.isMine ? "justify-end" : "justify-start"} ${
+            showTimestamp ? "mb-2" : "mb-[1px]"
+              }`}
+            >
+              {showTimestamp && (
+            <div className="mr-2 text-xs text-muted-foreground opacity-70 min-w-[44px] text-right">
+              {new Date(message.timestamp).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </div>
+              )}
+              <div className="flex items-center max-w-[70%]">
+            <div
+              className={`rounded-lg px-3 py-1 ${
+                message.isMine ? "bg-primary text-primary-foreground" : "bg-muted"
+              }`}
+            >
+              <p className="mb-0">{message.content}</p>
+            </div>
+            {message.isMine && showTimestamp ? (
+              <span className="ml-2 text-xs opacity-70">
+                {message.isRead ? "✓✓" : "✓"}
+              </span>
             ) : (
-              <div className="flex h-40 items-center justify-center text-center text-muted-foreground">
-                <p>Rozpocznij konwersację</p>
-              </div>
+              <span className="ml-2 text-xs opacity-0">
+                {message.isRead ? "✓✓" : "✓"}
+              </span>
             )}
-            <div ref={messagesEndRef} />
+              </div>
+            </div>
+          )
+            })
+        ) : (
+          <div className="flex h-40 items-center justify-center text-center text-muted-foreground">
+            <p>Rozpocznij konwersację</p>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
 
-        <form onSubmit={handleSendMessage} className="flex items-center gap-2 border-t p-4">
+        <form
+          onSubmit={handleSendMessage}
+          className="flex items-center gap-2 border-t p-4 bg-background sticky bottom-0"
+          style={{
+        zIndex: 10,
+        // For mobile keyboard handling
+        position: "sticky",
+        bottom: 0,
+          }}
+        >
           <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Napisz wiadomość..."
-            className="flex-1"
+        value={newMessage}
+        onChange={(e) => setNewMessage(e.target.value)}
+        placeholder="Napisz wiadomość..."
+        className="flex-1"
+        autoComplete="off"
+        inputMode="text"
           />
           <Button type="submit">Wyślij</Button>
         </form>

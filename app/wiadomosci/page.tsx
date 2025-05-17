@@ -19,9 +19,38 @@ export default function MessagesPage() {
   const [activeUser, setActiveUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [initialLoad, setInitialLoad] = useState(true)
+  const [user, setUser] = useState<any>(null)
   const [lastMessageTimestamp, setLastMessageTimestamp] = useState<string | null>(null)
   const router = useRouter()
   const isMobile = useMediaQuery("(max-width: 768px)")
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await fetch("/api/auth/me")
+      } catch (error) {
+        console.error("Error fetching user:", error)
+      }
+    }
+
+    fetchUser()
+    setUser(user)
+  }, [])
+
+  
+  // if (!user) {
+  //   return (
+  //     <PageLayout>
+  //       <div className="flex flex-col gap-5 h-screen items-center justify-center">
+  //         <p className="text-center text-muted-foreground">
+  //           Nie jesteś zalogowany. 
+  //         </p>
+  //         <Button><Link href="/login">Zaloguj się</Link></Button>
+  //         <Button className="bg-background/50 border-foreground border-1" onClick={() => window.location.reload()}>Odśwież stronę</Button>
+  //       </div>
+  //     </PageLayout>
+  //   )
+  // }
 
   useEffect(() => {
     // Fetch conversations
@@ -37,11 +66,13 @@ export default function MessagesPage() {
       }
     }
 
+    
+
     fetchConversations()
 
     // Set up polling for new messages
-    const interval = setInterval(fetchConversations, 10000)
-    return () => clearInterval(interval)
+    // const interval = setInterval(fetchConversations, 10000)
+    // return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -106,7 +137,7 @@ export default function MessagesPage() {
 
             // Update user status if provided
             if (data.userStatus) {
-              setActiveUser((prev) => ({
+              setActiveUser((prev : any) => ({
                 ...prev,
                 isOnline: data.userStatus.isOnline,
                 lastSeen: data.userStatus.lastSeen,
@@ -262,7 +293,6 @@ export default function MessagesPage() {
         onCancelSearch={() => setIsSearching(false)}
         onReport={handleReport}
         isMobileFullScreen={true}
-        initialLoad={initialLoad}
       />
     </div>
   )
