@@ -94,7 +94,7 @@ export function MessagesLayout({
   // For mobile view with active conversation in full screen mode
   if (isMobile && activeConversation && isMobileFullScreen) {
     return (
-      <div className={`flex h-screen flex-col ${className}`}>
+      <div className={`flex h-dvh flex-col ${className}`}>
         {/* Header */}
         <div className="flex items-center justify-between border-b p-4">
           <div className="flex items-center gap-3">
@@ -139,7 +139,7 @@ export function MessagesLayout({
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-4" ref={messagesEndRef}>
           {isLoading ? (
             <div className="flex h-full items-center justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
@@ -147,32 +147,67 @@ export function MessagesLayout({
           ) : (
             <div className="flex flex-col gap-3">
               {messages.length > 0 ? (
-                messages.map((message) => (
-                  <div key={message.id} className={`flex ${message.isMine ? "justify-end" : "justify-start"}`}>
-                    <div
-                      className={`max-w-[80%] rounded-lg p-3 ${
-                        message.isMine ? "bg-primary text-primary-foreground" : "bg-muted"
-                      }`}
-                    >
-                      <p>{message.content}</p>
-                      <div className="mt-1 flex items-center justify-end gap-1 text-xs opacity-70">
-                        <span>
-                          {new Date(message.timestamp).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                        {message.isMine && message.isRead && <span>✓✓</span>}
-                      </div>
-                    </div>
+          // Group messages by consecutive same minute and sender
+          (() => {
+            const groups: { key: string; messages: Message[] }[] = []
+            let currentGroup: { key: string; messages: Message[] } | null = null
+
+            messages.forEach((msg, idx) => {
+              const date = new Date(msg.timestamp)
+              const minuteKey = `${msg.isMine}-${date.getHours()}-${date.getMinutes()}`
+              if (
+                !currentGroup ||
+                currentGroup.key !== minuteKey
+              ) {
+                currentGroup = { key: minuteKey, messages: [msg] }
+                groups.push(currentGroup)
+              } else {
+                currentGroup.messages.push(msg)
+              }
+            })
+
+            return groups.map((group, i) => (
+              <div
+                key={i}
+                className={`flex flex-col gap-1 ${
+            group.messages[0].isMine ? "items-end" : "items-start"
+                }`}
+              >
+                {group.messages.map((message, j) => (
+            <div
+              key={message.id}
+              className={`flex ${message.isMine ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className={`max-w-[80%] rounded-lg p-3 ${
+                  message.isMine
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted"
+                }`}
+              >
+                <p>{message.content}</p>
+                {j === group.messages.length - 1 && (
+                  <div className="mt-1 flex items-center justify-end gap-1 text-xs opacity-70">
+              <span>
+                {new Date(message.timestamp).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+              {message.isMine && message.isRead && <span>✓✓</span>}
                   </div>
-                ))
+                )}
+              </div>
+            </div>
+                ))}
+              </div>
+            ))
+          })()
               ) : (
-                <div className="flex h-40 items-center justify-center text-center text-muted-foreground">
-                  <p>Rozpocznij konwersację</p>
-                </div>
+          <div className="flex h-40 items-center justify-center text-center text-muted-foreground">
+            <p>Rozpocznij konwersację</p>
+          </div>
               )}
-              <div ref={messagesEndRef} />
             </div>
           )}
         </div>

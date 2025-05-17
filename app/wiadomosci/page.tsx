@@ -18,6 +18,8 @@ export default function MessagesPage() {
   const [newMessage, setNewMessage] = useState("")
   const [activeUser, setActiveUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [initialLoad, setInitialLoad] = useState(true)
+  const [lastMessageTimestamp, setLastMessageTimestamp] = useState<string | null>(null)
   const router = useRouter()
   const isMobile = useMediaQuery("(max-width: 768px)")
 
@@ -43,27 +45,74 @@ export default function MessagesPage() {
   }, [])
 
   useEffect(() => {
+    // Reset state when changing conversations
+    if (activeConversation) {
+      setInitialLoad(true)
+      setLastMessageTimestamp(null)
+    }
+  }, [activeConversation])
+
+  useEffect(() => {
     // Fetch messages for active conversation
     const fetchMessages = async () => {
       if (!activeConversation) return
 
       setIsLoading(true)
       try {
-        const response = await fetch(`/api/messages/conversations/${activeConversation}`)
-        if (response.ok) {
-          const data = await response.json()
-          setMessages(data.messages)
-          setActiveUser(data.user)
+        // For initial load, get all messages
+        if (initialLoad) {
+          const response = await fetch(`/api/messages/conversations/${activeConversation}`)
+          if (response.ok) {
+            const data = await response.json()
+            setMessages(data.messages)
+            setActiveUser(data.user)
 
-          // Mark messages as read
-          fetch(`/api/messages/read/${activeConversation}`, { method: "POST" })
-            .then(() => {
-              // Update unread count in conversations list
-              setConversations((prev) =>
-                prev.map((conv) => (conv.id === activeConversation ? { ...conv, unread: 0 } : conv)),
+            // Set the timestamp of the last message for future polling
+            if (data.messages.length > 0) {
+              setLastMessageTimestamp(data.messages[data.messages.length - 1].timestamp)
+            }
+
+            setInitialLoad(false)
+
+            // Mark messages as read
+            fetch(`/api/messages/read/${activeConversation}`, { method: "POST" })
+              .then(() => {
+                // Update unread count in conversations list
+                setConversations((prev) =>
+                  prev.map((conv) => (conv.id === activeConversation ? { ...conv, unread: 0 } : conv)),
+                )
+              })
+              .catch((error) => console.error("Error marking as read:", error))
+          }
+        }
+        // For subsequent polls, only get new messages
+        else if (lastMessageTimestamp) {
+          const response = await fetch(
+            `/api/messages/conversation/${activeConversation}?after=${encodeURIComponent(lastMessageTimestamp)}`,
+          )
+
+          if (response.ok) {
+            const data = await response.json()
+
+            if (data.newMessages && data.newMessages.length > 0) {
+              setMessages((prev) => [...prev, ...data.newMessages])
+              setLastMessageTimestamp(data.newMessages[data.newMessages.length - 1].timestamp)
+
+              // Mark new messages as read
+              fetch(`/api/messages/read/${activeConversation}`, { method: "POST" }).catch((error) =>
+                console.error("Error marking as read:", error),
               )
-            })
-            .catch((error) => console.error("Error marking as read:", error))
+            }
+
+            // Update user status if provided
+            if (data.userStatus) {
+              setActiveUser((prev) => ({
+                ...prev,
+                isOnline: data.userStatus.isOnline,
+                lastSeen: data.userStatus.lastSeen,
+              }))
+            }
+          }
         }
       } catch (error) {
         console.error("Error fetching messages:", error)
@@ -75,15 +124,17 @@ export default function MessagesPage() {
     if (activeConversation) {
       fetchMessages()
 
-      // Set up polling for new messages
-      const interval = setInterval(fetchMessages, 3000)
+      // Set up polling for new messages - only if we have an active conversation
+      const interval = setInterval(fetchMessages, 5000)
       return () => clearInterval(interval)
     } else {
       // Clear messages when no active conversation
       setMessages([])
       setActiveUser(null)
+      setLastMessageTimestamp(null)
+      setInitialLoad(true)
     }
-  }, [activeConversation])
+  }, [activeConversation, initialLoad, lastMessageTimestamp])
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -151,8 +202,12 @@ export default function MessagesPage() {
       if (response.ok) {
         // Add message to the list
         const data = await response.json()
-        setMessages((prev) => [...prev, data.message])
+        const newMsg = data.message
+        setMessages((prev) => [...prev, newMsg])
         setNewMessage("")
+
+        // Update the last message timestamp
+        setLastMessageTimestamp(newMsg.timestamp)
 
         // Update conversation in the list
         setConversations((prev) => {
@@ -184,8 +239,8 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="mb-6 text-3xl font-bold">Wiadomości</h1>
+     <div className="md:container mx-auto h-dvh md:py-8 pt-2">
+      <h1 className="md:mb-6 hidden md:block text-3xl font-bold">Wiadomości</h1>
 
       <MessagesLayout
         conversations={conversations}
@@ -207,6 +262,7 @@ export default function MessagesPage() {
         onCancelSearch={() => setIsSearching(false)}
         onReport={handleReport}
         isMobileFullScreen={true}
+        initialLoad={initialLoad}
       />
     </div>
   )

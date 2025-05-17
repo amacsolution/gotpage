@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, use } from "react";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar } from "@/components/ui/avatar"
@@ -20,7 +20,8 @@ type Message = {
   isRead: boolean
 }
 
-export default function ConversationPage({ params }: { params: { id: string } }) {
+export default function ConversationPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState("")
   const [user, setUser] = useState<any>(null)
