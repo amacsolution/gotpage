@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Star, MapPin, Phone, Mail, Shield, Clock, Building, ExternalLink, ShieldCheck } from "lucide-react"
+import { toast } from "@/components/ui/use-toast"
+import { useRouter } from "next/navigation"
 
 export interface CompanyCardProps {
   company: {
@@ -22,10 +24,52 @@ export interface CompanyCardProps {
   }
   featured?: boolean
 }
-
-
 export function CompanyCard({ company, featured = false }: CompanyCardProps) {
-const categories = Array.isArray(company.categories) ? company.categories : [];
+  const categories = Array.isArray(company.categories) ? company.categories : [];
+  const router = useRouter();
+
+  const handleMessage = async (userId: number) => {
+    try {
+      // Check if user is logged in
+      const currentUser = localStorage.getItem("userData")
+      if (!currentUser) {
+        toast({
+          title: "Wymagane logowanie",
+          description: "Musisz być zalogowany, aby wysyłać wiadomości",
+          variant: "destructive",
+        })
+        router.push("/login")
+        return
+      }
+
+      // Create or get conversation
+      const response = await fetch("/api/messages/conversations/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          receiverId: userId,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error creating conversation: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      // Redirect to conversation
+      router.push(`/wiadomosci`)
+    } catch (err) {
+      console.error("Error starting conversation:", err)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się rozpocząć konwersacji. Spróbuj ponownie później.",
+        variant: "destructive",
+      })
+    }
+  }
 
   return (
     <Card
@@ -98,11 +142,10 @@ const categories = Array.isArray(company.categories) ? company.categories : [];
                 <Phone className="h-3 w-3 mr-2" /> Zadzwoń
               </Button>
             </a>
-            <a href={`sms:${company.phone}?body=Witam! Chciałbym zapytać o ofertę Państwa firmy.`}>
-              <Button variant="outline" size="sm" className="w-full">
+            
+              <Button variant="outline" size="sm" className="w-full" onClick={() => handleMessage(company.id)}>
                 <Mail className="h-3 w-3 mr-2" /> Napisz
               </Button>
-            </a>
           </div>
         </div>
 

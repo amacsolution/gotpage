@@ -22,7 +22,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <SessionProvider refetchInterval={0} refetchOnWindowFocus={false}>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true}>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
         {children}
       </ThemeProvider>
     </SessionProvider>

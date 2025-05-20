@@ -1,42 +1,50 @@
-// app/api/admin/users/route.ts
-import { NextRequest, NextResponse } from "next/server"
-import { cookies } from "next/headers"
-import { db } from "@/lib/db"
-
-// Funkcja pomocnicza do sprawdzania uwierzytelnienia administratora
-async function isAdmin(request: NextRequest) {
-  const adminToken = (await cookies()).get("admin_token")
-  return adminToken && adminToken.value === "authenticated"
-}
+import { type NextRequest, NextResponse } from "next/server"
+import { query } from "@/lib/db"
+import { auth } from "@/lib/auth"
 
 export async function GET(request: NextRequest) {
   try {
-    // Sprawdź, czy użytkownik jest administratorem
-    if (!(await isAdmin(request))) {
-      return NextResponse.json(
-        { error: "Brak uprawnień" },
-        { status: 401 }
-      )
+    // Sprawdź uprawnienia administratora
+    const session = await auth()
+
+    if (!session) {
+      return NextResponse.json({ error: "Brak uprawnień" }, { status: 403 })
     }
 
-    // Pobierz użytkowników z bazy danych
-    const users = await db.query(`
+    // Pobierz parametry wyszukiwania z URL
+    const searchParams = request.nextUrl.searchParams
+    const searchQuery = searchParams.get("search") || ""
+
+    // Przygotuj zapytanie SQL z opcjonalnym wyszukiwaniem
+    let sql = `
       SELECT 
         id, 
-        username as name, 
+        name, 
         email, 
         created_at as joinedAt, 
-        is_verified as verified
+        verified,
+        (SELECT COUNT(*) FROM ads WHERE user_id = users.id) as adCount,
+        (SELECT COUNT(*) FROM messages WHERE sender_id = users.id OR receiver_id = users.id) as messageCount
       FROM users
-      ORDER BY created_at DESC
-    `)
+    `
+
+    const queryParams = []
+
+    // Dodaj warunek wyszukiwania, jeśli podano
+    if (searchQuery) {
+      sql += ` WHERE name LIKE ? OR email LIKE ? OR id = ?`
+      queryParams.push(`%${searchQuery}%`, `%${searchQuery}%`, searchQuery)
+    }
+
+    // Dodaj sortowanie i limit
+    sql += ` ORDER BY created_at DESC`
+
+    // Wykonaj zapytanie
+    const users = await query(sql, queryParams)
 
     return NextResponse.json(users)
   } catch (error) {
     console.error("Błąd podczas pobierania użytkowników:", error)
-    return NextResponse.json(
-      { error: "Wystąpił błąd podczas pobierania użytkowników" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "Wystąpił błąd podczas pobierania użytkowników" }, { status: 500 })
   }
 }

@@ -2,6 +2,13 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 
+type WebSocketMessage = {
+  type: string
+  [key: string]: any
+}
+
+type MessageHandler = (message: any) => void
+
 export function useWebSocket(userId: string | null | undefined) {
   const [isConnected, setIsConnected] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -9,6 +16,24 @@ export function useWebSocket(userId: string | null | undefined) {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const reconnectAttemptsRef = useRef(0)
   const MAX_RECONNECT_ATTEMPTS = 3
+  const messageHandlersRef = useRef<Map<string, Set<MessageHandler>>>(new Map())
+  const pingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Funkcja do dodawania handlera wiadomości
+  const on = useCallback((type: string, handler: MessageHandler) => {
+    if (!messageHandlersRef.current.has(type)) {
+      messageHandlersRef.current.set(type, new Set())
+    }
+    messageHandlersRef.current.get(type)?.add(handler)
+
+    // Funkcja do usuwania handlera
+    return () => {
+      messageHandlersRef.current.get(type)?.delete(handler)
+      if (messageHandlersRef.current.get(type)?.size === 0) {
+        messageHandlersRef.current.delete(type)
+      }
+    }
+  }, [])
 
   // Inicjalizacja WebSocket
   const initWebSocket = useCallback(() => {
@@ -39,12 +64,31 @@ export function useWebSocket(userId: string | null | undefined) {
               setIsConnected(true)
               setError(null)
               reconnectAttemptsRef.current = 0
+
+              // Ustaw interwał ping-pong, aby utrzymać połączenie
+              pingIntervalRef.current = setInterval(() => {
+                if (ws.readyState === WebSocket.OPEN) {
+                  ws.send(JSON.stringify({ type: "ping" }))
+                }
+              }, 30000) // Ping co 30 sekund
             }
 
             ws.onmessage = (event) => {
               try {
-                const data = JSON.parse(event.data)
-                console.log("WebSocket message received:", data)
+                const message = JSON.parse(event.data) as WebSocketMessage
+                console.log("WebSocket message received:", message.type)
+
+                // Wywołaj handlery dla tego typu wiadomości
+                const handlers = messageHandlersRef.current.get(message.type)
+                if (handlers) {
+                  handlers.forEach((handler) => {
+                    try {
+                      handler(message)
+                    } catch (error) {
+                      console.error(`Error in message handler for ${message.type}:`, error)
+                    }
+                  })
+                }
               } catch (error) {
                 console.error("Error parsing WebSocket message:", error)
               }
@@ -58,6 +102,12 @@ export function useWebSocket(userId: string | null | undefined) {
             ws.onclose = (event) => {
               console.log("WebSocket disconnected:", event.code)
               setIsConnected(false)
+
+              // Wyczyść interwał ping-pong
+              if (pingIntervalRef.current) {
+                clearInterval(pingIntervalRef.current)
+                pingIntervalRef.current = null
+              }
 
               // Próba ponownego połączenia
               if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
@@ -107,6 +157,11 @@ export function useWebSocket(userId: string | null | undefined) {
         clearTimeout(reconnectTimeoutRef.current)
         reconnectTimeoutRef.current = null
       }
+
+      if (pingIntervalRef.current) {
+        clearInterval(pingIntervalRef.current)
+        pingIntervalRef.current = null
+      }
     }
   }, [initWebSocket])
 
@@ -126,9 +181,52 @@ export function useWebSocket(userId: string | null | undefined) {
     }
   }, [])
 
+  // Funkcja do dołączania do konwersacji
+  const joinConversation = useCallback(
+    (conversationId: string) => {
+      console.log("Joining conversation", conversationId)
+      return sendMessage({
+        type: "join_conversation",
+        userId,
+        conversationId,
+      })
+    },
+    [sendMessage, userId],
+  )
+
+  // Funkcja do opuszczania konwersacji
+  const leaveConversation = useCallback(
+    (conversationId: string) => {
+      console.log("Leaving conversation", conversationId)
+      return sendMessage({
+        type: "leave_conversation",
+        userId,
+        conversationId,
+      })
+    },
+    [sendMessage, userId],
+  )
+
+  // Funkcja do wysyłania statusu pisania
+  const sendTypingStatus = useCallback(
+    (conversationId: string, isTyping: boolean) => {
+      return sendMessage({
+        type: "typing",
+        userId,
+        conversationId,
+        isTyping,
+      })
+    },
+    [sendMessage, userId],
+  )
+
   return {
     isConnected,
     error,
     sendMessage,
+    joinConversation,
+    leaveConversation,
+    sendTypingStatus,
+    on,
   }
 }

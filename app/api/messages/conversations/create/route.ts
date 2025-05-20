@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { auth, authOptions } from "@/lib/auth"
 import { query } from "@/lib/db"
 import { v4 as uuidv4 } from "uuid"
+import { Search } from "lucide-react"
 
 export async function POST(request: Request) {
   try {
@@ -13,7 +14,7 @@ export async function POST(request: Request) {
     }
 
     const userId = session.id
-    const { userId: otherUserId } = await request.json()
+    const { receiverId: otherUserId } = await request.json()
 
     if (!otherUserId) {
       return NextResponse.json({ error: "Missing user ID" }, { status: 400 })

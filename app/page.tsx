@@ -17,26 +17,64 @@ import {
 } from "lucide-react"
 import type { Metadata } from "next"
 import CompaniesFeedLimit from "@/components/companies-feed"
+import { UserProfiles } from "@/components/user-profiles"
+import { Suspense } from "react"
+import { SiteConfig } from "@/config/site"
 
 // Dodajemy metadane dla SEO
 export const metadata: Metadata = {
-  title: "Gotpage - Nowoczesna platforma ogłoszeniowa",
+  title: `${SiteConfig.name} - Nowoczesna platforma ogłoszeniowa | Znajdź lub sprzedaj`,
   description:
-    "Publikuj i przeglądaj ogłoszenia w nowoczesnym stylu. Znajdź to, czego szukasz lub sprzedaj to, co chcesz.",
-  keywords: "ogłoszenia, sprzedaż, kupno, platforma ogłoszeniowa, gotpage",
+    "Publikuj i przeglądaj ogłoszenia w nowoczesnym stylu. Znajdź to, czego szukasz lub sprzedaj to, co chcesz. Dołącz do społeczności Gotpage już dziś!",
+  keywords: "ogłoszenia, sprzedaż, kupno, platforma ogłoszeniowa, gotpage, lokalne ogłoszenia, darmowe ogłoszenia",
+  authors: [{ name: SiteConfig.name, url: SiteConfig.url }],
+  creator: SiteConfig.name,
   openGraph: {
-    title: "Gotpage - Nowoczesna platforma ogłoszeniowa",
+    type: "website",
+    locale: "pl_PL",
+    url: SiteConfig.url,
+    title: `${SiteConfig.name} - Nowoczesna platforma ogłoszeniowa`,
     description:
       "Publikuj i przeglądaj ogłoszenia w nowoczesnym stylu. Znajdź to, czego szukasz lub sprzedaj to, co chcesz.",
+    siteName: SiteConfig.name,
     images: [
       {
-        url: "/logo.png",
-        width: 630,
+        url: `${SiteConfig.url}/og-image.jpg`,
+        width: 1200,
         height: 630,
-        alt: "Gotpage - Nowoczesna platforma ogłoszeniowa",
+        alt: `${SiteConfig.name} - Nowoczesna platforma ogłoszeniowa`,
       },
     ],
-    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SiteConfig.name} - Nowoczesna platforma ogłoszeniowa`,
+    description:
+      "Publikuj i przeglądaj ogłoszenia w nowoczesnym stylu. Znajdź to, czego szukasz lub sprzedaj to, co chcesz.",
+    images: [`${SiteConfig.url}/twitter-image.jpg`],
+    creator: "@gotpage",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: SiteConfig.url,
+    languages: {
+      "pl-PL": `${SiteConfig.url}/pl`,
+      "en-US": `${SiteConfig.url}/en`,
+    },
+  },
+  verification: {
+    google: "verification_token",
+    yandex: "verification_token",
   },
 }
 
@@ -100,64 +138,14 @@ const categories = [
   },
 ]
 
-// Mock data dla firm
-const featuredCompanies = [
-  {
-    id: 1,
-    name: "Auto Serwis Kowalski",
-    logo: "/placeholder.svg?height=100&width=100&text=Auto+Serwis",
-    description:
-      "Profesjonalny serwis samochodowy z wieloletnim doświadczeniem. Oferujemy naprawy mechaniczne, elektryczne, diagnostykę komputerową oraz wymianę opon.",
-    categories: ["Motoryzacja", "Usługi"],
-    location: "Warszawa",
-    rating: 4.8,
-    reviewCount: 124,
-    verified: true,
-  },
-  {
-    id: 2,
-    name: "Nieruchomości XYZ",
-    logo: "/placeholder.svg?height=100&width=100&text=XYZ",
-    description:
-      "Biuro nieruchomości specjalizujące się w sprzedaży i wynajmie mieszkań, domów oraz lokali użytkowych. Działamy na rynku od 15 lat.",
-    categories: ["Nieruchomości"],
-    location: "Kraków",
-    rating: 4.5,
-    reviewCount: 87,
-    verified: true,
-  },
-  {
-    id: 3,
-    name: "IT Solutions Sp. z o.o.",
-    logo: "/placeholder.svg?height=100&width=100&text=IT",
-    description:
-      "Firma informatyczna oferująca usługi programistyczne, tworzenie stron internetowych, aplikacji mobilnych oraz wsparcie IT dla firm.",
-    categories: ["Usługi", "Elektronika"],
-    location: "Poznań",
-    rating: 4.9,
-    reviewCount: 93,
-    verified: true,
-  },
-  {
-    id: 4,
-    name: "Salon Fryzjerski Elegancja",
-    logo: "/placeholder.svg?height=100&width=100&text=Fryzjer",
-    description:
-      "Profesjonalny salon fryzjerski oferujący strzyżenie, koloryzację, stylizację oraz zabiegi pielęgnacyjne dla włosów.",
-    categories: ["Usługi", "Moda"],
-    location: "Gdańsk",
-    rating: 4.7,
-    reviewCount: 142,
-    verified: true,
-  },
-]
-
 export default function HomePage() {
-
-
   return (
     <PageLayout>
-      <div className="relative overflow-visible ">
+      {/* Hero Section z danymi strukturalnymi dla SEO */}
+      <section className="relative overflow-visible" itemScope itemType="https://schema.org/WebPage">
+        <meta itemProp="name" content="Gotpage - Nowoczesna platforma ogłoszeniowa" />
+        <meta itemProp="description" content="Publikuj i przeglądaj ogłoszenia w nowoczesnym stylu." />
+
         <div className="container grid items-center gap-6 pb-8 pt-6 md:py-10 relative">
           <HeroAnimation />
           <div className="flex max-w-[980px] flex-col items-start gap-2 z-10">
@@ -170,35 +158,45 @@ export default function HomePage() {
             </p>
           </div>
           <div className="flex gap-4 z-10 flex-wrap">
-            <Link href="/ogloszenia/dodaj">
+            <Link href="/ogloszenia/dodaj" aria-label="Dodaj nowe ogłoszenie">
               <Button size="lg">Dodaj ogłoszenie</Button>
             </Link>
-            <Link href="/ogloszenia">
+            <Link href="/ogloszenia" aria-label="Przeglądaj dostępne ogłoszenia">
               <Button variant="outline" size="lg">
                 Przeglądaj ogłoszenia
               </Button>
             </Link>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="container py-8">
-        <h2 className="mb-6 text-2xl font-bold">Kategorie</h2>
+      {/* Kategorie z danymi strukturalnymi */}
+      <section className="container py-8" itemScope itemType="https://schema.org/ItemList">
+        <h2 className="mb-6 text-2xl font-bold" itemProp="name">
+          Kategorie
+        </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
-          {categories.map((category) => (
+          {categories.map((category, index) => (
             <Link
               key={category.name}
               href={category.href}
               className="flex flex-col items-center justify-center p-4 rounded-lg transition-all hover:scale-105"
+              itemProp="itemListElement"
+              itemScope
+              itemType="https://schema.org/ListItem"
             >
+              <meta itemProp="position" content={`${index + 1}`} />
               <div className={`p-4 rounded-full ${category.color} ${category.textColor} mb-2`}>{category.icon}</div>
-              <span className="text-sm font-medium">{category.name}</span>
+              <span className="text-sm font-medium" itemProp="name">
+                {category.name}
+              </span>
             </Link>
           ))}
         </div>
-      </div>
+      </section>
 
-      <div className="container py-8 bg-muted/30 rounded-lg">
+      {/* Sekcja promocji */}
+      <section className="container py-8 bg-muted/30 rounded-lg">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Promuj swoje ogłoszenia</h2>
           <Link href="/ogloszenia/promuj" className="text-primary hover:underline flex items-center">
@@ -249,20 +247,150 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="container py-8">
+      {/* Najnowsze ogłoszenia z danymi strukturalnymi */}
+      <section className="container py-8" itemScope itemType="https://schema.org/ItemList">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Najnowsze ogłoszenia</h2>
+          <h2 className="text-2xl font-bold" itemProp="name">
+            Najnowsze ogłoszenia
+          </h2>
           <Link href="/ogloszenia" className="text-primary hover:underline flex items-center">
             Zobacz wszystkie <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
         </div>
-        <AdFeed />
-      </div>
+        <Suspense fallback={<div className="text-center py-10">Ładowanie ogłoszeń...</div>}>
+          <AdFeed />
+        </Suspense>
+      </section>
 
-      <CompaniesFeedLimit />
+      {/* Sekcja firm */}
+      <Suspense fallback={<div className="text-center py-10">Ładowanie firm...</div>}>
+        <CompaniesFeedLimit />
+      </Suspense>
+
+      {/* Nowa sekcja: Profile użytkowników */}
+      <section className="container py-8 bg-muted/30 rounded-lg my-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Poznaj naszych użytkowników</h2>
+          {/* <Link href="/uzytkownicy" className="text-primary hover:underline flex items-center">
+            Zobacz wszystkich <ArrowRight className="ml-1 h-4 w-4" />
+          </Link> */}
+        </div>
+        <Suspense fallback={<div className="text-center py-10">Ładowanie profili użytkowników...</div>}>
+          <UserProfiles />
+        </Suspense>
+      </section>
+
+      {/* Nowa sekcja: CTA i angażująca treść */}
+      <section className="container py-12 my-8">
+        <div className="bg-gradient-to-r from-primary/80 to-primary rounded-xl p-8 text-white">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl font-bold mb-4">Dołącz do naszej społeczności już dziś!</h2>
+            <p className="text-lg mb-8">
+              Ponad 10,000 użytkowników korzysta z naszej platformy każdego dnia. Znajdź to, czego szukasz, sprzedaj
+              niepotrzebne rzeczy lub nawiąż nowe kontakty biznesowe.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
+                <div className="text-4xl font-bold mb-2">50K+</div>
+                <p>Aktywnych ogłoszeń</p>
+              </div>
+              <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
+                <div className="text-4xl font-bold mb-2">15K+</div>
+                <p>Zarejestrowanych użytkowników</p>
+              </div>
+              <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
+                <div className="text-4xl font-bold mb-2">5K+</div>
+                <p>Transakcji miesięcznie</p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/register">
+                <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                  Zarejestruj się za darmo
+                </Button>
+              </Link>
+              <Link href="/ogloszenia">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="bg-transparent border-white text-white hover:bg-white/20 w-full sm:w-auto"
+                >
+                  Przeglądaj ogłoszenia
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section dla SEO */}
+      <section className="container py-8 mb-8">
+        <h2 className="text-2xl font-bold mb-6">Często zadawane pytania</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6" itemScope itemType="https://schema.org/FAQPage">
+          <div
+            className="bg-background p-6 rounded-lg border shadow-sm"
+            itemScope
+            itemType="https://schema.org/Question"
+          >
+            <h3 className="text-xl font-bold mb-2" itemProp="name">
+              Jak dodać ogłoszenie?
+            </h3>
+            <div itemScope itemType="https://schema.org/Answer" itemProp="acceptedAnswer">
+              <p className="text-muted-foreground" itemProp="text">
+                Aby dodać ogłoszenie, zaloguj się na swoje konto, kliknij przycisk "Dodaj ogłoszenie", wypełnij
+                formularz z opisem, zdjęciami i ceną, a następnie opublikuj.
+              </p>
+            </div>
+          </div>
+          <div
+            className="bg-background p-6 rounded-lg border shadow-sm"
+            itemScope
+            itemType="https://schema.org/Question"
+          >
+            <h3 className="text-xl font-bold mb-2" itemProp="name">
+              Czy korzystanie z serwisu jest darmowe?
+            </h3>
+            <div itemScope itemType="https://schema.org/Answer" itemProp="acceptedAnswer">
+              <p className="text-muted-foreground" itemProp="text">
+                Podstawowe funkcje serwisu są całkowicie darmowe. Oferujemy również płatne opcje promocji ogłoszeń,
+                które zwiększają ich widoczność.
+              </p>
+            </div>
+          </div>
+          <div
+            className="bg-background p-6 rounded-lg border shadow-sm"
+            itemScope
+            itemType="https://schema.org/Question"
+          >
+            <h3 className="text-xl font-bold mb-2" itemProp="name">
+              Jak kontaktować się ze sprzedającym?
+            </h3>
+            <div itemScope itemType="https://schema.org/Answer" itemProp="acceptedAnswer">
+              <p className="text-muted-foreground" itemProp="text">
+                Na stronie ogłoszenia znajdziesz przycisk "Napisz wiadomość", który pozwoli Ci rozpocząć konwersację ze
+                sprzedającym bezpośrednio przez naszą platformę.
+              </p>
+            </div>
+          </div>
+          <div
+            className="bg-background p-6 rounded-lg border shadow-sm"
+            itemScope
+            itemType="https://schema.org/Question"
+          >
+            <h3 className="text-xl font-bold mb-2" itemProp="name">
+              Jak promować swoje ogłoszenia?
+            </h3>
+            <div itemScope itemType="https://schema.org/Answer" itemProp="acceptedAnswer">
+              <p className="text-muted-foreground" itemProp="text">
+                Oferujemy różne pakiety promocyjne, które wyróżnią Twoje ogłoszenia. Możesz wybrać opcję "Promuj" przy
+                swoim ogłoszeniu lub skorzystać z pakietów promocyjnych dla wielu ogłoszeń.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
     </PageLayout>
   )
 }
-

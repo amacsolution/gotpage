@@ -41,11 +41,86 @@ import { FollowButton } from "@/components/follow-button"
 import { FollowStats } from "@/components/follow-stats"
 import { PhotoGallery } from "@/components/photo-gallery"
 
+// Komponent szkieletu ładowania
+function ProfileSkeleton() {
+  return (
+    <PageLayout>
+      <div className="container py-6">
+        <div className="relative h-40 w-full rounded-xl bg-gradient-to-r from-primary/20 to-primary/10 mb-16">
+          <div className="absolute -bottom-12 left-6">
+            <Skeleton className="h-24 w-24 rounded-full" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-1 space-y-6">
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <div className="flex flex-wrap gap-2">
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-6 w-20" />
+              </div>
+              <div className="flex gap-4 text-sm">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+            </div>
+
+            <Card>
+              <CardContent className="p-4 space-y-4">
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="md:col-span-2">
+            <Skeleton className="h-10 w-full mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Card key={index} className="overflow-hidden">
+                  <Skeleton className="h-48 w-full" />
+                  <CardContent className="p-4">
+                    <Skeleton className="h-6 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-1/2 mb-4" />
+                    <Skeleton className="h-5 w-1/3 mb-2" />
+                    <Skeleton className="h-4 w-full mb-2" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </PageLayout>
+  )
+}
+
+// Komponent dla nieznalezionego użytkownika
+function UserNotFound({ router }: { router: any }) {
+  return (
+    <PageLayout>
+      <div className="container py-8">
+        <div className="flex flex-col items-center justify-center h-[60vh]">
+          <h1 className="text-2xl font-bold mb-4">Użytkownik nie został znaleziony</h1>
+          <Button onClick={() => router.push("/")}>Wróć do strony głównej</Button>
+        </div>
+      </div>
+    </PageLayout>
+  )
+}
+
 export default function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params) // Unwrap the params object
   const id = unwrappedParams.id
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [similarUsers, setSimilarUsers] = useState<any[]>([])
   const [isSimilarUsersLoading, setIsSimilarUsersLoading] = useState(true)
   const [posts, setPosts] = useState<any[]>([])
@@ -57,22 +132,35 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
   const loggedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
 
-  // Utworzenie lokalnej zmiennej dla ID do użycia w tablicy zależności
+  // Pobieranie danych profilu użytkownika
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         setIsLoading(true)
+        setError(null)
+
+        console.log(`Fetching user profile for ID: ${id}`)
         const response = await fetch(`/api/users/${id}`)
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error(`HTTP error! status: ${response.status}, response: ${errorText}`)
+          throw new Error(`Błąd pobierania danych: ${response.status}`)
+        }
+
         const data = await response.json()
 
         if (data.error) {
+          console.error(`API error: ${data.error}`)
           throw new Error(data.error)
         }
-        setIsFollowing(data.isFollowing)
 
+        console.log("User data received:", data)
+        setIsFollowing(data.isFollowing)
         setUser(data)
       } catch (error) {
         console.error("Błąd podczas pobierania profilu użytkownika:", error)
+        setError((error as Error).message || "Nie udało się pobrać profilu użytkownika")
         toast({
           title: "Błąd",
           description: "Nie udało się pobrać profilu użytkownika. Spróbuj ponownie później.",
@@ -86,14 +174,17 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     fetchUserProfile()
   }, [id, toast])
 
+  // Pobieranie postów użytkownika
   useEffect(() => {
-    fetchPosts(1, id)
+    if (id) {
+      fetchPosts(1, id)
+    }
   }, [id])
 
   const fetchPosts = async (pageNum: number, userId: string) => {
-    try {
-      setIsLoading(true)
+    if (!userId) return
 
+    try {
       const response = await fetch(`/api/news?page=${pageNum}&limit=10&userId=${userId}`)
 
       if (!response.ok) {
@@ -117,18 +208,16 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         description: "Nie udało się pobrać aktualności",
         variant: "destructive",
       })
-    } finally {
-      setIsLoading(false)
     }
   }
 
-  // Pobieranie podobnych użytkowników z niższym priorytetem
+  // Pobieranie podobnych użytkowników
   useEffect(() => {
     if (user && !isLoading) {
       const fetchSimilarUsers = async () => {
         try {
           setIsSimilarUsersLoading(true)
-          const response = await fetch(`/api/users/similar?id=${user.id}&type=${user.type}`) //&type=${user.type} do konkretnego wyszukiwania podobnych profili
+          const response = await fetch(`/api/users/similar?id=${user.id}&type=${user.type}`)
           const data = await response.json()
 
           if (data.error) {
@@ -152,72 +241,19 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     fetchPosts(nextPage, id)
   }
 
-  // Skeleton loading dla całej strony
+  // Pokazujemy skeleton podczas ładowania
   if (isLoading) {
-    return (
-      <PageLayout>
-        <div className="container py-6">
-          <div className="relative h-40 w-full rounded-xl bg-gradient-to-r from-primary/20 to-primary/10 mb-16">
-            <div className="absolute -bottom-12 left-6">
-              <Skeleton className="h-24 w-24 rounded-full" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-1 space-y-6">
-              <div className="space-y-2">
-                <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <div className="flex flex-wrap gap-2">
-                  <Skeleton className="h-6 w-20" />
-                  <Skeleton className="h-6 w-20" />
-                </div>
-                <div className="flex gap-4 text-sm">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-20" />
-                </div>
-              </div>
-
-              <Card>
-                <CardContent className="p-4 space-y-4">
-                  <Skeleton className="h-6 w-full" />
-                  <Skeleton className="h-6 w-full" />
-                  <Skeleton className="h-6 w-full" />
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="md:col-span-2">
-              <Skeleton className="h-10 w-full mb-4" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <Card key={index} className="overflow-hidden">
-                    <Skeleton className="h-48 w-full" />
-                    <CardContent className="p-4">
-                      <Skeleton className="h-6 w-3/4 mb-2" />
-                      <Skeleton className="h-4 w-1/2 mb-4" />
-                      <Skeleton className="h-5 w-1/3 mb-2" />
-                      <Skeleton className="h-4 w-full mb-2" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </PageLayout>
-    )
+    return <ProfileSkeleton />
   }
 
-  if (!user) {
+  // Pokazujemy komunikat o błędzie, jeśli wystąpił
+  if (error) {
     return (
       <PageLayout>
         <div className="container py-8">
           <div className="flex flex-col items-center justify-center h-[60vh]">
-            <h1 className="text-2xl font-bold mb-4">Użytkownik nie został znaleziony</h1>
+            <h1 className="text-2xl font-bold mb-4">Wystąpił błąd</h1>
+            <p className="text-muted-foreground mb-6">{error}</p>
             <Button onClick={() => router.push("/")}>Wróć do strony głównej</Button>
           </div>
         </div>
@@ -225,17 +261,23 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     )
   }
 
+  // Pokazujemy komunikat o braku użytkownika, jeśli nie znaleziono
+  if (!user) {
+    return <UserNotFound router={router} />
+  }
+
+  // Główny widok profilu użytkownika
   return (
     <PageLayout>
       <div className="container py-6">
         <div
           className={`relative profile-background h-40 w-full rounded-xl mb-16 ${
-            user.backgroundImage ? "bg-cover bg-center" : ""
+            user.background_img ? "bg-cover bg-center" : ""
           }`}
           style={
-            user.backgroundImage
+            user.background_img
               ? {
-                  backgroundImage: `url(${user.backgroundImage})`,
+                  backgroundImage: `url(${user.background_img})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }

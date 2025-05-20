@@ -1,7 +1,15 @@
 import { Server } from "ws"
 import type { NextApiRequest, NextApiResponse } from "next"
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+}
+
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log("WebSocket endpoint hit:", req.method, req.url)
+
   // Obsługa metody GET dla inicjalizacji
   if (req.method === "GET" && !req.headers.upgrade) {
     console.log("WebSocket initialization endpoint hit via GET")
@@ -26,7 +34,14 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         // Parsuj URL, aby uzyskać userId
         const url = new URL(request.url || "", "http://localhost")
         const userId = url.searchParams.get("userId")
-        console.log(`User connected: ${userId}`)
+        const conversationId = url.searchParams.get("conversationId")
+        console.log(`User connected: ${userId}${conversationId ? `, conversation: ${conversationId}` : ""}`)
+
+        // Jeśli podano conversationId, zapisz go dla tego połączenia
+        if (conversationId) {
+          // @ts-ignore
+          ws.conversationId = conversationId
+        }
 
         // Wyślij potwierdzenie połączenia
         ws.send(
@@ -41,22 +56,24 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         ws.on("message", (message) => {
           try {
             const data = JSON.parse(message.toString())
-            console.log("Received message:", data)
+            console.log("Received message:", data.type)
 
             // Obsługa różnych typów wiadomości
             if (data.type === "new_message") {
               // Przekaż wiadomość do wszystkich klientów w tej konwersacji
               wss.clients.forEach((client) => {
-                if (client !== ws && client.readyState === ws.OPEN) {
+                if (client.readyState === ws.OPEN) {
                   // Sprawdź, czy klient jest w tej samej konwersacji
                   // @ts-ignore
                   if (client.conversationId === data.message.conversationId) {
+                    // Dla nadawcy, oznacz wiadomość jako "swoją"
+                    const isSender = client === ws
                     client.send(
                       JSON.stringify({
                         type: "new_message",
                         message: {
                           ...data.message,
-                          isMine: false,
+                          isMine: isSender,
                         },
                       }),
                     )
@@ -107,6 +124,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
                   }
                 }
               })
+            } else if (data.type === "ping") {
+              // Odpowiedz na ping
+              ws.send(JSON.stringify({ type: "pong" }))
             }
           } catch (error) {
             console.error("Error processing WebSocket message:", error)
@@ -114,8 +134,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         })
 
         // Obsługa rozłączenia
-        ws.on("close", () => {
-          console.log("WebSocket connection closed")
+        ws.on("close", (code, reason) => {
+          console.log(`WebSocket connection closed. Code: ${code}, Reason: ${reason || "No reason provided"}`)
         })
 
         // Obsługa błędów
@@ -126,10 +146,17 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
       // Obsługa upgrade dla WebSocket
       server.on("upgrade", (request, socket, head) => {
-        if (request.url?.startsWith("/api/websocket")) {
+        const { pathname } = new URL(request.url || "", "http://localhost")
+        console.log("Upgrade request for path:", pathname)
+
+        if (pathname.startsWith("/api/websocket")) {
+          console.log("Handling WebSocket upgrade for /api/websocket")
           wss.handleUpgrade(request, socket, head, (ws) => {
             wss.emit("connection", ws, request)
           })
+        } else {
+          console.log("Ignoring upgrade request for non-WebSocket path:", pathname)
+          socket.destroy()
         }
       })
 
@@ -141,6 +168,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     res.end()
   } else {
     // Dla innych żądań HTTP
+    console.log("Non-WebSocket request to WebSocket endpoint")
     res.status(200).json({ success: true, message: "WebSocket server is ready" })
   }
 }

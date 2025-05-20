@@ -1,59 +1,113 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth/next"
+import { auth, authOptions } from "@/lib/auth"
 import { query } from "@/lib/db"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
-    const user = await auth(request)
-    if (!user) {
+    const session = await auth()
+    const { searchParams } = new URL(request.url)
+    const lastMessageTimestamp = searchParams.get("after")
+
+    if (!session?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const userId = session.id
     const conversationId = params.id
-    const url = new URL(request.url)
-    const after = url.searchParams.get("after")
 
-    // Sprawdź, czy użytkownik ma dostęp do konwersacji
-    const conversationCheck = await query(
+    // Check if user is part of this conversation
+    const conversations = await query(
       `
-      SELECT * FROM conversations 
+      SELECT 
+        id, 
+        user1_id, 
+        user2_id
+      FROM conversations
       WHERE id = ? AND (user1_id = ? OR user2_id = ?)
-      `,
-      [conversationId, user.id, user.id],
-    ) as { id: string, user1_id: string, user2_id: string }[]
- 
-    if (!conversationCheck.length) {
+    `,
+      [conversationId, userId, userId],
+    ) as any[]
+
+    if (conversations.length === 0) {
       return NextResponse.json({ error: "Conversation not found" }, { status: 404 })
     }
 
-    // Pobierz nowe wiadomości
-    let messagesQuery = `
-      SELECT m.id, m.conversation_id as conversationId, m.sender_id as senderId, 
-             m.content, m.is_read as isRead, m.created_at as timestamp
-      FROM messages m
-      WHERE m.conversation_id = ?
+    // Get messages for this conversation after the specified timestamp
+    const messagesQuery = `
+      SELECT 
+        id,
+        sender_id,
+        receiver_id,
+        content,
+        image_url,
+        is_read,
+        created_at
+      FROM messages
+      WHERE conversation_id = ? AND created_at > ?
+      ORDER BY created_at ASC
     `
-    const queryParams = [conversationId]
 
-    // Jeśli podano timestamp, pobierz tylko nowsze wiadomości
-    if (after) {
-      messagesQuery += ` AND m.created_at > ?`
-      queryParams.push(after)
-    }
+    const messagesData = await query(messagesQuery, [conversationId, lastMessageTimestamp || "1970-01-01"]) as any[]
 
-    messagesQuery += ` ORDER BY m.created_at ASC`
-
-    const messages = await query(messagesQuery, queryParams) as any[]
-
-    // Oznacz wiadomości jako "moje" lub "nie moje"
-    const messagesWithOwnership = messages.map((message: any) => ({
-      ...message,
-      isMine: message.senderId === user.id,
+    const messages = messagesData.map((msg: any) => ({
+      id: msg.id,
+      content: msg.content,
+      imageUrl: msg.image_url,
+      timestamp: msg.created_at,
+      isMine: msg.sender_id === userId,
+      isRead: msg.is_read,
     }))
 
-    return NextResponse.json({ messages: messagesWithOwnership })
+    // Get the other user's online status
+    const conversation = conversations[0]
+    const otherUserId = conversation.user1_id === userId ? conversation.user2_id : conversation.user1_id
+
+    const users = await query(
+      `
+      SELECT 
+        (
+          SELECT MAX(last_activity) FROM user_sessions WHERE user_id = ?
+        ) as last_seen
+      `,
+      [otherUserId],
+    ) as any[]
+
+    const lastSeen = users[0]?.last_seen ? new Date(users[0].last_seen) : null
+    const now = new Date()
+    const isOnline = lastSeen && now.getTime() - lastSeen.getTime() < 5 * 60 * 1000 // 5 minutes
+
+    return NextResponse.json({
+      messages,
+      userStatus: {
+        isOnline,
+        lastSeen: formatLastSeen(users[0]?.last_seen),
+      },
+    })
   } catch (error) {
     console.error("Error fetching new messages:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
+
+function formatLastSeen(timestamp: string | null) {
+  if (!timestamp) return "Nigdy"
+
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+
+  if (diffMinutes < 1) {
+    return "Przed chwilą"
+  } else if (diffMinutes < 60) {
+    return `${diffMinutes} min temu`
+  } else if (diffMinutes < 24 * 60) {
+    const hours = Math.floor(diffMinutes / 60)
+    return `${hours} ${hours === 1 ? "godzinę" : hours < 5 ? "godziny" : "godzin"} temu`
+  } else if (diffMinutes < 48 * 60) {
+    return "Wczoraj"
+  } else {
+    return date.toLocaleDateString()
   }
 }

@@ -6,17 +6,16 @@ import { query } from "@/lib/db"
 export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {
+    const session = await auth()
     const { searchParams } = new URL(request.url)
     const lastMessageTimestamp = searchParams.get("after")
 
-    const session = await auth()
-    
-        if (!session?.id) {
-          return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-        }
-    
-        const userId = session.id
-    const conversationId = await params.id
+    if (!session?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const userId = session.id
+    const conversationId = params.id
 
     // Check if user is part of this conversation
     const conversations = await query(
@@ -40,9 +39,9 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
     // Get the other user's details
     const otherUserId = conversation.user1_id === userId ? conversation.user2_id : conversation.user1_id
 
-    const users  = await query(
+    const  users  = await query(
       `
-      SELECT id, name, email, avatar, 
+      SELECT id, name, email, avatar as profile_image, 
       (
         SELECT MAX(last_activity) FROM user_sessions WHERE user_id = users.id
       ) as last_seen
@@ -68,6 +67,7 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
         sender_id,
         receiver_id,
         content,
+        image_url,
         is_read,
         created_at
       FROM messages
@@ -84,11 +84,12 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
 
     messagesQuery += ` ORDER BY created_at ASC`
 
-    const messagesData = await query(messagesQuery, queryParams) as any[]
+    const messagesData  = await query(messagesQuery, queryParams) as any[]
 
     const messages = messagesData.map((msg: any) => ({
       id: msg.id,
       content: msg.content,
+      imageUrl: msg.image_url,
       timestamp: msg.created_at,
       isMine: msg.sender_id === userId,
       isRead: msg.is_read,
@@ -110,7 +111,7 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
       user: {
         id: user.id,
         name: user.name,
-        avatar: user.avatar || undefined,
+        avatar: user.profile_image || undefined,
         isOnline,
         lastSeen: formatLastSeen(user.last_seen),
       },

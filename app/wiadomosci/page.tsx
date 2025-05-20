@@ -10,7 +10,6 @@ import { useMediaQuery } from "@/hooks/use-media-query"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { PageLayout } from "@/components/page-layout"
-import { useSocket } from "@/hooks/use-socket"
 
 export default function MessagesPage() {
   // Stan komponentu
@@ -28,7 +27,8 @@ export default function MessagesPage() {
   const [user, setUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [userLoaded, setUserLoaded] = useState(false)
-  const [usePolling, setUsePolling] = useState(false)
+  const [usePolling, setUsePolling] = useState(true) // Domyślnie używamy pollingu
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   // Referencje
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -65,62 +65,6 @@ export default function MessagesPage() {
     fetchUser()
   }, [])
 
-  // Inicjalizacja Socket.IO
-  const {
-    isConnected,
-    error: socketError,
-    joinConversation,
-    leaveConversation,
-    sendMessage,
-    sendTypingStatus,
-    on,
-  } = useSocket(user?.id)
-
-  // Ustaw fallback na polling, jeśli Socket.IO nie działa
-  useEffect(() => {
-    if (socketError) {
-      console.log("Socket.IO error, switching to polling:", socketError)
-      setUsePolling(true)
-    } else if (isConnected) {
-      setUsePolling(false)
-    }
-  }, [socketError, isConnected])
-
-  // Nasłuchuj zdarzeń Socket.IO
-  useEffect(() => {
-    if (!isConnected) return
-
-    // Nasłuchuj nowych wiadomości
-    const unsubscribeNewMessage = on("new_message", (message: any) => {
-      handleNewMessage(message)
-    })
-
-    // Nasłuchuj statusu pisania
-    const unsubscribeTyping = on("typing", ({ userId, isTyping }: { userId: string; isTyping: boolean }) => {
-      handleTypingStatus(userId, isTyping)
-    })
-
-    // Nasłuchuj statusu użytkownika
-    const unsubscribeUserStatus = on("user_status", ({ userId, isOnline }: { userId: string; isOnline: boolean }) => {
-      handleUserStatus(userId, isOnline)
-    })
-
-    // Nasłuchuj potwierdzenia wysłania wiadomości
-    const unsubscribeMessageSent = on(
-      "message_sent",
-      ({ messageId, timestamp }: { messageId: string; timestamp: string }) => {
-        console.log(`Message ${messageId} sent at ${timestamp}`)
-      },
-    )
-
-    return () => {
-      unsubscribeNewMessage?.()
-      unsubscribeTyping?.()
-      unsubscribeUserStatus?.()
-      unsubscribeMessageSent?.()
-    }
-  }, [isConnected, on])
-
   // Pobierz konwersacje
   const fetchConversations = useCallback(async () => {
     if (!user) return
@@ -142,9 +86,9 @@ export default function MessagesPage() {
     }
   }, [userLoaded, user, fetchConversations])
 
-  // Polling jako fallback, gdy Socket.IO nie działa
+  // Polling dla nowych wiadomości
   useEffect(() => {
-    if (!usePolling || !activeConversation || !user) {
+    if (!activeConversation || !user) {
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current)
         pollingIntervalRef.current = null
@@ -202,7 +146,7 @@ export default function MessagesPage() {
         pollingIntervalRef.current = null
       }
     }
-  }, [usePolling, activeConversation, user, fetchConversations])
+  }, [activeConversation, user, fetchConversations])
 
   // Funkcje obsługi wiadomości
   const handleNewMessage = useCallback(
@@ -276,29 +220,24 @@ export default function MessagesPage() {
     [activeUser],
   )
 
-  // Funkcja do wysyłania wiadomości przez Socket.IO lub API
-  const handleSendMessageViaSocketOrApi = useCallback(
-    (messageData: any) => {
-      // Jeśli używamy pollingu lub Socket.IO nie jest połączony, użyj API REST
-      if (usePolling || !isConnected) {
-        fetch("/api/messages/send", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            conversationId: messageData.conversationId,
-            content: messageData.content,
-            messageId: messageData.id,
-          }),
-        }).catch((error) => console.error("Error sending message via API:", error))
-        return true
-      }
-
-      // Wyślij wiadomość przez Socket.IO
-      return sendMessage(messageData)
+  // Funkcja do wysyłania wiadomości przez API
+  const handleSendMessageViaApi = useCallback(
+    (messageData: { id: string; conversationId: string; content: string; imageUrl?: string }) => {
+      fetch("/api/messages/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          conversationId: messageData.conversationId,
+          content: messageData.content,
+          messageId: messageData.id,
+          imageUrl: messageData.imageUrl,
+        }),
+      }).catch((error) => console.error("Error sending message via API:", error))
+      return true
     },
-    [usePolling, isConnected, sendMessage],
+    [],
   )
 
   // Obsługa zmiany aktywnej konwersacji
@@ -306,11 +245,6 @@ export default function MessagesPage() {
     if (activeConversation) {
       activeConversationIdRef.current = activeConversation
       lastMessageTimestampRef.current = null
-
-      // Dołącz do konwersacji przez Socket.IO, jeśli jest połączony
-      if (isConnected && !usePolling) {
-        joinConversation(activeConversation)
-      }
 
       setInitialLoad(true)
       setIsLoading(true)
@@ -348,11 +282,6 @@ export default function MessagesPage() {
           setIsLoading(false)
         })
     } else {
-      // Opuść konwersację przez Socket.IO, jeśli jest połączony
-      if (activeConversationIdRef.current && isConnected && !usePolling) {
-        leaveConversation(activeConversationIdRef.current)
-      }
-
       activeConversationIdRef.current = null
       lastMessageTimestampRef.current = null
 
@@ -360,39 +289,7 @@ export default function MessagesPage() {
       setMessages([])
       setActiveUser(null)
     }
-
-    return () => {
-      // Opuść konwersację przy odmontowaniu
-      if (activeConversationIdRef.current && isConnected && !usePolling) {
-        leaveConversation(activeConversationIdRef.current)
-      }
-    }
-  }, [activeConversation, isConnected, usePolling, joinConversation, leaveConversation])
-
-  // Obsługa pisania
-  useEffect(() => {
-    if (activeConversation && newMessage && isConnected && !usePolling) {
-      sendTypingStatus(activeConversation, true)
-
-      // Wyczyść poprzedni timeout
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current)
-      }
-
-      // Ustaw nowy timeout, aby przestać pokazywać "pisanie" po 2 sekundach bezczynności
-      typingTimeoutRef.current = setTimeout(() => {
-        if (isConnected && !usePolling) {
-          sendTypingStatus(activeConversation, false)
-        }
-      }, 2000)
-    }
-
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current)
-      }
-    }
-  }, [newMessage, activeConversation, isConnected, usePolling, sendTypingStatus])
+  }, [activeConversation])
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -439,7 +336,7 @@ export default function MessagesPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newMessage.trim() || !activeConversation || !user?.id) return
+    if ((!newMessage.trim() && !uploadingImage) || !activeConversation || !user?.id) return
 
     const messageId = uuidv4()
     const messageContent = newMessage
@@ -464,8 +361,8 @@ export default function MessagesPage() {
     // Aktualizuj timestamp ostatniej wiadomości
     lastMessageTimestampRef.current = messageData.timestamp
 
-    // Wyślij wiadomość przez Socket.IO lub API
-    handleSendMessageViaSocketOrApi(messageData)
+    // Wyślij wiadomość przez API
+    handleSendMessageViaApi(messageData)
 
     // Aktualizuj konwersację na liście
     setConversations((prev) => {
@@ -473,7 +370,7 @@ export default function MessagesPage() {
         if (conv.id === activeConversation) {
           return {
             ...conv,
-            lastMessage: messageContent,
+            lastMessage: messageContent || "Zdjęcie",
             timestamp: "Teraz",
           }
         }
@@ -486,6 +383,87 @@ export default function MessagesPage() {
         ...updatedConversations.filter((c) => c.id !== activeConversation),
       ]
     })
+  }
+
+  const handleImageUpload = async (file: File) => {
+    if (!activeConversation || !user?.id) return
+
+    setUploadingImage(true)
+
+    try {
+      // Utwórz FormData i dodaj plik oraz ID konwersacji
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("conversationId", activeConversation)
+
+      console.log("Uploading file:", file.name, file.type, file.size)
+      console.log("To conversation:", activeConversation)
+
+      // Wyślij plik na serwer - używamy endpointu /api/messages/upload
+      const uploadResponse = await fetch("/api/messages/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json().catch(() => ({ error: "Unknown error" }))
+        console.error("Upload error:", errorData)
+        throw new Error(`Failed to upload image: ${errorData.error || uploadResponse.statusText}`)
+      }
+
+      const uploadData = await uploadResponse.json()
+      console.log("Upload successful:", uploadData)
+
+      // Utwórz wiadomość z obrazem
+      const messageId = uuidv4()
+      const messageData = {
+        id: messageId,
+        conversationId: activeConversation,
+        content: newMessage, // Opcjonalny tekst wiadomości
+        imageUrl: uploadData.fileUrl,
+        timestamp: new Date().toISOString(),
+        senderId: user.id,
+        isMine: true,
+        isRead: false,
+      }
+
+      // Wyczyść pole wiadomości
+      setNewMessage("")
+
+      // Optymistycznie dodaj wiadomość do UI
+      setMessages((prev) => [...prev, messageData])
+
+      // Aktualizuj timestamp ostatniej wiadomości
+      lastMessageTimestampRef.current = messageData.timestamp
+
+      // Wyślij wiadomość przez API
+      handleSendMessageViaApi(messageData)
+
+      // Aktualizuj konwersację na liście
+      setConversations((prev) => {
+        const updatedConversations = prev.map((conv) => {
+          if (conv.id === activeConversation) {
+            return {
+              ...conv,
+              lastMessage: "Zdjęcie",
+              timestamp: "Teraz",
+            }
+          }
+          return conv
+        })
+
+        // Sortuj konwersacje, aby aktywna była na górze
+        return [
+          ...updatedConversations.filter((c) => c.id === activeConversation),
+          ...updatedConversations.filter((c) => c.id !== activeConversation),
+        ]
+      })
+    } catch (error) {
+      console.error("Error uploading image:", error)
+      alert("Nie udało się wysłać zdjęcia. Spróbuj ponownie.")
+    } finally {
+      setUploadingImage(false)
+    }
   }
 
   const handleReport = () => {
@@ -517,20 +495,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="md:container mx-auto h-dvh md:py-8 pt-2">
-      <h1 className="md:mb-6 hidden md:block text-3xl font-bold">Wiadomości</h1>
-
-      {socketError && (
-        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded">
-          <p>{socketError}</p>
-          <p className="text-sm">
-            {usePolling
-              ? "Używam alternatywnej metody komunikacji. Niektóre funkcje mogą działać wolniej."
-              : "Próbuję ponownie nawiązać połączenie..."}
-          </p>
-        </div>
-      )}
-
+    <div className="h-screen bg-background">
       <MessagesLayout
         conversations={conversations}
         messages={messages}
@@ -550,10 +515,11 @@ export default function MessagesPage() {
         onStartConversation={startConversation}
         onCancelSearch={() => setIsSearching(false)}
         onReport={handleReport}
+        onImageUpload={handleImageUpload}
         isMobileFullScreen={true}
-        initialLoad={initialLoad}
-        socketConnected={isConnected && !usePolling}
-        isTyping={isTyping}
+        className="h-full"
+        currentUser={user}
+        uploadingImage={uploadingImage}
       />
     </div>
   )

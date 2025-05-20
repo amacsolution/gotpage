@@ -62,6 +62,45 @@ async function ensureDirectoryExists(dirPath: string): Promise<void> {
   }
 }
 
+export async function uploadFile(file: File, path: string): Promise<{ url: string }> {
+  try {
+    // Symulacja przesyłania pliku - w rzeczywistej aplikacji tutaj byłby kod do przesyłania na serwer
+    // np. do AWS S3, Cloudinary, itp.
+
+    // Generuj unikalną nazwę pliku
+    const fileName = `${path.split("/").pop() || uuidv4()}`
+
+    // Konwertuj plik na Base64 (tylko dla celów demonstracyjnych)
+    const reader = new FileReader()
+
+    return new Promise((resolve, reject) => {
+      reader.onload = () => {
+        // W rzeczywistej aplikacji tutaj byłby kod do przesyłania pliku
+        // Dla celów demonstracyjnych zwracamy URL do pliku
+        // W prawdziwej aplikacji byłby to URL do przesłanego pliku
+
+        // Symulacja opóźnienia przesyłania
+        setTimeout(() => {
+          // Zwróć URL do "przesłanego" pliku
+          // W rzeczywistej aplikacji byłby to URL zwrócony przez serwer
+          resolve({
+            url: reader.result as string,
+          })
+        }, 1000)
+      }
+
+      reader.onerror = () => {
+        reject(new Error("Failed to read file"))
+      }
+
+      reader.readAsDataURL(file)
+    })
+  } catch (error) {
+    console.error("Error uploading file:", error)
+    throw error
+  }
+}
+
 // Funkcja do przesyłania obrazu
 export async function uploadImage(
   file: File,

@@ -7,8 +7,18 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, Plus, X, Heart, MessageCircle, Share2 } from "lucide-react"
+import { Loader2, Plus, X, Heart, MessageCircle, Share2, Trash2 } from "lucide-react"
 import Image from "next/image"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface Photo {
   id: string
@@ -32,6 +42,9 @@ export function PhotoGallery({ userId, isOwnProfile = false }: PhotoGalleryProps
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [photoToDelete, setPhotoToDelete] = useState<string | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const { toast } = useToast()
 
   // Refs for infinite scrolling
@@ -137,6 +150,46 @@ export function PhotoGallery({ userId, isOwnProfile = false }: PhotoGalleryProps
     }
   }
 
+  const handleDeletePhoto = async (photoId: string) => {
+    try {
+      setIsDeleting(true)
+      const response = await fetch(`/api/photos/${photoId}/delete`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        throw new Error("Nie udało się usunąć zdjęcia")
+      }
+
+      // Remove the photo from the state
+      setPhotos((prev) => prev.filter((photo) => photo.id !== photoId))
+
+      // Close the dialog
+      setSelectedPhoto(null)
+
+      toast({
+        title: "Sukces",
+        description: "Zdjęcie zostało usunięte",
+      })
+    } catch (error) {
+      console.error("Błąd podczas usuwania zdjęcia:", error)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się usunąć zdjęcia. Spróbuj ponownie później.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsDeleting(false)
+      setPhotoToDelete(null)
+      setIsDeleteDialogOpen(false)
+    }
+  }
+
+  const confirmDeletePhoto = (photoId: string) => {
+    setPhotoToDelete(photoId)
+    setIsDeleteDialogOpen(true)
+  }
+
   const handlePhotoUploadSuccess = (newPhoto: Photo) => {
     setPhotos((prev) => [newPhoto, ...prev])
 
@@ -226,8 +279,45 @@ export function PhotoGallery({ userId, isOwnProfile = false }: PhotoGalleryProps
       )}
 
       {selectedPhoto && (
-        <PhotoDetailDialog photo={selectedPhoto} onClose={() => setSelectedPhoto(null)} onLike={handleLikePhoto} />
+        <PhotoDetailDialog
+          photo={selectedPhoto}
+          onClose={() => setSelectedPhoto(null)}
+          onLike={handleLikePhoto}
+          onDelete={confirmDeletePhoto}
+          isOwnProfile={isOwnProfile}
+        />
       )}
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Czy na pewno chcesz usunąć to zdjęcie?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ta akcja jest nieodwracalna. Zdjęcie zostanie trwale usunięte.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPhotoToDelete(null)}>Anuluj</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => photoToDelete && handleDeletePhoto(photoToDelete)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Usuwanie...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Usuń
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
@@ -422,9 +512,11 @@ interface PhotoDetailDialogProps {
   photo: Photo
   onClose: () => void
   onLike: (photoId: string) => void
+  onDelete?: (photoId: string) => void
+  isOwnProfile?: boolean
 }
 
-function PhotoDetailDialog({ photo, onClose, onLike }: PhotoDetailDialogProps) {
+function PhotoDetailDialog({ photo, onClose, onLike, onDelete, isOwnProfile = false }: PhotoDetailDialogProps) {
   return (
     <Dialog open={true} onOpenChange={() => onClose()}>
       <DialogContent className="sm:max-w-4xl h-80 p-0 overflow-hidden">
@@ -465,10 +557,18 @@ function PhotoDetailDialog({ photo, onClose, onLike }: PhotoDetailDialogProps) {
               <Button variant="outline" size="sm" onClick={onClose}>
                 Zamknij
               </Button>
-              <Button variant="outline" size="sm">
-                <Share2 className="h-4 w-4 mr-2" />
-                Udostępnij
-              </Button>
+              <div className="flex gap-2">
+                {isOwnProfile && onDelete && (
+                  <Button variant="destructive" size="sm" onClick={() => onDelete(photo.id)}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Usuń
+                  </Button>
+                )}
+                <Button variant="outline" size="sm">
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Udostępnij
+                </Button>
+              </div>
             </div>
           </div>
         </div>

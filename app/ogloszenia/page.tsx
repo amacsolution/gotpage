@@ -72,11 +72,11 @@ export default function AdsPage() {
   const { toast } = useToast()
 
   // Get search parameters from URL
-  const query = searchParams.get("q") || ""
-  const category = searchParams.get("category") || ""
-  const subcategory = searchParams.get("subcategory") || ""
-  const location = searchParams.get("location") || ""
-  const sortBy = searchParams.get("sortBy") || "newest"
+  const query = searchParams?.get("q") || ""
+  const category = searchParams?.get("category") || ""
+  const subcategory = searchParams?.get("subcategory") || ""
+  const location = searchParams?.get("location") || ""
+  const sortBy = searchParams?.get("sortBy") || "newest"
 
   // Fetch ads and locations
   useEffect(() => {
@@ -158,7 +158,7 @@ export default function AdsPage() {
 
   // Handle search
   const handleSearch = (searchQuery: string) => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString())
 
     if (searchQuery) {
       params.set("q", searchQuery)
@@ -171,7 +171,7 @@ export default function AdsPage() {
 
   // Handle filter changes
   const handleFilterChange = (type: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString())
 
     if (value && value !== "all") {
       params.set(type, value)
@@ -193,7 +193,7 @@ export default function AdsPage() {
 
   // Remove filter
   const removeFilter = (filter: string) => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString())
 
     if (category === filter) params.delete("category")
     if (subcategory === filter) params.delete("subcategory")
@@ -302,7 +302,7 @@ export default function AdsPage() {
               <h2 className="text-2xl font-bold flex items-center">
                 <Award className="h-5 w-5 mr-2 text-amber-500" /> Wyróżnione ogłoszenia
               </h2>
-              <Button variant="link" className="text-primary" onClick={() => router.push("/dodaj-ogloszenie")}>
+              <Button variant="link" className="text-primary" onClick={() => router.push("/dodaj")}>
                 Dodaj swoje ogłoszenie <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>

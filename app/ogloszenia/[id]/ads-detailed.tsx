@@ -18,6 +18,7 @@ import { Share2, Flag, MapPin, Phone, Mail, Calendar, Clock, ArrowLeft, Eye, Shi
 import { PageLayout } from "@/components/page-layout"
 import { LikeButton } from "@/components/like-button"
 import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 
 export default function AdDetailsClient({ id }: { id: string }) {
   const [ad, setAd] = useState<any>(null)
@@ -27,6 +28,50 @@ export default function AdDetailsClient({ id }: { id: string }) {
   const [similarAds, setSimilarAds] = useState<any[]>([])
   const [isSimilarAdsLoading, setIsSimilarAdsLoading] = useState(true)
   const { toast } = useToast()
+  const router = useRouter();
+
+    const handleMessage = async (userId: number) => {
+    try {
+      // Check if user is logged in
+      const currentUser = localStorage.getItem("userData")
+      if (!currentUser) {
+        toast({
+          title: "Wymagane logowanie",
+          description: "Musisz być zalogowany, aby wysyłać wiadomości",
+          variant: "destructive",
+        })
+        router.push("/login")
+        return
+      }
+
+      // Create or get conversation
+      const response = await fetch("/api/messages/conversations/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          receiverId: userId,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error creating conversation: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      // Redirect to conversation
+      router.push(`/wiadomosci`)
+    } catch (err) {
+      console.error("Error starting conversation:", err)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się rozpocząć konwersacji. Spróbuj ponownie później.",
+        variant: "destructive",
+      })
+    }
+  }
 
   useEffect(() => {
     // Pobieranie danych ogłoszenia
@@ -320,12 +365,11 @@ export default function AdDetailsClient({ id }: { id: string }) {
                     {ad.author.phone}
                   </Button>
                 </a>
-                <a href={`sms:${ad.author.phone}?body=Witam! Mam pytanie odnośnie ogłoszenia: ${ad.title}`}>
-                  <Button className="w-full" variant="outline">
-                    <Mail className="h-4 w-4 mr-2" />
-                    Wyślij wiadomość SMS
-                  </Button>
-                </a>
+                
+                <Button className="w-full" variant="outline" onClick={() => handleMessage(ad.author.id)}>
+                  <Mail className="h-4 w-4 mr-2" />
+                  Wyślij wiadomość 
+                </Button>
               </div>
             </Card>
 
