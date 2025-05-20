@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
-import { auth, authOptions } from "@/lib/auth"
+import { authOptions } from "@/lib/auth"
 import { query } from "@/lib/db"
 import { v4 as uuidv4 } from "uuid"
 
 export async function POST(request: Request) {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions) as any
 
-    if (!session?.id) {
-      return NextResponse.json({ success: false }, { status: 401 })
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const userId = session.id
+    const userId = session.user.id
     const { conversationId, content, messageId } = await request.json()
 
     if (!conversationId || !content) {
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       WHERE id = ? AND (user1_id = ? OR user2_id = ?)
     `,
       [conversationId, userId, userId],
-    ) as any[]
+    ) as {id: number, user1_id: string, user2_id: string}[]
 
     if (conversations.length === 0) {
       return NextResponse.json({ error: "Conversation not found" }, { status: 404 })
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
       WHERE id = ?
     `,
       [msgId],
-    ) as any[]
+    ) as {id : number, content: string, created_at: string}[]
 
     const message = messages[0]
 
@@ -83,15 +83,31 @@ export async function POST(request: Request) {
       [msgId, conversationId],
     )
 
-    return NextResponse.json({
-      message: {
-        id: message.id,
-        content: message.content,
-        timestamp: message.created_at,
-        isMine: true,
-        isRead: false,
+    // Get sender info for the response
+    const users  = await query(
+      `
+      SELECT name, profile_image
+      FROM users
+      WHERE id = ?
+    `,
+      [userId],
+    ) as {name: string, profile_image: string}[]
+
+    const messageResponse = {
+      id: message.id,
+      content: message.content,
+      timestamp: message.created_at,
+      isMine: true,
+      isRead: false,
+      sender: {
+        id: userId,
+        name: users[0]?.name || "Unknown",
+        avatar: users[0]?.profile_image || undefined,
       },
-    })
+      conversationId,
+    }
+
+    return NextResponse.json({ message: messageResponse })
   } catch (error) {
     console.error("Error sending message:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

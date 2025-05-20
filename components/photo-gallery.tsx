@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -34,6 +34,10 @@ export function PhotoGallery({ userId, isOwnProfile = false }: PhotoGalleryProps
   const [hasMore, setHasMore] = useState(true)
   const { toast } = useToast()
 
+  // Refs for infinite scrolling
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+
   const fetchPhotos = async (pageNum: number) => {
     try {
       setIsLoading(true)
@@ -63,6 +67,42 @@ export function PhotoGallery({ userId, isOwnProfile = false }: PhotoGalleryProps
       setIsLoading(false)
     }
   }
+
+  // Load more photos when scrolling
+  const loadMore = () => {
+    if (!isLoading && hasMore) {
+      const nextPage = page + 1
+      fetchPhotos(nextPage)
+    }
+  }
+
+  // Set up intersection observer for infinite scrolling
+  useEffect(() => {
+    const handleObserver = (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries
+      if (entry.isIntersecting && hasMore && !isLoading) {
+        loadMore()
+      }
+    }
+
+    const options = {
+      root: null,
+      rootMargin: "0px 0px 200px 0px", // Load more when within 200px of the bottom
+      threshold: 0.1,
+    }
+
+    observerRef.current = new IntersectionObserver(handleObserver, options)
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current)
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
+    }
+  }, [hasMore, isLoading])
 
   useEffect(() => {
     fetchPhotos(1)
@@ -97,13 +137,13 @@ export function PhotoGallery({ userId, isOwnProfile = false }: PhotoGalleryProps
     }
   }
 
-  const loadMore = () => {
-    const nextPage = page + 1
-    fetchPhotos(nextPage)
-  }
-
   const handlePhotoUploadSuccess = (newPhoto: Photo) => {
     setPhotos((prev) => [newPhoto, ...prev])
+
+    toast({
+      title: "Sukces",
+      description: "Zdjęcie zostało dodane",
+    })
   }
 
   if (isLoading && photos.length === 0) {
@@ -157,18 +197,15 @@ export function PhotoGallery({ userId, isOwnProfile = false }: PhotoGalleryProps
             ))}
           </div>
 
+          {/* Infinite scroll loading indicator */}
           {hasMore && (
-            <div className="flex justify-center mt-6">
-              <Button variant="outline" onClick={loadMore} disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Ładowanie...
-                  </>
-                ) : (
-                  "Załaduj więcej"
-                )}
-              </Button>
+            <div ref={loadMoreRef} className="flex justify-center py-6">
+              {isLoading && (
+                <div className="flex items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <span className="ml-2">Ładowanie...</span>
+                </div>
+              )}
             </div>
           )}
         </>
@@ -255,14 +292,13 @@ function PhotoUploadDialog({ userId, onUploadSuccess }: PhotoUploadDialogProps) 
     setIsUploading(true)
 
     try {
-      // Using your existing upload API
+      // Using the provided API route
       const formData = new FormData()
-      formData.append("file", selectedFile)
+      formData.append("photo", selectedFile)
       formData.append("caption", caption)
       formData.append("userId", userId)
-      formData.append("type", "photo")
 
-      const response = await fetch("/api/upload", {
+      const response = await fetch("/api/photos/upload", {
         method: "POST",
         body: formData,
       })
@@ -277,18 +313,13 @@ function PhotoUploadDialog({ userId, onUploadSuccess }: PhotoUploadDialogProps) 
       const newPhoto: Photo = {
         id: data.id || String(Date.now()),
         userId: userId,
-        imageUrl: data.url || data.path,
-        caption: caption,
-        createdAt: new Date().toISOString(),
-        likes: 0,
-        comments: 0,
-        isLiked: false,
+        imageUrl: data.imageUrl,
+        caption: data.caption || caption,
+        createdAt: data.createdAt || new Date().toISOString(),
+        likes: data.likes || 0,
+        comments: data.comments || 0,
+        isLiked: data.isLiked || false,
       }
-
-      toast({
-        title: "Sukces",
-        description: "Zdjęcie zostało dodane",
-      })
 
       onUploadSuccess(newPhoto)
       setIsOpen(false)

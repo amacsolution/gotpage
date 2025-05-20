@@ -20,7 +20,7 @@ import LinkPreview from "@/components/link-preview"
 interface NewsCommentsProps {
   postId: number
   user: {
-    id: number
+    id: string
     name: string
     avatar: string
   } | null
@@ -31,7 +31,7 @@ interface Comment {
   content: string
   createdAt: string
   author: {
-    id: number
+    id: string
     name: string
     avatar: string
   }

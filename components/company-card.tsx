@@ -10,7 +10,8 @@ export interface CompanyCardProps {
   company: {
     id: number
     name: string
-    avatar: string
+    avatar: string | null
+    logo: string | null
     description: string
     phone: string
     categories: string[]

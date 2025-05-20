@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
-import { db, query } from "@/lib/db"
+import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
+import type { NewsPostProps } from "@/components/news-post"
 
 // Funkcja pomocnicza do wyodrębniania URL z tekstu
 function extractUrl(text: string): string | null {
@@ -27,9 +28,6 @@ export async function GET(request: Request) {
 
     // Sprawdzenie, czy użytkownik jest zalogowany
     const currentUser = await auth(request)
-    if (!currentUser) {
-      return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
-    }
     const currentUserId = currentUser?.id
 
     // Budowanie zapytania SQL
@@ -44,12 +42,17 @@ export async function GET(request: Request) {
         p.created_at as createdAt,
         p.type,
         p.image_url as imageUrl,
+        p.image_urls as imageUrls,
         p.poll_data as pollData,
         u.id as author_id, 
         u.name as author_name, 
         u.avatar as author_avatar, 
         u.type as author_type, 
-        u.verified as author_verified
+        u.verified as author_verified,
+        CASE 
+          WHEN f.follower_id IS NOT NULL THEN 1 
+          ELSE 0 
+        END as is_followed
     `
 
     // Jeśli użytkownik jest zalogowany, dodajemy informację o obserwowaniu
@@ -104,8 +107,7 @@ export async function GET(request: Request) {
     params.push(limit, offset)
 
     // Wykonanie zapytania
-
-    const posts = await query(sql, params) as NewsData[]
+    const posts = await query(sql, params)
 
     if (!Array.isArray(posts)) {
       return NextResponse.json({ posts: [], total: 0 })
@@ -123,21 +125,20 @@ export async function GET(request: Request) {
       countParams.push(currentUserId)
     }
 
-    const totalResult = await query(countSql, countParams) as {count : number}[]
-
+    const totalResult = await query(countSql, countParams) as { count: string }[]
     const total =
-      Array.isArray(totalResult) && totalResult[0]?.count ? totalResult[0].count : 0
+      Array.isArray(totalResult) && totalResult[0]?.count ? Number.parseInt(totalResult[0].count) : 0
 
     // Sprawdzenie, czy zalogowany użytkownik polubił wpisy
     const userLikes: Record<number, boolean> = {}
 
     if (currentUserId) {
-      const postIds = posts.filter((post: any) => post && post.id).map((post: any) => post.id)
+      const postIds = posts.map((post: any) => post.id)
       if (postIds.length > 0) {
         const likesResult = await query(
           `SELECT post_id FROM news_likes WHERE user_id = ? AND post_id IN (${postIds.map(() => "?").join(",")})`,
           [currentUserId, ...postIds],
-        )
+        ) as { post_id: number }[]
 
         if (Array.isArray(likesResult)) {
           likesResult.forEach((like: any) => {
@@ -146,8 +147,6 @@ export async function GET(request: Request) {
         }
       }
     }
-
-
 
     // Formatowanie danych
     const formattedPosts = posts.map((post: any) => ({
@@ -162,6 +161,7 @@ export async function GET(request: Request) {
       isFollowed: post.is_followed === 1,
       type: post.type || "text",
       imageUrl: post.imageUrl,
+      imageUrls: post.imageUrls ? JSON.parse(post.imageUrls) : null,
       pollData: post.pollData ? JSON.parse(post.pollData) : null,
       author: {
         id: post.author_id,
@@ -170,7 +170,7 @@ export async function GET(request: Request) {
         type: post.author_type,
         verified: post.author_verified === 1,
       },
-    }))
+    })) as NewsPostProps["post"][]
 
     return NextResponse.json({
       posts: formattedPosts,
@@ -185,24 +185,6 @@ export async function GET(request: Request) {
   }
 }
 
-interface NewsData {
-  id: number
-  content: string
-  has_link: number
-  link_url: string | null
-  likes: number
-  comments: number
-  createdAt: string
-  type: string
-  imageUrl: string | null
-  pollData: string | null
-  author_id: number
-  author_name: string
-  author_avatar: string | null
-  author_type: string
-  author_verified: number
-}
-
 // Dodawanie nowego wpisu
 export async function POST(request: Request) {
   try {
@@ -213,7 +195,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { content, type = "text", imageUrl, pollOptions } = body
+    const { content, type = "text", imageUrl, imageUrls, pollOptions } = body
 
     if (!content || content.trim() === "") {
       return NextResponse.json({ error: "Treść wpisu nie może być pusta" }, { status: 400 })
@@ -237,6 +219,12 @@ export async function POST(request: Request) {
       params.push(imageUrl)
     }
 
+    // Dodanie tablicy URL-i obrazków, jeśli istnieje (dla typu image)
+    if (type === "image" && Array.isArray(imageUrls) && imageUrls.length > 0) {
+      sql += ", image_urls"
+      params.push(JSON.stringify(imageUrls))
+    }
+
     // Dodanie danych ankiety, jeśli istnieją
     if (type === "poll" && Array.isArray(pollOptions) && pollOptions.length >= 2) {
       sql += ", poll_data"
@@ -256,6 +244,10 @@ export async function POST(request: Request) {
       sql += "?, "
     }
 
+    if (type === "image" && Array.isArray(imageUrls) && imageUrls.length > 0) {
+      sql += "?, "
+    }
+
     if (type === "poll" && Array.isArray(pollOptions) && pollOptions.length >= 2) {
       sql += "?, "
     }
@@ -263,7 +255,7 @@ export async function POST(request: Request) {
     sql += "NOW())"
 
     // Dodanie wpisu
-    const result = await query(sql, params) as any
+    const result = await query(sql, params) as {insertId: number}
     const insertId = result.insertId
 
     if (!insertId) {
@@ -282,6 +274,7 @@ export async function POST(request: Request) {
         p.created_at as createdAt,
         p.type,
         p.image_url as imageUrl,
+        p.image_urls as imageUrls,
         p.poll_data as pollData,
         u.id as author_id, 
         u.name as author_name, 
@@ -292,9 +285,9 @@ export async function POST(request: Request) {
       JOIN users u ON p.user_id = u.id
       WHERE p.id = ?`,
       [insertId],
-    ) as NewsData[]
+    ) as any[]
 
-    if (!Array.isArray(posts) || posts.length === 0) {
+    if (!posts || !Array.isArray(posts) || posts.length === 0) {
       throw new Error("Nie udało się pobrać dodanego wpisu")
     }
 
@@ -312,6 +305,7 @@ export async function POST(request: Request) {
       isLiked: false,
       type: post.type || "text",
       imageUrl: post.imageUrl,
+      imageUrls: post.imageUrls ? JSON.parse(post.imageUrls) : null,
       pollData: post.pollData ? JSON.parse(post.pollData) : null,
       author: {
         id: post.author_id,
@@ -346,17 +340,17 @@ export async function DELETE(request: Request) {
     }
 
     // Sprawdzenie, czy użytkownik jest autorem wpisu
-    const post = await query("SELECT user_id FROM news_posts WHERE id = ?", [postId]) as {user_id : string}[]
+    const post = await query("SELECT user_id FROM news_posts WHERE id = ?", [postId]) as { user_id: string }[]
     if (!Array.isArray(post) || post.length === 0) {
       return NextResponse.json({ error: "Wpis nie istnieje" }, { status: 404 })
     }
 
-    if (post[0].user_id !== String(user.id)) {
+    if (post[0].user_id !== user.id) {
       return NextResponse.json({ error: "Nie masz uprawnień do usunięcia tego wpisu" }, { status: 403 })
     }
 
     // Usunięcie wpisu
-    const result = await query("DELETE FROM news_posts WHERE id = ?", [postId]) as {affectedRows: number}
+    const result = await query("DELETE FROM news_posts WHERE id = ?", [postId]) as { affectedRows: number }
     if (!result || result.affectedRows === 0) {
       throw new Error("Nie udało się usunąć wpisu")
     }

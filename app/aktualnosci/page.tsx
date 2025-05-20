@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PageLayout } from "@/components/page-layout"
@@ -26,7 +26,6 @@ const featuredCompanies = [
     rating: 4.8,
     reviewCount: 124,
     verified: true,
-    phone: "+48123456789"
   },
   {
     id: 2,
@@ -39,7 +38,6 @@ const featuredCompanies = [
     rating: 4.5,
     reviewCount: 87,
     verified: true,
-        phone: "+48123456789"
   },
   {
     id: 3,
@@ -52,7 +50,6 @@ const featuredCompanies = [
     rating: 4.9,
     reviewCount: 93,
     verified: true,
-        phone: "+48123456789"
   },
   {
     id: 4,
@@ -65,7 +62,6 @@ const featuredCompanies = [
     rating: 4.7,
     reviewCount: 142,
     verified: true,
-        phone: "+48123456789"
   },
 ]
 
@@ -78,10 +74,6 @@ export default function NewsPage() {
   const { user } = useUser()
   const [activeTab, setActiveTab] = useState<"all" | "followed">("all")
 
-  useEffect(() => {
-    fetchPosts(1, activeTab === "followed")
-  }, [activeTab])
-
   const fetchPosts = async (pageNum: number, followedOnly = false) => {
     try {
       setIsLoading(true)
@@ -93,8 +85,6 @@ export default function NewsPage() {
       }
 
       const data = await response.json()
-
-      console.log(data)
 
       if (pageNum === 1) {
         setPosts(data.posts)
@@ -116,6 +106,10 @@ export default function NewsPage() {
     }
   }
 
+  useEffect(() => {
+    fetchPosts(1, activeTab === "followed")
+  }, [activeTab])
+
   const handlePostCreated = (newPost: any) => {
     setPosts((prev) => [newPost, ...prev])
   }
@@ -126,12 +120,12 @@ export default function NewsPage() {
       const updatedPosts = posts.map((post) => {
         if (post.id === postId && post.isPoll) {
           // Create a copy of poll options with updated vote count
-          const updatedOptions = post.pollOptions.map((option: { id: string; votes: number }) =>
+          const updatedOptions = post.pollOptions.map((option : {id : string, votes : number}) =>
             option.id === optionId ? { ...option, votes: option.votes + 1 } : option,
           )
 
           // Calculate new total votes
-          const newTotalVotes = updatedOptions.reduce((sum: number, option: { id: string; votes: number }) => sum + option.votes, 0)
+          const newTotalVotes = updatedOptions.reduce((sum : number, option : {votes : number}) => sum + option.votes, 0)
 
           return {
             ...post,
@@ -220,8 +214,6 @@ export default function NewsPage() {
       fetchPosts(1, activeTab === "followed")
     }
   }
-
-  console.log(posts)
 
   const handleFollow = async (userId: string) => {
     try {
@@ -431,10 +423,48 @@ export default function NewsPage() {
     }
   }
 
-  const loadMore = () => {
-    const nextPage = page + 1
-    fetchPosts(nextPage, activeTab === "followed")
-  }
+  const loadMore = useCallback(() => {
+    if (!isLoading && hasMore) {
+      const nextPage = page + 1
+      fetchPosts(nextPage, activeTab === "followed")
+    }
+  }, [isLoading, hasMore, page, activeTab])
+
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    // Funkcja callback dla Intersection Observer
+    const handleObserver = (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries
+      if (entry.isIntersecting && hasMore && !isLoading) {
+        loadMore()
+      }
+    }
+
+    // Resetuj observer przy zmianie zależności
+    if (observerRef.current) {
+      observerRef.current.disconnect()
+    }
+
+    // Inicjalizuj nowy observer
+    observerRef.current = new IntersectionObserver(handleObserver, {
+      rootMargin: "0px 0px 200px 0px", // Załaduj więcej, gdy element jest 200px od dolnej krawędzi
+      threshold: 0.1,
+    })
+
+    // Obserwuj element loadMoreRef, jeśli istnieje
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current)
+    }
+
+    // Cleanup
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
+    }
+  }, [loadMore, hasMore, isLoading])
 
   return (
     <PageLayout>
@@ -448,7 +478,7 @@ export default function NewsPage() {
                 user={{
                   id: user.id,
                   name: user.name,
-                  avatar: user.avatar || "/placeholder-user.jpg",
+                  avatar: user.avatar ?? null,
                 }}
                 onPostCreated={handlePostCreated}
               />
@@ -492,17 +522,13 @@ export default function NewsPage() {
                 ))}
 
                 {hasMore && (
-                  <div className="flex justify-center mt-6">
-                    <Button variant="outline" onClick={loadMore} disabled={isLoading}>
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Ładowanie...
-                        </>
-                      ) : (
-                        "Załaduj więcej"
-                      )}
-                    </Button>
+                  <div ref={loadMoreRef} className="flex justify-center py-6">
+                    {isLoading && (
+                      <div className="flex items-center justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        <span className="ml-2">Ładowanie...</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </>

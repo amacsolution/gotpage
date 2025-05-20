@@ -6,7 +6,7 @@ import { useState, useEffect, useRef, use } from "react";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ScrollArea, ScrollAreaMessages } from "@/components/ui/scroll-area"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -137,7 +137,7 @@ export default function ConversationPage(props: { params: Promise<{ id: string }
           </div>
         </div>
 
-        <ScrollArea className="flex-1 flex flex-col-reverse overflow-y-auto p-2 justyfy-end" style={{ minHeight: 0 }}>
+        <ScrollAreaMessages className="flex-1 flex flex-col-reverse overflow-y-auto p-2 justyfy-end" style={{ minHeight: 0 }}>
           <div className="flex flex-col-reverse justify-end">
         {messages.length > 0 ? (
           messages
@@ -201,7 +201,7 @@ export default function ConversationPage(props: { params: Promise<{ id: string }
         )}
         <div ref={messagesEndRef} />
           </div>
-        </ScrollArea>
+        </ScrollAreaMessages>
 
         <form
           onSubmit={handleSendMessage}

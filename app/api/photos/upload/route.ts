@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { db, query } from "@/lib/db"
-import { auth } from "@/lib/auth"
+import { query } from "@/lib/db"
 import { uploadImage } from "@/lib/upload"
+import { auth } from "@/lib/auth"
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,18 +26,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Upload the photo
-    const uploadResult = await uploadImage(photo, "photos")
-    if (!uploadResult) {
+    const imageUrl = await uploadImage(photo, "photos")
+    if (!imageUrl) {
       return NextResponse.json({ error: "Failed to upload photo" }, { status: 500 })
     }
 
     // Save to database
-    const result = await query(
+    const result = (await query(
       `INSERT INTO user_photos (user_id, image_url, caption) 
        VALUES (?, ?, ?) 
        RETURNING id, user_id as "userId", image_url as "imageUrl", caption, created_at as "createdAt"`,
-      [userId, uploadResult, caption || null],
-    ) as any[]
+      [userId, imageUrl, caption || null],
+    )) as any[]
 
     // Add default values for likes and comments
     const newPhoto = {

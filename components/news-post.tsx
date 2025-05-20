@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, JSX, useEffect } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { formatDistanceToNow } from "date-fns"
@@ -8,7 +8,20 @@ import { pl } from "date-fns/locale"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Heart, MessageSquare, Share2, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Flag, ShieldCheck, ExternalLink, Loader2 } from "lucide-react"
+import {
+  Heart,
+  MessageSquare,
+  Share2,
+  ChevronDown,
+  ChevronUp,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Flag,
+  ShieldCheck,
+  ExternalLink,
+  Loader2,
+} from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import LinkPreview from "@/components/link-preview"
 import { NewsComments } from "@/components/news-comments"
@@ -27,6 +40,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { FollowButton } from "./follow-button"
+import { ImageGrid } from "./image-grid"
 
 export interface NewsPostProps {
   post: {
@@ -40,6 +54,7 @@ export interface NewsPostProps {
     isLiked: boolean
     type: "text" | "image" | "poll"
     imageUrl?: string
+    imageUrls?: string[] // Dodane pole dla wielu zdjęć
     pollData?: {
       options: string[]
       votes: number[]
@@ -47,22 +62,21 @@ export interface NewsPostProps {
       userVote?: number
     }
     author: {
-      id: number
+      id: string
       name: string
       avatar: string
       type: string
       verified: boolean
     }
   }
-  onVote?: (postId: string, optionId: string) => Promise<void>;
-  onLike?: (postId: string) => Promise<void>;
-  onComment?: (postId: string, content: string) => Promise<void>;
-  onDeletePost?: (postId: string) => Promise<void>;
-  onEditPost?: (postId: string, content: string) => Promise<void>;
-  onFollow?: (userId: string) => Promise<void>;
-  showFollowButton?: boolean;
+  onVote?: (postId: string, optionId: string) => Promise<void>
+  onLike?: (postId: string) => Promise<void>
+  onComment?: (postId: string, content: string) => Promise<void>
+  onDeletePost?: (postId: string) => Promise<void>
+  onEditPost?: (postId: string, content: string) => Promise<void>
+  onFollow?: (userId: string) => Promise<void>
+  showFollowButton?: boolean
 }
-
 
 // Funkcja do sprawdzania, czy tekst zawiera URL - taka sama jak w LinkPreview
 const hasUrl = (text: string): boolean => {
@@ -100,7 +114,6 @@ export const formatTextWithBoldLinksAndHashtags = (text: string) => {
 }
 
 export function NewsPost({ post }: NewsPostProps) {
-
   const [isLiked, setIsLiked] = useState(post?.isLiked || false)
   const [likesCount, setLikesCount] = useState(post.likes)
   const [isLoading, setIsLoading] = useState(false)
@@ -112,6 +125,9 @@ export function NewsPost({ post }: NewsPostProps) {
   const [isAuthor, setIsAuthor] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const router = useRouter()
+
+  // Przygotuj tablicę zdjęć - jeśli jest imageUrls, użyj jej, w przeciwnym razie użyj pojedynczego imageUrl
+  const images = post.imageUrls || (post.imageUrl ? [post.imageUrl] : [])
 
   const handleLike = async () => {
     try {
@@ -134,7 +150,6 @@ export function NewsPost({ post }: NewsPostProps) {
       // Aktualizacja stanu z bazy danych
       setIsLiked(data.liked)
       setLikesCount((prev) => (data.liked ? prev + 1 : prev - 1))
-
     } catch (error) {
       toast({
         title: "Błąd",
@@ -154,8 +169,7 @@ export function NewsPost({ post }: NewsPostProps) {
           text: post.content.substring(0, 100) + (post.content.length > 100 ? "..." : ""),
           url: `${window.location.origin}/aktualnosci/post/${post.id}`,
         })
-      } catch (error) {
-      }
+      } catch (error) {}
     } else {
       // Fallback dla przeglądarek bez API Web Share
       const url = `${window.location.origin}/aktualnosci/post/${post.id}`
@@ -231,7 +245,6 @@ export function NewsPost({ post }: NewsPostProps) {
     }
   }, [user, post.author.id])
 
-
   const handleDelete = async () => {
     setShowDeleteDialog(true)
   }
@@ -239,30 +252,30 @@ export function NewsPost({ post }: NewsPostProps) {
   const confirmDelete = async () => {
     setIsLoading(true)
     try {
-      let response;
+      let response
       try {
         response = await fetch(`/api/news?postId=${post.id}`, {
           method: "DELETE",
-        });
+        })
       } catch (networkError) {
-        console.error("Network error:", networkError);
+        console.error("Network error:", networkError)
         toast({
           title: "Błąd sieci",
           description: "Nie udało się połączyć z serwerem. Sprawdź swoje połączenie internetowe.",
           variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
+        })
+        setIsLoading(false)
+        return
       }
 
       if (!response.ok) {
-        let errorData;
+        let errorData
         try {
-          errorData = await response.json();
+          errorData = await response.json()
         } catch {
-          errorData = { error: "Nieznany błąd" };
+          errorData = { error: "Nieznany błąd" }
         }
-        throw new Error(errorData.error || "Wystąpił błąd podczas usuwania wpisu");
+        throw new Error(errorData.error || "Wystąpił błąd podczas usuwania wpisu")
       }
 
       toast({
@@ -298,7 +311,7 @@ export function NewsPost({ post }: NewsPostProps) {
           <div className="flex items-start gap-3 mb-3">
             <Link href={`/profil/${post.author.id}`}>
               <Avatar className="h-10 w-10">
-                <AvatarImage src={post.author.avatar} alt={post.author.name} />
+                <AvatarImage src={post.author.avatar || "/placeholder.svg"} alt={post.author.name} />
                 <AvatarFallback>{post.author.name.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
             </Link>
@@ -325,15 +338,15 @@ export function NewsPost({ post }: NewsPostProps) {
                   locale: pl,
                 })}
               </div>
-              
-
             </div>
             {post.author.id !== user?.id && (
-                <FollowButton
-                  userId={post.author.id}
-                  isFollowing={post.author.type === "following" ? true : false}
-                  size="sm"/>)}
-          {user ? (
+              <FollowButton
+                userId={post.author.id}
+                isFollowing={post.author.type === "following" ? true : false}
+                size="sm"
+              />
+            )}
+            {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
@@ -368,16 +381,10 @@ export function NewsPost({ post }: NewsPostProps) {
             {formatTextWithBoldLinksAndHashtags(post.content)}
           </div>
 
-          {/* Zdjęcie, jeśli post jest typu image */}
-          {post.type === "image" && post.imageUrl && (
-            <div className="mt-3 mb-3 rounded-md overflow-hidden">
-              <Image
-                src={post.imageUrl || "/placeholder.svg"}
-                alt="Zdjęcie w poście"
-                width={600}
-                height={400}
-                className="w-full object-cover max-h-[500px]"
-              />
+          {/* Zdjęcia - używamy nowego komponentu ImageGrid */}
+          {post.type === "image" && images.length > 0 && (
+            <div className="mt-3 mb-3">
+              <ImageGrid images={images} alt={`Post od ${post.author.name}`} />
             </div>
           )}
 
@@ -505,4 +512,3 @@ export function NewsPost({ post }: NewsPostProps) {
     </div>
   )
 }
-

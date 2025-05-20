@@ -7,7 +7,7 @@ import { Avatar } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ScrollArea, ScrollAreaMessages } from "@/components/ui/scroll-area"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ArrowLeft, Flag, MoreVertical, Search, User } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -139,78 +139,71 @@ export function MessagesLayout({
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4" ref={messagesEndRef}>
-          {isLoading ? (
-            <div className="flex h-full items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {messages.length > 0 ? (
-          // Group messages by consecutive same minute and sender
-          (() => {
-            const groups: { key: string; messages: Message[] }[] = []
-            let currentGroup: { key: string; messages: Message[] } | null = null
-
-            messages.forEach((msg, idx) => {
-              const date = new Date(msg.timestamp)
-              const minuteKey = `${msg.isMine}-${date.getHours()}-${date.getMinutes()}`
-              if (
-                !currentGroup ||
-                currentGroup.key !== minuteKey
-              ) {
-                currentGroup = { key: minuteKey, messages: [msg] }
-                groups.push(currentGroup)
-              } else {
-                currentGroup.messages.push(msg)
-              }
-            })
-
-            return groups.map((group, i) => (
-              <div
-                key={i}
-                className={`flex flex-col gap-1 ${
-            group.messages[0].isMine ? "items-end" : "items-start"
-                }`}
-              >
-                {group.messages.map((message, j) => (
-            <div
-              key={message.id}
-              className={`flex ${message.isMine ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`max-w-[80%] rounded-lg p-3 ${
-                  message.isMine
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted"
-                }`}
-              >
-                <p>{message.content}</p>
-                {j === group.messages.length - 1 && (
-                  <div className="mt-1 flex items-center justify-end gap-1 text-xs opacity-70">
-              <span>
-                {new Date(message.timestamp).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
-              {message.isMine && message.isRead && <span>✓✓</span>}
+        <ScrollArea className="flex-1 flex flex-col-reverse overflow-y-auto p-2 justyfy-end" style={{ minHeight: 0 }}>
+                  <div className="flex flex-col-reverse justify-end">
+                {messages.length > 0 ? (
+                  messages
+                    .slice()
+                    .reverse()
+                    .map((message, idx, arr) => {
+                  const nextMessage = arr[idx - 1]
+                  const isFirst = idx === arr.length - 1
+                  const showTimestamp =
+                    isFirst ||
+                    !nextMessage ||
+                    new Date(nextMessage.timestamp).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }) !==
+                      new Date(message.timestamp).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                      })
+        
+                  return (
+                    <div
+                      key={message.id+message.content}
+                      className={`flex items-center ${message.isMine ? "justify-end" : "justify-start"} ${
+                    showTimestamp ? "mb-2" : "mb-[1px]"
+                      }`}
+                    >
+                      {showTimestamp && (
+                    <div className="mr-2 text-xs text-muted-foreground opacity-70 min-w-[44px] text-right">
+                      {new Date(message.timestamp).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </div>
+                      )}
+                      <div className="flex items-center max-w-[70%]">
+                    <div
+                      className={`rounded-lg px-3 py-1 ${
+                        message.isMine ? "bg-primary text-primary-foreground" : "bg-muted"
+                      }`}
+                    >
+                      <p className="mb-0">{message.content}</p>
+                    </div>
+                    {message.isMine && showTimestamp ? (
+                      <span className="ml-2 text-xs opacity-70">
+                        {message.isRead ? "✓✓" : "✓"}
+                      </span>
+                    ) : (
+                      <span className="ml-2 text-xs opacity-0">
+                        {message.isRead ? "✓✓" : "✓"}
+                      </span>
+                    )}
+                      </div>
+                    </div>
+                  )
+                    })
+                ) : (
+                  <div className="flex h-40 items-center justify-center text-center text-muted-foreground">
+                    <p>Rozpocznij konwersację</p>
                   </div>
                 )}
-              </div>
-            </div>
-                ))}
-              </div>
-            ))
-          })()
-              ) : (
-          <div className="flex h-40 items-center justify-center text-center text-muted-foreground">
-            <p>Rozpocznij konwersację</p>
-          </div>
-              )}
-            </div>
-          )}
-        </div>
+                <div ref={messagesEndRef} />
+                  </div>
+                </ScrollArea>
 
         {/* Input */}
         <form onSubmit={onSendMessage} className="flex items-center gap-2 border-t p-4">
@@ -394,44 +387,72 @@ export function MessagesLayout({
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-4">
-              {isLoading ? (
-                <div className="flex h-full items-center justify-center">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  {messages.length > 0 ? (
-                    messages.map((message) => (
-                      <div key={message.id} className={`flex ${message.isMine ? "justify-end" : "justify-start"}`}>
+            <ScrollAreaMessages className="flex-1 flex flex-col-reverse overflow-y-auto px-2 justify-end" style={{ minHeight: 0 }}>
+              <div className="flex flex-col-reverse justify-end">
+                {messages.length > 0 ? (
+                  [...new Set(messages.map(m => m.id))] // deduplicate by id
+                    .map((id) => messages.find(m => m.id === id)!)
+                    .slice()
+                    .reverse()
+                    .map((message, idx, arr) => {
+                      const nextMessage = arr[idx - 1]
+                      const isFirst = idx === arr.length - 1
+                      const showTimestamp =
+                        isFirst ||
+                        !nextMessage ||
+                        new Date(nextMessage.timestamp).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }) !==
+                          new Date(message.timestamp).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+
+                      return (
                         <div
-                          className={`max-w-[70%] rounded-lg p-3 ${
-                            message.isMine ? "bg-primary text-primary-foreground" : "bg-muted"
+                          key={message.id}
+                          className={`flex items-center ${message.isMine ? "justify-end" : "justify-start"} ${
+                            showTimestamp ? "mb-2" : "mb-[1px]"
                           }`}
                         >
-                          <p>{message.content}</p>
-                          <div className="mt-1 flex items-center justify-end gap-1 text-xs opacity-70">
-                            <span>
+                          {showTimestamp && (
+                            <div className="mr-2 text-xs text-muted-foreground opacity-70 min-w-[44px] text-right">
                               {new Date(message.timestamp).toLocaleTimeString([], {
                                 hour: "2-digit",
                                 minute: "2-digit",
                               })}
-                            </span>
-                            {message.isMine && message.isRead && <span>✓✓</span>}
+                            </div>
+                          )}
+                          <div className="flex items-center max-w-[70%]">
+                            <div
+                              className={`rounded-lg px-3 py-1 ${
+                                message.isMine ? "bg-primary text-primary-foreground" : "bg-muted"
+                              }`}
+                            >
+                              <p className="mb-0">{message.content}</p>
+                            </div>
+                            {message.isMine && showTimestamp ? (
+                              <span className="ml-2 text-xs opacity-70">
+                                {message.isRead ? "✓✓" : "✓"}
+                              </span>
+                            ) : (
+                              <span className="ml-2 text-xs opacity-0">
+                                {message.isRead ? "✓✓" : "✓"}
+                              </span>
+                            )}
                           </div>
                         </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="flex h-40 items-center justify-center text-center text-muted-foreground">
-                      <p>Rozpocznij konwersację</p>
-                    </div>
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
-              )}
-            </ScrollArea>
-
+                      )
+                    })
+                ) : (
+                  <div className="flex h-40 items-center justify-center text-center text-muted-foreground">
+                    <p>Rozpocznij konwersację</p>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollAreaMessages>
             {/* Input */}
             <form onSubmit={onSendMessage} className="flex items-center gap-2 border-t p-4">
               <Input

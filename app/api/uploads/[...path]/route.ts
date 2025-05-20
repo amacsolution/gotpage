@@ -46,6 +46,21 @@ async function findFile(basePath: string, relativePath: string): Promise<string 
       return path
     }
   }
+
+  // Jeśli żaden plik nie został znaleziony, wyslij zapytanie do API gotpage.pl
+  try {
+    const response = await fetch(`https://gotpage.pl/api/uploads/${relativePath}`)
+    if (response.ok) {
+      // Zapisz plik lokalnie, aby przyspieszyć kolejne żądania
+      const buffer = Buffer.from(await response.arrayBuffer())
+      const savePath = join(basePath, "uploads", relativePath)
+      await fs.mkdir(join(savePath, ".."), { recursive: true })
+      await fs.writeFile(savePath, buffer)
+      return savePath
+    }
+  } catch (err) {
+    console.error("Błąd pobierania pliku z gotpage.pl:", err)
+  }
   return null
 }
 
