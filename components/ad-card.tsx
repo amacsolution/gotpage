@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/legacy/image"
 import { formatDistanceToNow } from "date-fns"
-import { pl } from "date-fns/locale"
+import { is, pl } from "date-fns/locale"
 import { MessageSquare, MapPin, Star, Truck, ShieldCheck, Edit, Eye, Trash2 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -74,6 +74,7 @@ export function AdCard({ ad, image}: AdCardProps) {
       const userData = localStorage.getItem("userData")
       if (userData) {
         const user = JSON.parse(userData)
+
         setIsAuthor(user.id === ad.author.id)
       }
     } catch (error) {
@@ -131,7 +132,7 @@ export function AdCard({ ad, image}: AdCardProps) {
   }
 
   // Sprawdzenie, czy jesteśmy na stronie profilu
-  const isProfilePage = pathname?.includes("/profil")
+  const isProfilePage = pathname?.startsWith("/profil") && !pathname?.startsWith("/profil/")
 
   // Sprawdzenie, czy powinniśmy pokazać overlay
   const shouldShowOverlay = isAuthor || (isProfilePage && pathname?.includes(`/${ad.author.id}`))
@@ -144,7 +145,7 @@ export function AdCard({ ad, image}: AdCardProps) {
             <CardContent className={`p-0 overflow-hidden ${ad.promoted ? "border-primary/40" : "border-muted"}`}>
               <div className="flex flex-col">
                 {/* Zdjęcie produktu - zawsze na górze, zarówno na mobile jak i desktop */}
-                <div className="relative w-full h-48 overflow-hidden bg-gray-50">
+                <div className="relative w-full h-52 overflow-hidden bg-gray-50">
                   <Image
                     src={image || ad.image || plImage}
                     alt={ad.title}

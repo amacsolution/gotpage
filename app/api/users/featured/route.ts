@@ -34,7 +34,7 @@ export async function GET() {
         (SELECT COUNT(*) FROM user_follows WHERE target_id = u.id) as followerCount
       FROM users u 
       WHERE u.id != ? AND u.avatar != '/placeholder-profile.svg?height=100&width=100'
-      ORDER BY adCount DESC, rating DESC
+      ORDER BY adCount DESC, rating , RAND() DESC
       LIMIT 8
     `
 

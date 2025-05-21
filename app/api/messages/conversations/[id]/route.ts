@@ -126,9 +126,14 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
 function formatLastSeen(timestamp: string | null) {
   if (!timestamp) return "Nigdy"
 
-  const date = new Date(timestamp)
+  // Parse timestamp as UTC and convert to Poland time (Europe/Warsaw)
+  const utcDate = new Date(timestamp + "Z")
+  // Get Poland time now
   const now = new Date()
-  const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+  const polandNow = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Warsaw" }))
+  const polandDate = new Date(utcDate.toLocaleString("en-US", { timeZone: "Europe/Warsaw" }))
+
+  const diffMinutes = Math.floor((polandNow.getTime() - polandDate.getTime()) / (1000 * 60))
 
   if (diffMinutes < 1) {
     return "Przed chwilą"
@@ -140,6 +145,6 @@ function formatLastSeen(timestamp: string | null) {
   } else if (diffMinutes < 48 * 60) {
     return "Wczoraj"
   } else {
-    return date.toLocaleDateString()
+    return polandDate.toLocaleDateString("pl-PL")
   }
 }

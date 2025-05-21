@@ -112,10 +112,8 @@ export function MessagesLayout({
 
   useEffect(() => {
     // Scroll to bottom when messages change
-    if (messages.length > 0) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-      }, 100)
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "auto", block: "start" })
     }
   }, [messages])
 
@@ -218,7 +216,7 @@ export function MessagesLayout({
         </div>
 
         {/* Messages */}
-        <ScrollArea className="flex-1 flex flex-col-reverse overflow-y-auto p-2 justyfy-end" style={{ minHeight: 0 }}>
+        <ScrollAreaMessages className="flex-1 flex flex-col-reverse overflow-y-auto p-2 justyfy-end" style={{ minHeight: 0 }}>
           <div className="flex flex-col-reverse justify-end">
             {messages.length > 0 ? (
               messages
@@ -291,7 +289,7 @@ export function MessagesLayout({
             )}
             <div ref={messagesEndRef} />
           </div>
-        </ScrollArea>
+        </ScrollAreaMessages>
 
         {/* Input */}
         <form onSubmit={handleSubmitWithImage} className="flex flex-col border-t">
@@ -336,7 +334,7 @@ export function MessagesLayout({
         </form>
 
         {/* Dodaj panel użytkownika na dole dla wersji mobilnej */}
-        {currentUser && (
+        {currentUser && !activeConversation && (
           <div className="border-t p-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
@@ -448,11 +446,11 @@ export function MessagesLayout({
                     {conversations.map((conv) => (
                       <div
                         key={conv.id}
-                        className={`flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-accent ${
+                        className={`flex cursor-pointer items-center gap-2 rounded-md p-2 mb-1 hover:bg-accent ${
                           conv.id === activeConversation
                             ? "bg-accent/80 ring-1 ring-accent-foreground/10"
                             : conv.unread > 0
-                              ? "bg-accent/30"
+                              ? "bg-accent/20 text-foreground"
                               : ""
                         }`}
                         onClick={() => onConversationSelect(conv.id)}
@@ -471,10 +469,10 @@ export function MessagesLayout({
                             <span className={`${conv.id === activeConversation ? "font-semibold" : "font-medium"}`}>
                               {conv.user.name}
                             </span>
-                            <span className="text-xs text-muted-foreground">{conv.timestamp}</span>
+                            <span className={`text-xs ${conv.unread > 0 ? "text-foreground" : "text-muted-foreground"}`}>{conv.timestamp}</span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <p className="truncate text-sm text-muted-foreground">{conv.lastMessage}</p>
+                            <p className={`truncate text-sm ${conv.unread > 0 ? "text-foreground" : "text-muted-foreground"}`}>{conv.lastMessage}</p>
                             {conv.unread > 0 && (
                               <Badge variant="default" className="ml-1">
                                 {conv.unread}

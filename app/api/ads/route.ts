@@ -321,7 +321,7 @@ export async function GET(request: Request) {
     }
 
     // Dodanie sortowania
-    sql += " ORDER BY a.promoted DESC, "
+    sql += " ORDER BY a.promoted DESC, RAND(), "
 
     switch (sortBy) {
       case "oldest":

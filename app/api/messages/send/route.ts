@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
 
@@ -12,7 +10,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Pobierz dane JSON zamiast formData
     const { conversationId, content, messageId, imageUrl } = await request.json()
 
     if (!conversationId) {
@@ -32,28 +29,49 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "You are not a participant in this conversation" }, { status: 403 })
     }
 
-    // Pobierz ID odbiorcy
     const conversation = participantCheck[0]
     const recipientId = conversation.user1_id === session.id ? conversation.user2_id : conversation.user1_id
 
-    // Wstaw wiadomość do bazy danych
-    const result = await query(
+    const timestamp = new Date().toISOString()
+
+    // Wstaw wiadomość do bazy danych z UTC czasem
+    await query(
       `
       INSERT INTO messages (id, conversation_id, sender_id, receiver_id, content, image_url, is_read, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, false, NOW())
+      VALUES (?, ?, ?, ?, ?, ?, false, ?)
       `,
-      [messageId, conversationId, session.id, recipientId, content || "", imageUrl || null],
+      [messageId, conversationId, session.id, recipientId, content || "", imageUrl || null, timestamp],
     )
 
-    // Zaktualizuj ostatnią wiadomość w konwersacji
+    // Zaktualizuj ostatnią wiadomość w konwersacji z UTC czasem
     await query(
       `
       UPDATE conversations 
-      SET last_message_id = ?, updated_at = NOW()
+      SET last_message_id = ?, updated_at = ?
       WHERE id = ?
       `,
-      [messageId, conversationId],
+      [messageId, timestamp, conversationId],
     )
+
+    const activity = await query(`select * from user_sessions where user_id = ?`, [recipientId]) as { id : number, user_id: string, last_activity: string }[]
+
+    if (activity.length > 0) {
+      // Użytkownik jest aktywny, więc aktualizujemy jego ostatnią aktywność
+      query(
+        `
+        UPDATE user_sessions 
+        SET last_activity = ?
+        WHERE user_id = ?
+        `,
+        [timestamp, session.id],
+      )
+    } else {
+      query(
+      `
+      INSERT INTO user_sessions (user_id, last_activity)
+      VALUES (?, ?) `
+      , [session.id, timestamp]) }
+
 
     return NextResponse.json({
       success: true,
@@ -65,7 +83,7 @@ export async function POST(request: Request) {
         content: content || "",
         imageUrl: imageUrl || null,
         isRead: false,
-        timestamp: new Date().toISOString(),
+        timestamp, // dokładnie ten sam co w bazie
       },
     })
   } catch (error) {

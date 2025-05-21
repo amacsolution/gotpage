@@ -57,21 +57,21 @@ export async function GET(request: Request) {
     // Dodanie sortowania
     switch (sortBy) {
       case "name_asc":
-        sql += " ORDER BY u.name ASC"
-        break
+      sql += " ORDER BY u.name ASC, RAND()"
+      break
       case "name_desc":
-        sql += " ORDER BY u.name DESC"
-        break
+      sql += " ORDER BY u.name DESC, RAND()"
+      break
       case "newest":
-        sql += " ORDER BY u.created_at DESC"
-        break
+      sql += " ORDER BY u.created_at DESC, RAND()"
+      break
       case "popular":
-        sql += " ORDER BY reviewCount DESC"
-        break
+      sql += " ORDER BY reviewCount DESC, RAND()"
+      break
       case "rating":
       default:
-        sql += " ORDER BY rating DESC, reviewCount DESC"
-        break
+      sql += " ORDER BY rating DESC, reviewCount DESC, RAND()"
+      break
     }
 
     sql += " LIMIT ? OFFSET ?"

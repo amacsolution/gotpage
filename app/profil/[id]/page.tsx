@@ -138,8 +138,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       try {
         setIsLoading(true)
         setError(null)
-
-        console.log(`Fetching user profile for ID: ${id}`)
         const response = await fetch(`/api/users/${id}`)
 
         if (!response.ok) {
@@ -155,7 +153,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           throw new Error(data.error)
         }
 
-        console.log("User data received:", data)
         setIsFollowing(data.isFollowing)
         setUser(data)
       } catch (error) {

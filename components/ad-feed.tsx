@@ -41,9 +41,6 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       setIsLoading(true)
 
       // Budowanie URL zapytania
-      console.log('userId:', userId);
-      console.log('pageNum:', pageNum);
-      console.log('sort:', sort);
       
       let url;
       if (isUserProfile && userId) {
@@ -51,8 +48,6 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       } else {
         url = `/api/ads?page=${pageNum || 1}&limit=12&sortBy=${sort || 'desc'}`;
       }
-      
-      console.log('Generated URL:', url);
 
       // Dodanie parametrów filtrowania
       if (!isUserProfile) {

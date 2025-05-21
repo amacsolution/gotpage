@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef, useCallback } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, useRef, useCallback, use } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { v4 as uuidv4 } from "uuid"
 import { MessagesLayout, type Conversation, type Message } from "@/components/chat/messages-layout"
 import { useMediaQuery } from "@/hooks/use-media-query"
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { PageLayout } from "@/components/page-layout"
 
-export default function MessagesPage() {
+export default function MessagesPage({params}: { params: { c: string } }) {
   // Stan komponentu
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [searchQuery, setSearchQuery] = useState("")
@@ -39,6 +39,9 @@ export default function MessagesPage() {
   // Hooki
   const router = useRouter()
   const isMobile = useMediaQuery("(max-width: 768px)")
+
+  const searchParams = useSearchParams()
+
 
   // Pobierz dane o zalogowanym użytkowniku
   useEffect(() => {
@@ -101,9 +104,11 @@ export default function MessagesPage() {
     // Funkcja do pobierania nowych wiadomości
     const pollNewMessages = async () => {
       try {
-        const url = `/api/messages/conversations/${activeConversation}/new${
+        const url = `/api/messages/conversations/${activeConversation}${
           lastMessageTimestampRef.current ? `?after=${encodeURIComponent(lastMessageTimestampRef.current)}` : ""
         }`
+
+        console.log(lastMessageTimestampRef)
 
         const response = await fetch(url)
         if (!response.ok) return
@@ -116,6 +121,7 @@ export default function MessagesPage() {
 
           // Aktualizuj timestamp ostatniej wiadomości
           const lastMessage = data.messages[data.messages.length - 1]
+          console.log("Last message:", lastMessage)
           lastMessageTimestampRef.current = lastMessage.timestamp
 
           // Jeśli są nowe wiadomości od innych użytkowników, oznacz je jako przeczytane
@@ -135,7 +141,7 @@ export default function MessagesPage() {
     }
 
     // Ustaw interwał pollingu
-    pollingIntervalRef.current = setInterval(pollNewMessages, 3000) // Poll co 3 sekundy
+    pollingIntervalRef.current = setInterval(pollNewMessages, 5000) // Poll co 5s
 
     // Wykonaj pierwsze zapytanie od razu
     pollNewMessages()
@@ -164,7 +170,7 @@ export default function MessagesPage() {
             console.error("Error marking as read:", error),
           )
         }
-
+ 
         // Odśwież listę konwersacji
         fetchConversations()
       } else {
@@ -321,14 +327,12 @@ export default function MessagesPage() {
         body: JSON.stringify({ userId }),
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        setActiveConversation(data.conversationId)
-        setIsSearching(false)
-
-        // Odśwież listę konwersacji
-        fetchConversations()
-      }
+if (response.ok) {
+  const data = await response.json()
+  setActiveConversation(data.conversationId)
+  setIsSearching(false)
+  fetchConversations()
+}
     } catch (error) {
       console.error("Error creating conversation:", error)
     }
@@ -396,9 +400,6 @@ export default function MessagesPage() {
       formData.append("file", file)
       formData.append("conversationId", activeConversation)
 
-      console.log("Uploading file:", file.name, file.type, file.size)
-      console.log("To conversation:", activeConversation)
-
       // Wyślij plik na serwer - używamy endpointu /api/messages/upload
       const uploadResponse = await fetch("/api/messages/upload", {
         method: "POST",
@@ -412,7 +413,6 @@ export default function MessagesPage() {
       }
 
       const uploadData = await uploadResponse.json()
-      console.log("Upload successful:", uploadData)
 
       // Utwórz wiadomość z obrazem
       const messageId = uuidv4()
@@ -495,7 +495,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="h-screen bg-background">
+    <div className="h-screen py-2 px-1 bg-background">
       <MessagesLayout
         conversations={conversations}
         messages={messages}
