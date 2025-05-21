@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef, useCallback, use } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { v4 as uuidv4 } from "uuid"
 import { MessagesLayout, type Conversation, type Message } from "@/components/chat/messages-layout"
 import { useMediaQuery } from "@/hooks/use-media-query"
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { PageLayout } from "@/components/page-layout"
 
-export default function MessagesPage({params}: { params: { c: string } }) {
+export default function MessagesPage() {
   // Stan komponentu
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [searchQuery, setSearchQuery] = useState("")
@@ -39,8 +39,6 @@ export default function MessagesPage({params}: { params: { c: string } }) {
   // Hooki
   const router = useRouter()
   const isMobile = useMediaQuery("(max-width: 768px)")
-
-  const searchParams = useSearchParams()
 
 
   // Pobierz dane o zalogowanym użytkowniku
