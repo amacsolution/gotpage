@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,7 @@ import { MessageSquare, User, Star, AlertCircle, Locate, MapPin, Newspaper } fro
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
 import { FollowButton } from "@/components/follow-button"
+import { UserData } from "@/app/api/profile/route"
 
 interface UserProfile {
   id: number
@@ -23,10 +24,34 @@ interface UserProfile {
 
 export function UserProfiles() {
   const [users, setUsers] = useState<UserProfile[]>([])
+  const [userId, setUser] = useState<UserData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
   const router = useRouter()
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("/api/auth/me", {
+          method: "GET"
+        })
+
+        if (!response.ok) {
+          throw new Error(`Error fetching user: ${response.status}`)
+          setUser(null)
+        }
+
+        const data = await response.json()
+        console.log("Fetched user data:", data)
+        setUser(data)
+      } catch (err) {
+        console.error("Error fetching user:", err)
+      }
+    }
+
+    fetchUser()
+  })
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -197,7 +222,7 @@ export function UserProfiles() {
               </div>
             )}
 
-            <div className="flex gap-2 my-2 px-5">
+            {userId != null && (<div className="flex gap-2 my-2 px-5">
               <FollowButton
                 userId={user.id}
                 isFollowing={user.isFollowing}
@@ -210,7 +235,7 @@ export function UserProfiles() {
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Wiadomość
               </Button>
-            </div>
+            </div>)}
           </div>
           <Link
             href={`/profil/${user.id}`}

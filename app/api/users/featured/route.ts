@@ -9,7 +9,7 @@ export async function GET() {
     const userId = session?.id
 
     // Fetch featured users (users with most ads or highest ratings)
-    const featuredUsersQuery = `
+    let featuredUsersQuery = `
       SELECT 
         u.id, 
         u.name, 
@@ -33,12 +33,25 @@ export async function GET() {
         (SELECT AVG(rating) FROM reviews WHERE user_id = u.id) as rating,
         (SELECT COUNT(*) FROM user_follows WHERE target_id = u.id) as followerCount
       FROM users u 
-      WHERE u.id != ? AND u.avatar != '/placeholder-profile.svg?height=100&width=100'
-      ORDER BY adCount DESC, rating , RAND() DESC
-      LIMIT 8
     `
+    let featuredUsers
 
-    const featuredUsers = await query(featuredUsersQuery, [userId]) as UserData[]
+    if (userId) {
+      featuredUsersQuery += `
+        WHERE u.id != ? AND u.avatar != '/placeholder-profile.svg?height=100&width=100'
+        ORDER BY adCount DESC, rating , RAND() DESC
+        LIMIT 8
+      `
+    featuredUsers = await query(featuredUsersQuery, [userId]) as UserData[]
+    } else {
+      featuredUsersQuery += `
+        WHERE u.avatar != '/placeholder-profile.svg?height=100&width=100'
+        ORDER BY adCount DESC, rating , RAND() DESC
+        LIMIT 8
+      `
+      featuredUsers = await query(featuredUsersQuery) as UserData[]
+    }
+
 
     // If user is logged in, check which users they are following
     if (userId) {
