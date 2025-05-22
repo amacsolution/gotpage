@@ -41,6 +41,7 @@ scp -i $sshKeyPath -P $remotePort -r `
   app `
   lib `
   emails `
+  hooks `
   components `
   middleware.ts `
   next.config.mjs `
@@ -57,7 +58,7 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "Pliki przeslane pomyslnie. Instalowanie zaleznosci i restart aplikacji..." -ForegroundColor Green
 
-ssh -i $sshKeyPath -p 222 "$remoteUser@$remoteDomain" "cd $remotePath; npm install; pm2 kill pm2 start ecosystem.config.js"
+ssh -i $sshKeyPath -p 222 "$remoteUser@$remoteDomain" "cd $remotePath; npm install; pm2 kill; pm2 start ecosystem.config.js"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Instalacja zaleznosci lub restart aplikacji nie powiodly sie!" -ForegroundColor Red
