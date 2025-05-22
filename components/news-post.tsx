@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { formatDistanceToNow } from "date-fns"
@@ -125,9 +125,26 @@ export function NewsPost({ post }: NewsPostProps) {
   const [isAuthor, setIsAuthor] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const router = useRouter()
+  const [loggedUser, setLogged] = useState(user)
 
   // Przygotuj tablicę zdjęć - jeśli jest imageUrls, użyj jej, w przeciwnym razie użyj pojedynczego imageUrl
   const images = post.imageUrls || (post.imageUrl ? [post.imageUrl] : [])
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("/api/auth/me")
+        if (!response.ok) {
+          return
+        }
+        const data = await response.json()
+        setLogged(data.user)
+      } catch (error) {
+        console.error("Error fetching user:", error)
+      }
+    }
+  fetchUser()
+  })
 
   const handleLike = async () => {
     try {
@@ -339,7 +356,7 @@ export function NewsPost({ post }: NewsPostProps) {
                 })}
               </div>
             </div>
-            {post.author.id !== user?.id && (
+            {post.author.id !== user?.id && loggedUser && (
               <FollowButton
                 userId={post.author.id}
                 isFollowing={post.author.type === "following" ? true : false}

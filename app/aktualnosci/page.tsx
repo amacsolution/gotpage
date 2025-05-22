@@ -74,6 +74,36 @@ export default function NewsPage() {
   const { user } = useUser()
   const [activeTab, setActiveTab] = useState<"all" | "followed">("all")
 
+  const [featuredCompanies, setFeaturedCompanies] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true)
+
+      try {
+        
+        // Fetch featured companies
+        const res = await fetch("/api/companies?promoted=true&limit=4")
+        if (res.ok) {
+          const featuredData = await res.json()
+          setFeaturedCompanies(featuredData.companies || [])
+        } else {
+          throw new Error("Nie udało się pobrać firm")
+        }
+
+      } catch (error) {
+        toast({
+          title: "Błąd",
+          description: "Nie udało się pobrać danych. Spróbuj ponownie później.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [toast])
   const fetchPosts = async (pageNum: number, followedOnly = false) => {
     try {
       setIsLoading(true)
