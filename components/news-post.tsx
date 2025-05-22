@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/dialog"
 import { FollowButton } from "./follow-button"
 import { ImageGrid } from "./image-grid"
+import { cookies } from "next/headers"
 
 export interface NewsPostProps {
   post: {
@@ -133,7 +134,7 @@ export function NewsPost({ post }: NewsPostProps) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch("/api/auth/me")
+        const response = await localStorage.get("userData")
         if (!response.ok) {
           return
         }

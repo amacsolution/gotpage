@@ -35,10 +35,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch("/api/auth/me")
-        const data = await res.json()
+        const res = await localStorage.getItem("userData")
+        const data = res ? JSON.parse(res) : null
 
-        if (res.ok && data.authenticated) {
+        if (res && data.authenticated) {
           setUser(data.user)
           setIsAuthenticated(true)
         } else {

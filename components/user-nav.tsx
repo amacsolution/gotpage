@@ -34,14 +34,15 @@ export function UserNav() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch("/api/auth/me")
+        const response = await localStorage.getItem("userData")
 
-        if (!response.ok) {
+        if (!response) {
           setUser(null)
           return
         }
 
-        const userData = await response.json()
+        const userData = JSON.parse(response)
+        console.log("Fetched user data:", userData)
         setUser(userData)
       } catch (error) {
         setUser(null)

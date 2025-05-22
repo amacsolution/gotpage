@@ -33,17 +33,14 @@ export function UserProfiles() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch("/api/auth/me", {
-          method: "GET"
-        })
+        const response = await localStorage.getItem("userData")
 
-        if (!response.ok) {
-          throw new Error(`Error fetching user: ${response.status}`)
+        if (!response) {
           setUser(null)
+          return
         }
 
-        const data = await response.json()
-        console.log("Fetched user data:", data)
+        const data = JSON.parse(response)
         setUser(data)
       } catch (err) {
         console.error("Error fetching user:", err)
