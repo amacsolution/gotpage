@@ -2,10 +2,8 @@ import type { Metadata, ResolvingMetadata } from "next"
 import AdDetailsClient from "./ads-detailed"
 
 // Generowanie dynamicznych metadanych dla pojedynczego ogłoszenia
-export async function generateMetadata(
-  { params }: { params: { id: string } },
-  parent: ResolvingMetadata,
-): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ id: string }> }, parent: ResolvingMetadata): Promise<Metadata> {
+  const params = await props.params;
   let ad = null
   const { id } = params
 
