@@ -1,18 +1,18 @@
 "use client"
 
-import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Star, MapPin, Phone, Mail, Shield, Clock, Building, ExternalLink, ShieldCheck } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
+import { Building, Clock, ExternalLink, Mail, MapPin, Phone, ShieldCheck, Star } from "lucide-react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 export interface CompanyCardProps {
   company: {
     id: number
     name: string
-    avatar: string | null
+    avatar?: string
     logo: string | null
     description: string
     phone: string
@@ -31,7 +31,12 @@ export function CompanyCard({ company, featured = false }: CompanyCardProps) {
   const handleMessage = async (userId: number) => {
     try {
       // Check if user is logged in
-      const currentUser = localStorage.getItem("userData")
+      const getUserData = async () => {
+        const userData = await fetch("/api/auth/me").then((res) => res.json()) 
+        return userData
+      }
+
+      const currentUser = await getUserData()
       if (!currentUser) {
         toast({
           title: "Wymagane logowanie",

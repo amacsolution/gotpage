@@ -1,14 +1,14 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
+import { UserData } from "@/app/api/profile/route"
+import { FollowButton } from "@/components/follow-button"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/components/ui/use-toast"
+import { AlertCircle, MapPin, MessageSquare, Newspaper, Star, User } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { MessageSquare, User, Star, AlertCircle, Locate, MapPin, Newspaper } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
-import { FollowButton } from "@/components/follow-button"
-import { UserData } from "@/app/api/profile/route"
+import { useEffect, useState } from "react"
 
 interface UserProfile {
   id: number
@@ -30,25 +30,31 @@ export function UserProfiles() {
   const { toast } = useToast()
   const router = useRouter()
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await localStorage.getItem("userData")
-
-        if (!response) {
-          setUser(null)
-          return
-        }
-
-        const data = JSON.parse(response)
-        setUser(data)
-      } catch (err) {
-        console.error("Error fetching user:", err)
-      }
+  const getUserData = async () => {
+    try {
+      const res = await fetch("/api/auth/me")
+      if (!res.ok) return null
+      return await res.json()
+    } catch {
+      return null
     }
+  }
 
-    fetchUser()
-  })
+  useEffect(() => {
+    let isMounted = true
+
+
+
+    getUserData().then((response) => {
+      if (isMounted) {
+        setUser(response)
+      }
+    })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -101,7 +107,7 @@ export function UserProfiles() {
   const handleMessage = async (userId: number) => {
     try {
       // Check if user is logged in
-      const currentUser = localStorage.getItem("userData")
+      const currentUser = getUserData()
       if (!currentUser) {
         toast({
           title: "Wymagane logowanie",
@@ -181,17 +187,17 @@ export function UserProfiles() {
         >
           <div>
             <div className="relative w-full aspect-square overflow-hidden">
-                <Image
-                  src={user.avatar || "/placeholder.svg"}
-                  alt={user.name}
-                  fill
-                  className="object-cover"
-                  itemProp="image"
-                />
-              </div>
+              <Image
+                src={user.avatar || "/placeholder.svg"}
+                alt={user.name}
+                fill
+                className="object-cover"
+                itemProp="image"
+              />
+            </div>
             <div className="flex items-center gap-4">
-              
-              <div  className="p-6">
+
+              <div className="p-6">
                 <h3 className="font-bold text-lg" itemProp="name">
                   {user.name}
                 </h3>
@@ -206,7 +212,7 @@ export function UserProfiles() {
                   </span>
                   <span className="mx-2 text-muted-foreground">•</span>
                   <span className="text-sm text-muted-foreground inline-flex" itemProp="address">
-                    <MapPin className="h-4 w-4 mr-1"/>{user.location}
+                    <MapPin className="h-4 w-4 mr-1" />{user.location}
                   </span>
                 </div>
               </div>

@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server"
-import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
+import { query } from "@/lib/db"
+import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
@@ -53,9 +53,9 @@ export async function POST(request: Request) {
       [messageId, timestamp, conversationId],
     )
 
-    const activity = await query(`select * from user_sessions where user_id = ?`, [recipientId]) as { id : number, user_id: string, last_activity: string }[]
+    const activity = await query(`select * from user_sessions where user_id = ?`, [recipientId]) as { id: number, user_id: string, last_activity: string }[]
 
-    if (activity.length > 0) {
+    if (activity != null) {
       // Użytkownik jest aktywny, więc aktualizujemy jego ostatnią aktywność
       query(
         `
@@ -67,10 +67,11 @@ export async function POST(request: Request) {
       )
     } else {
       query(
-      `
+        `
       INSERT INTO user_sessions (user_id, last_activity)
       VALUES (?, ?) `
-      , [session.id, timestamp]) }
+        , [session.id, timestamp])
+    }
 
 
     return NextResponse.json({

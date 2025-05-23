@@ -1,9 +1,7 @@
-import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { auth, authOptions } from "@/lib/auth"
+import { auth } from "@/lib/auth"
 import { query } from "@/lib/db"
+import { NextResponse } from "next/server"
 import { v4 as uuidv4 } from "uuid"
-import { Search } from "lucide-react"
 
 export async function POST(request: Request) {
   try {

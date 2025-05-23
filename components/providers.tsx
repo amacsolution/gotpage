@@ -2,9 +2,8 @@
 
 import type React from "react"
 
-import { SessionProvider } from "next-auth/react"
 import { ThemeProvider } from "next-themes"
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Unikamy błędów hydratacji przez renderowanie dzieci tylko po stronie klienta
@@ -21,10 +20,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <SessionProvider refetchInterval={0} refetchOnWindowFocus={false}>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
         {children}
       </ThemeProvider>
-    </SessionProvider>
   )
 }

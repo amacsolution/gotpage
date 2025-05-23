@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { auth, authOptions } from "@/lib/auth"
+import { auth } from "@/lib/auth"
 import { query } from "@/lib/db"
+import { NextResponse } from "next/server"
 
 export async function GET() {
   try {

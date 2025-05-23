@@ -1,11 +1,10 @@
-import { cookies } from "next/headers"
-import jwt from "jsonwebtoken"
+import { UserData } from "@/app/api/profile/route"
 import { query } from "@/lib/db"
+import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import bcrypt from "bcryptjs"
-import { db } from "./db"
-import { UserData } from "@/app/api/profile/route"
+import { cookies } from "next/headers"
 
 export interface User {
   id: string
@@ -70,7 +69,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          const [users] = await db.query("SELECT * FROM users WHERE email = ?", [credentials.email]) as UserData[]
+          const users = await query("SELECT * FROM users WHERE email = ?", [credentials.email]) as UserData[]
 
           if (!users || users.length === 0) {
             return null
@@ -85,7 +84,7 @@ export const authOptions: NextAuthOptions = {
 
           return {
             id: user.id.toString(),
-            name: user.username,
+            name: user.name,
             email: user.email,
             role: user.role,
             image: user.avatar 
@@ -126,7 +125,7 @@ export const authOptions: NextAuthOptions = {
 // Funkcja pomocnicza do sprawdzania, czy użytkownik jest administratorem
 export async function isAdmin(userId: string) {
   try {
-    const [users] = await db.query("SELECT role FROM users WHERE id = ?", [userId]) as UserData[]
+    const users = await query("SELECT role FROM users WHERE id = ?", [userId]) as UserData[]
 
     if (!users || users.length === 0) {
       return false

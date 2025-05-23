@@ -1,45 +1,45 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { AdFeed } from "@/components/ad-feed"
+import { CompanyCard } from "@/components/company-card"
+import { FollowButton } from "@/components/follow-button"
+import { FollowStats } from "@/components/follow-stats"
+import { NewsPost } from "@/components/news-post"
+import { PageLayout } from "@/components/page-layout"
+import { PhotoGallery } from "@/components/photo-gallery"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
-import { PageLayout } from "@/components/page-layout"
-import { AdFeed } from "@/components/ad-feed"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { UserReviews } from "@/components/user-reviews"
+import { useToast } from "@/hooks/use-toast"
 import {
-  Star,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Building,
-  User,
-  Globe,
+  AlarmClock,
   Book,
   BookUser,
   Briefcase,
-  Loader2,
-  ShieldCheck,
-  AlarmClock,
+  Building,
+  Calendar,
   Facebook,
+  Globe,
+  ImageIcon,
   Instagram,
   Linkedin,
+  Loader2,
+  Mail,
+  MapPin,
   Music2,
+  Phone,
+  ShieldCheck,
+  Star,
+  User,
   Wrench,
-  ImageIcon,
 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { UserReviews } from "@/components/user-reviews"
-import { CompanyCard } from "@/components/company-card"
-import { NewsPost } from "@/components/news-post"
-import { FollowButton } from "@/components/follow-button"
-import { FollowStats } from "@/components/follow-stats"
-import { PhotoGallery } from "@/components/photo-gallery"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { use, useEffect, useState } from "react"
 
 // Komponent szkieletu ładowania
 function ProfileSkeleton() {
@@ -268,19 +268,18 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     <PageLayout>
       <div className="container py-6">
         <div
-          className={`relative profile-background h-40 w-full rounded-xl mb-16 ${
-            user.background_img ? "bg-cover bg-center" : ""
-          }`}
+          className={`relative profile-background h-40 w-full rounded-xl mb-16 ${user.backgroundImage ? "bg-cover bg-center" : ""
+            }`}
           style={
-            user.background_img
+            user.backgroundImage
               ? {
-                  backgroundImage: `url(${user.background_img})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }
+                backgroundImage: `url(${user.backgroundImage})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }
               : {
-                  background: "linear-gradient(135deg, #e5308a 0%, #7c2ae8 100%)",
-                }
+                background: "linear-gradient(135deg, #e5308a 0%, #7c2ae8 100%)",
+              }
           }
         >
           <div className="absolute -bottom-12 left-6">
@@ -707,7 +706,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                                 <p className="text-sm font-medium mt-1 ">
                                                   <span className="text-muted-foreground">Cena:</span>
                                                   {service.price.includes("zł") ||
-                                                  service.price.toLowerCase().includes("pln")
+                                                    service.price.toLowerCase().includes("pln")
                                                     ? service.price
                                                     : ` ${service.price} zł`}
                                                 </p>

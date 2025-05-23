@@ -1,14 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { db } from "@/lib/db"
+import { auth, authOptions } from "@/lib/auth"
+import { db, query } from "@/lib/db"
 
 export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
 
-    if (!session?.user || session.user.role !== "admin") {
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -20,7 +19,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     }
 
     // Update report status
-    await db.query("UPDATE reports SET status = ? WHERE id = ?", [status, reportId])
+    await query("UPDATE reports SET status = ? WHERE id = ?", [status, reportId])
 
     return NextResponse.json({ success: true })
   } catch (error) {
@@ -32,16 +31,16 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
 export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
 
-    if (!session?.user || session.user.role !== "admin") {
+    if (!session ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const reportId = params.id
 
     // Get report details to determine what to delete
-    const [reports] = await db.query("SELECT reported_type, reported_id FROM reports WHERE id = ?", [reportId])
+    const reports = await query("SELECT reported_type, reported_id FROM reports WHERE id = ?", [reportId]) as { reported_type: string, reported_id: string }[]
 
     if (reports.length === 0) {
       return NextResponse.json({ error: "Report not found" }, { status: 404 })
@@ -51,15 +50,15 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
 
     // Delete the reported item
     if (report.reported_type === "ad") {
-      await db.query("DELETE FROM ads WHERE id = ?", [report.reported_id])
+      await query("DELETE FROM ads WHERE id = ?", [report.reported_id])
     } else if (report.reported_type === "comment") {
-      await db.query("DELETE FROM comments WHERE id = ?", [report.reported_id])
+      await query("DELETE FROM comments WHERE id = ?", [report.reported_id])
     } else if (report.reported_type === "user") {
-      await db.query("DELETE FROM users WHERE id = ?", [report.reported_id])
+      await query("DELETE FROM users WHERE id = ?", [report.reported_id])
     }
 
     // Update report status
-    await db.query("UPDATE reports SET status = ? WHERE id = ?", ["resolved", reportId])
+    await query("UPDATE reports SET status = ? WHERE id = ?", ["resolved", reportId])
 
     return NextResponse.json({ success: true })
   } catch (error) {

@@ -102,6 +102,7 @@
     "@types/socket.io": "^3.0.1",
     "@types/socket.io-client": "^1.4.36",
     "autoprefixer": "^10.4.21",
+    "biome": "^0.3.3",
     "mini-css-extract-plugin": "^2.9.2",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",

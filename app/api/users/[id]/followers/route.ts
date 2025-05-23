@@ -1,7 +1,6 @@
+import { auth } from "@/lib/auth"
+import { query } from "@/lib/db"
 import { type NextRequest, NextResponse } from "next/server"
-import { db, query } from "@/lib/db"
-import { getServerSession } from "next-auth"
-import { auth, authOptions } from "@/lib/auth"
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {    

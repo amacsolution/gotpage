@@ -1,13 +1,13 @@
+import { auth } from "@/lib/auth"
+import { query } from "@/lib/db"
 import { type NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { db } from "@/lib/db"
+import { AdData } from "../ads/route"
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
 
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -25,13 +25,13 @@ export async function POST(req: NextRequest) {
     // Check if the reported item exists
     let exists = false
     if (reportedType === "ad") {
-      const [ad] = await db.query("SELECT id FROM ads WHERE id = ?", [reportedId])
+      const ad = await query("SELECT id FROM ads WHERE id = ?", [reportedId]) as AdData[]
       exists = ad.length > 0
     } else if (reportedType === "comment") {
-      const [comment] = await db.query("SELECT id FROM comments WHERE id = ?", [reportedId])
+      const comment = await query("SELECT id FROM comments WHERE id = ?", [reportedId]) as Comment[]
       exists = comment.length > 0
     } else if (reportedType === "user") {
-      const [user] = await db.query("SELECT id FROM users WHERE id = ?", [reportedId])
+      const user = await query("SELECT id FROM users WHERE id = ?", [reportedId]) as { id: string }[]
       exists = user.length > 0
     }
 
@@ -40,12 +40,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Insert report
-    const [result] = await db.query(
+    const result = await query(
       "INSERT INTO reports (reporter_id, reported_type, reported_id, reason) VALUES (?, ?, ?, ?)",
-      [session.user.id, reportedType, reportedId, reason],
-    )
+      [session.id, reportedType, reportedId, reason],
+    ) as { insertId: string }[]
 
-    return NextResponse.json({ success: true, reportId: result.insertId })
+    return NextResponse.json({ success: true, reportId: result[0].insertId })
   } catch (error) {
     console.error("Error creating report:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -54,9 +54,9 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
 
-    if (!session?.user || session.user.role !== "admin") {
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
     const limit = Number.parseInt(searchParams.get("limit") || "10")
     const offset = (page - 1) * limit
 
-    let query = `
+    let sqlquery = `
       SELECT r.*, 
              u1.username as reporter_username,
              u1.email as reporter_email
@@ -79,19 +79,19 @@ export async function GET(req: NextRequest) {
     const queryParams: any[] = []
 
     if (status !== "all") {
-      query += " AND r.status = ?"
+      sqlquery += " AND r.status = ?"
       queryParams.push(status)
     }
 
     if (type !== "all") {
-      query += " AND r.reported_type = ?"
+      sqlquery += " AND r.reported_type = ?"
       queryParams.push(type)
     }
 
-    query += " ORDER BY r.created_at DESC LIMIT ? OFFSET ?"
+    sqlquery += " ORDER BY r.created_at DESC LIMIT ? OFFSET ?"
     queryParams.push(limit, offset)
 
-    const [reports] = await db.query(query, queryParams)
+    const reports = await query(sqlquery, queryParams)
 
     // Get count for pagination
     let countQuery = "SELECT COUNT(*) as total FROM reports WHERE 1=1"
@@ -107,7 +107,7 @@ export async function GET(req: NextRequest) {
       countParams.push(type)
     }
 
-    const [countResult] = await db.query(countQuery, countParams)
+    const countResult = await query(countQuery, countParams) as { total: number }[]
     const total = countResult[0].total
 
     return NextResponse.json({

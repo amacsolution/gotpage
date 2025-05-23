@@ -7,7 +7,6 @@ import GoogleTagManager from "@/components/google-tag-manager" // Dodany import
 import "./globals.css"
 import { UserProvider } from "@/lib/user-context"
 import { initUploadsFolder } from "@/lib/init-upload"
-import { SessionProvider } from "next-auth/react"
 import { Providers } from "@/components/providers"
 
 

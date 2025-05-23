@@ -1,10 +1,8 @@
-import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
-import { v4 as uuidv4 } from "uuid"
-import path from "path"
-import { mkdir, writeFile } from "fs/promises"
 import { auth } from "@/lib/auth"
+import { mkdir, writeFile } from "fs/promises"
+import { NextResponse } from "next/server"
+import path from "path"
+import { v4 as uuidv4 } from "uuid"
 
 export async function POST(request: Request) {
   try {

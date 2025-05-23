@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
+import { UserData } from "@/app/api/profile/route"
 
 interface AdCardProps {
   ad: {
@@ -38,7 +39,7 @@ interface AdCardProps {
     createdAt: Date
     promoted: boolean
     author: {
-      id: number
+      id: string
       name: string
       avatar: string
       type: string
@@ -70,16 +71,21 @@ export function AdCard({ ad, image}: AdCardProps) {
 
   // Sprawdzenie, czy zalogowany użytkownik jest autorem ogłoszenia
   useEffect(() => {
-    try {
-      const userData = localStorage.getItem("userData")
-      if (userData) {
-        const user = JSON.parse(userData)
-
-        setIsAuthor(user.id === ad.author.id)
-      }
-    } catch (error) {
+    const getUserData = async () => {
+      const userData = await fetch("/api/auth/me").then((res) => res.json()) 
+      return userData
     }
+    const checkAuthor = async () => {
+      try {
+        const user = await getUserData()
+        setIsAuthor(user.id === ad.author.id)
+      } catch (error) {
+      }
+    }
+    checkAuthor()
   }, [ad.author.id])
+
+
 
   // Funkcje obsługujące przyciski
   const handleEditClick = (e: React.MouseEvent) => {
@@ -169,7 +175,7 @@ export function AdCard({ ad, image}: AdCardProps) {
                     </h3>
 
                     {/* Oceny w stylu Amazona */}
-                    <div className="flex items-center gap-1">
+                     <div className="flex items-center gap-1">
                       <div className="flex text-yellow-500">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <Star

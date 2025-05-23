@@ -3,7 +3,6 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import {
   Dialog,
@@ -29,8 +28,10 @@ export function ReportDialog({ reportedType, reportedId, trigger }: ReportDialog
   const [reason, setReason] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
-  const { data: session } = useSession()
   const router = useRouter()
+
+  const session = localStorage.getItem("userData")
+  const parsedSession = session ? JSON.parse(session) : null
 
   const handleSubmit = async () => {
     if (!session) {

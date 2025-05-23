@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server"
-import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
-import { User } from "next-auth"
+import { query } from "@/lib/db"
+import { NextResponse } from "next/server"
 
 interface Promotion {
   id: number
