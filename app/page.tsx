@@ -1,25 +1,25 @@
-import { AdFeed } from "@/components/ad-feed"
-import CompaniesFeedLimit from "@/components/companies-feed"
-import { HeroAnimation } from "@/components/hero-animations"
-import { PageLayout } from "@/components/page-layout"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { UserProfiles } from "@/components/user-profiles"
-import { SiteConfig } from "@/config/site"
+import { AdFeed } from "@/components/ad-feed"
+import { PageLayout } from "@/components/page-layout"
+import { HeroAnimation } from "@/components/hero-animations"
 import {
-  ArrowRight,
-  Briefcase,
+  MapPin,
   Building,
   Car,
   HomeIcon,
-  MapPin,
-  Rocket,
-  Scissors,
-  ShoppingBag,
   Smartphone,
+  Briefcase,
+  ShoppingBag,
+  Scissors,
+  ArrowRight,
+  Rocket,
 } from "lucide-react"
 import type { Metadata } from "next"
-import Link from "next/link"
+import CompaniesFeedLimit from "@/components/companies-feed"
+import { UserProfiles } from "@/components/user-profiles"
 import { Suspense } from "react"
+import { SiteConfig } from "@/config/site"
 
 // Dodajemy metadane dla SEO
 export const metadata: Metadata = {
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     title: `${SiteConfig.name} - Nowoczesna platforma ogłoszeniowa`,
     description:
       "Publikuj i przeglądaj ogłoszenia w nowoczesnym stylu. Znajdź to, czego szukasz lub sprzedaj to, co chcesz.",
-    images: [`${SiteConfig.url}/logo.jpg`],
+    images: [`${SiteConfig.url}/twitter-image.jpg`],
     creator: "@gotpage",
   },
   robots: {
@@ -293,15 +293,15 @@ export default function HomePage() {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
-                <div className="text-4xl font-bold mb-2">36K+</div>
+                <div className="text-4xl font-bold mb-2">50K+</div>
                 <p>Aktywnych ogłoszeń</p>
               </div>
               <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
-                <div className="text-4xl font-bold mb-2">12K+</div>
+                <div className="text-4xl font-bold mb-2">15K+</div>
                 <p>Zarejestrowanych użytkowników</p>
               </div>
               <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
-                <div className="text-4xl font-bold mb-2">2K+</div>
+                <div className="text-4xl font-bold mb-2">5K+</div>
                 <p>Transakcji miesięcznie</p>
               </div>
             </div>
