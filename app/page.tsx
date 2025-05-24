@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     title: `${SiteConfig.name} - Nowoczesna platforma ogłoszeniowa`,
     description:
       "Publikuj i przeglądaj ogłoszenia w nowoczesnym stylu. Znajdź to, czego szukasz lub sprzedaj to, co chcesz.",
-    images: [`${SiteConfig.url}/twitter-image.jpg`],
+    images: [`${SiteConfig.url}/logo.png`],
     creator: "@gotpage",
   },
   robots: {
