@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     // Pobierz logi
     const result = await db.query(query, queryParams)
 
-    console.log("Pobrano logi emaili:", result?.rows || result)
+    console.log("Pobrano logi emaili:", result, "logów")
     // Pobierz całkowitą liczbę logów
     const countResult = await db.query(countQuery, search ? [params[0], params[1], params[2]] : []) as { rows?: { total: number }[] } 
     const total = countResult.rows && countResult.rows.length > 0 ? countResult.rows[0].total : 0

@@ -134,7 +134,7 @@ export function NewsPost({ post }: NewsPostProps) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await localStorage.get("userData")
+        const response = await fetch("/api/auth/me")
         if (!response.ok) {
           return
         }
