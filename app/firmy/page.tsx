@@ -1,19 +1,19 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
-import { PageLayout } from "@/components/page-layout"
 import { CompanyCard } from "@/components/company-card"
+import { PageLayout } from "@/components/page-layout"
 import { SearchAutocomplete } from "@/components/search-autocomplete"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
-import { Building, MapPin, Filter, Grid, MapIcon, Star, TrendingUp, Award, Loader2, ChevronRight } from "lucide-react"
+import { Award, Building, ChevronRight, Filter, Grid, Loader2, MapIcon, MapPin, Star, TrendingUp } from "lucide-react"
 import dynamic from "next/dynamic"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
 
 // Dynamically import the map component with no SSR
 const CompanyMap = dynamic(() => import("@/components/company-map"), {
@@ -266,9 +266,8 @@ export default function CompaniesPage() {
                 {businessCategories.slice(0, 6).map((cat) => (
                   <Badge
                     key={cat.id}
-                    className={`text-sm py-1.5 px-3 cursor-pointer hover:bg-white/20 ${
-                      category === cat.id ? "bg-white/30" : "bg-white/10"
-                    }`}
+                    className={`text-sm py-1.5 px-3 cursor-pointer hover:bg-white/20 text-foreground ${category === cat.id ? "bg-white/30" : "bg-white/10"
+                      }`}
                     onClick={() => handleFilterChange("category", cat.id)}
                   >
                     <span className="mr-1">{cat.icon}</span> {cat.name}
@@ -300,14 +299,14 @@ export default function CompaniesPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {isLoading
                 ? Array.from({ length: 3 }).map((_, index) => (
-                    <Skeleton key={index} className="h-48 w-full rounded-lg" />
-                  ))
+                  <Skeleton key={index} className="h-48 w-full rounded-lg" />
+                ))
                 : featuredCompanies.map((company) => (
-                    <div key={company.id} className="relative">
-                      <Badge className="absolute top-2 right-2 z-10 bg-amber-500">Wyróżniona</Badge>
-                      <CompanyCard company={company} featured={true} />
-                    </div>
-                  ))}
+                  <div key={company.id} className="relative">
+                    <Badge className="absolute top-2 right-2 z-10 bg-amber-500">Wyróżniona</Badge>
+                    <CompanyCard company={company} featured={true} />
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -407,9 +406,8 @@ export default function CompaniesPage() {
                   {businessCategories.map((cat) => (
                     <Badge
                       key={cat.id}
-                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${
-                        category === cat.id ? cat.color : "bg-muted hover:bg-muted/80"
-                      }`}
+                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${category === cat.id ? cat.color : "bg-muted hover:bg-muted/80"
+                        }`}
                       onClick={() => handleFilterChange("category", cat.id)}
                     >
                       <span>{cat.icon}</span> {cat.name}
@@ -424,9 +422,8 @@ export default function CompaniesPage() {
                   {locations.slice(0, 10).map((loc) => (
                     <Badge
                       key={loc}
-                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${
-                        location === loc ? "bg-blue-100 text-blue-800" : "bg-muted hover:bg-muted/80"
-                      }`}
+                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${location === loc ? "bg-blue-100 text-blue-800" : "bg-muted hover:bg-muted/80"
+                        }`}
                       onClick={() => handleFilterChange("location", loc)}
                     >
                       <MapPin className="h-3 w-3" /> {loc}

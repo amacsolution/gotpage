@@ -1,32 +1,39 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ShieldCheck, Bell, X, Trash2, Search, UserCheck, UserX } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/use-toast"
-import { Badge } from "@/components/ui/badge"
+import { Bell, Search, ShieldCheck, Trash2, UserCheck, UserX, X } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 export default function UsersPage() {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const { toast } = useToast()
-  const [users, setUsers] = useState([])
+  type User = {
+    id: number
+    name: string
+    email: string
+    joinedAt: string
+    verified: boolean
+  }
+  const [users, setUsers] = useState<User[]>([])
   const [selectedUser, setSelectedUser] = useState<null | {
     id: number
     name: string
@@ -67,9 +74,10 @@ export default function UsersPage() {
       try {
         const res = await fetch("/api/admin/users")
         const usersData = await res.json()
-        setUsers(usersData)
+        setUsers(Array.isArray(usersData) ? usersData : [])
       } catch (error) {
         console.error("Błąd pobierania:", error)
+        setUsers([])
       }
     }
 

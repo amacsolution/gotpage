@@ -2,18 +2,11 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
-import Link from "next/link"
-import Image from "next/legacy/image"
-import { formatDistanceToNow } from "date-fns"
-import { is, pl } from "date-fns/locale"
-import { MessageSquare, MapPin, Star, Truck, ShieldCheck, Edit, Eye, Trash2 } from "lucide-react"
+import { LikeButton } from "@/components/like-button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { LikeButton } from "@/components/like-button"
-import { useRouter, usePathname } from "next/navigation"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -23,7 +16,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { UserData } from "@/app/api/profile/route"
+import { formatDistanceToNow } from "date-fns"
+import { pl } from "date-fns/locale"
+import { Edit, Eye, MapPin, MessageSquare, ShieldCheck, Star, Trash2, Truck } from "lucide-react"
+import Image from "next/legacy/image"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
 
 interface AdCardProps {
   ad: {
@@ -37,7 +36,8 @@ interface AdCardProps {
     location?: string
     image: string
     createdAt: Date
-    promoted: boolean
+    promoted: number
+    comments_count: number
     author: {
       id: string
       name: string
@@ -51,7 +51,7 @@ interface AdCardProps {
   image?: string
 }
 
-export function AdCard({ ad, image}: AdCardProps) {
+export function AdCard({ ad, image }: AdCardProps) {
   const [isAuthor, setIsAuthor] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -72,7 +72,7 @@ export function AdCard({ ad, image}: AdCardProps) {
   // Sprawdzenie, czy zalogowany użytkownik jest autorem ogłoszenia
   useEffect(() => {
     const getUserData = async () => {
-      const userData = await fetch("/api/auth/me").then((res) => res.json()) 
+      const userData = await fetch("/api/auth/me").then((res) => res.json())
       return userData
     }
     const checkAuthor = async () => {
@@ -113,7 +113,7 @@ export function AdCard({ ad, image}: AdCardProps) {
         method: "DELETE",
       })
 
-      if (!response.ok) { 
+      if (!response.ok) {
         throw new Error("Nie udało się usunąć ogłoszenia")
       }
 
@@ -159,7 +159,7 @@ export function AdCard({ ad, image}: AdCardProps) {
                     objectFit="cover"
                     layout="fill"
                   />
-                  {ad.promoted && (
+                  {ad.promoted === 1 && (
                     <Badge variant="default" className="absolute top-2 left-2 z-10">
                       Promowane
                     </Badge>
@@ -175,7 +175,7 @@ export function AdCard({ ad, image}: AdCardProps) {
                     </h3>
 
                     {/* Oceny w stylu Amazona */}
-                     <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1">
                       <div className="flex text-yellow-500">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <Star
@@ -185,7 +185,7 @@ export function AdCard({ ad, image}: AdCardProps) {
                           />
                         ))}
                       </div>
-                      <span className="text-xs text-muted-foreground">({Math.floor(Math.random() * 100) + 5})</span>
+                      <span className="text-xs text-muted-foreground">{ad.comments_count}</span>
                     </div>
 
                     {/* Kategoria */}

@@ -2,9 +2,9 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState("")
@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
         setSuccess(true)
         // Dodaj opóźnienie przed przekierowaniem, aby użytkownik zobaczył komunikat o sukcesie
         const timeoutId = setTimeout(() => {
-          router.replace("/admin")
+          router.push("/admin")
         }, 200) // 2-second delay
 
         return () => clearTimeout(timeoutId) // Clear timeout if component unmounts
@@ -84,7 +84,7 @@ export default function AdminLoginPage() {
               <Loader2 className="inline mr-2 w-4 h-4 animate-spin" />
             )}
             {loading ? "Logowanie..." : success ? "Zalogowano!" : "Zaloguj się"}
-            
+
           </button>
         </form>
       </div>

@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server"
-import { db, query } from "@/lib/db"
+import { query } from "@/lib/db"
+import { sendWelcomeEmail } from "@/lib/email-helpers"
 import bcrypt from "bcryptjs"
 import crypto from "crypto"
-import { sendWelcomeEmail } from "@/lib/email-helpers"
+import { NextResponse } from "next/server"
 import { z } from "zod"
 
 // Schemat walidacji
@@ -199,6 +199,11 @@ export async function POST(request: Request) {
           verificationToken,
         ],
       )
+
+      console.log("Użytkownik zarejestrowany:", result)
+      console.log("token weryfikacyjny:", verificationToken)
+
+      await query('UPDATE users SET verification_token = ? WHERE id = ?', [verificationToken, id])
 
       // Jeśli to firma, dodaj dodatkowe informacje
       if (type === "business" && nip) {
