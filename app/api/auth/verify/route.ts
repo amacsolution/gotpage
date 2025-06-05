@@ -1,5 +1,7 @@
 import { query } from "@/lib/db"
+import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
+import jwt from "jsonwebtoken"
 
 export async function GET(request: Request) {
   try {
@@ -13,7 +15,7 @@ export async function GET(request: Request) {
     }
 
     // Sprawdź, czy istnieje użytkownik z tym tokenem
-    const result = await query("SELECT id,email,type FROM users WHERE verification_token = ?", [token]) as { id: string, email: string, type: string }[]
+    const result = await query("SELECT id, name, email, type,verified, verified_email, avatar  FROM users WHERE verification_token = ?", [token]) as { id: string, email: string, type: string, name: string, verified: boolean }[]
     console.log("Wynik zapytania:", result)
 
     if (!result || result.length === 0) {
@@ -37,8 +39,32 @@ export async function GET(request: Request) {
       [token],
     )
 
+    console.log("Użytkownik zweryfikowany pomyślnie:", result[0].email)
+    const user = result[0]
+    const tokenJwt = jwt.sign(
+      {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        type: user.type,
+        verified: user.verified,
+      },
+      process.env.JWT_SECRET || "default_secret",
+      { expiresIn: "7d" },
+    )
+    
+    ;(await cookies()).set({
+        name: "auth_token",
+        value: tokenJwt,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7, // 7 dni
+      })
+
     // Przekieruj użytkownika na stronę sukcesu
-    return NextResponse.redirect(new URL("/verify-success", request.url))
+    return NextResponse.json({"uzytkownik zweryfikowany": true}, { status: 200 })
   } catch (error) {
     console.error("Błąd podczas weryfikacji konta:", error)
     return NextResponse.json(

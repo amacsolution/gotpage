@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast"
 import { AdFeed } from "@/components/ad-feed"
 import { LikedAdsFeed } from "@/components/liked-ads-feed"
 import { CompanyPromotion } from "@/components/company-promotion"
-import { Star, Edit, Loader2, User, Briefcase, Building, MapPin, Globe, Wrench } from "lucide-react"
+import { Star, Edit, Loader2, User, Briefcase, Building, MapPin, Globe, Wrench, ShieldCheck } from "lucide-react"
 import { ProfileImageUpload } from "@/components/profile-image-upload"
 import { ProfileBackgroundUpload } from "@/components/profile-background-upload"
 import { UserReviews } from "@/components/user-reviews"
@@ -29,6 +29,8 @@ import { FollowStats } from "@/components/follow-stats"
 import { CompanyDataForm } from "@/components/company-data-form"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { PhotoGallery } from "@/components/photo-gallery"
+import { CompanyCard } from "@/components/company-card"
+import { FollowButton } from "@/components/follow-button"
 
 // Update the UserData interface to include the new fields
 interface UserData {
@@ -109,6 +111,8 @@ export default function ProfilePage() {
   const [isEditingCompanyData, setIsEditingCompanyData] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
+  const [similarUsers, setSimilarUsers] = useState<any[]>([])
+  const [isSimilarUsersLoading, setIsSimilarUsersLoading] = useState(true)
   const [user, setUser] = useState<UserData | null>(null)
   const [posts, setPosts] = useState<any[]>([])
   const [page, setPage] = useState(1)
@@ -169,6 +173,31 @@ export default function ProfilePage() {
       website: "",
     },
   })
+
+    useEffect(() => {
+    if (user && !isLoading) {
+      const fetchSimilarUsers = async () => {
+        try {
+          setIsSimilarUsersLoading(true)
+          const response = await fetch(`/api/users/similar?id=${user.id}&type=${user.type}`)
+          const data = await response.json()
+
+          if (data.error) {
+            throw new Error(data.error)
+          }
+
+          setSimilarUsers(data)
+        } catch (error) {
+          console.error("Błąd podczas pobierania podobnych użytkowników:", error)
+        } finally {
+          setIsSimilarUsersLoading(false)
+        }
+      }
+
+      fetchSimilarUsers()
+    }
+  }, [user, isLoading])
+
 
   // Aktualizacja wartości formularza po pobraniu danych
   useEffect(() => {
@@ -711,6 +740,76 @@ export default function ProfilePage() {
                   </div>
                 </CardContent>
               </Card>
+            )}
+
+            {/* Similar users section */}
+            {similarUsers.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3">
+                  Profile dla Ciebie
+                </h3>
+
+                {isSimilarUsersLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    {similarUsers.map((similarUser) =>
+                      similarUser.type === "business" ? (
+                        <CompanyCard key={similarUser.id} company={similarUser} />
+                      ) : (
+                        <Link href={`/profil/${similarUser.id}`} key={similarUser.id}>
+                          <Card className="hover:border-primary/50 transition-colors">
+                            <CardContent className="p-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-10 w-10">
+                                    <AvatarImage
+                                      src={similarUser.avatar || "/placeholder-user.jpg"}
+                                      alt={similarUser.name}
+                                    />
+                                    <AvatarFallback>{similarUser.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <div className="flex items-center gap-1">
+                                      <span className="font-medium text-sm">{similarUser.name}</span>
+                                      {similarUser.verified ? (
+                                        <span className="text-primary text-xs" title="Zweryfikowany">
+                                          <ShieldCheck className="h-4 w-4" />
+                                        </span>
+                                      ) : (
+                                        ""
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">{similarUser.location}</div>
+                                    {similarUser.categories && similarUser.categories.length > 0 && (
+                                      <div className="flex flex-wrap gap-1 mt-1">
+                                        {similarUser.categories.map((category: string) => (
+                                          <Badge key={category} variant="secondary" className="text-xs py-0">
+                                            {category}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <FollowButton
+                                  userId={similarUser.id}
+                                  isFollowing={similarUser.isFollowing || false}
+                                  size="sm"
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      ),
+                    )}
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
