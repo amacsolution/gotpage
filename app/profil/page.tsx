@@ -428,9 +428,9 @@ export default function ProfilePage() {
 
   return (
     <PageLayout>
-      <div className="container py-6">
+      <div className="mx-auto max-w-[1400px]">
         <div
-          className={`relative profile-background h-52 md:h-52 w-full rounded-xl mb-16 ${
+          className={`relative profile-background h-52  md:h-52 w-full mb-16 ${
             user.backgroundImage ? "bg-cover bg-center bg-no-repeat" : ""
           }`}
           style={
@@ -483,6 +483,8 @@ export default function ProfilePage() {
             </Button>
           </div>
         </div>
+        </div>
+        <div className="container pb-6">
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-1 space-y-6">
