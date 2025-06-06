@@ -1,6 +1,6 @@
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err)
-})
+// process.on('uncaughtException', (err) => {
+//   console.error('Uncaught Exception:', err)
+// })
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
