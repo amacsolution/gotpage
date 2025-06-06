@@ -266,9 +266,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   // Główny widok profilu użytkownika
   return (
     <PageLayout>
-      <div className="container py-6">
+      <div className="mx-auto max-w-[1400px]">
         <div
-          className={`relative profile-background h-40 w-full rounded-xl mb-16 ${user.backgroundImage ? "bg-cover bg-center" : ""
+          className={`relative profile-background h-52 max-w-[1400px] w-full -px-2 mb-16 ${user.backgroundImage ? "bg-cover bg-center" : ""
             }`}
           style={
             user.backgroundImage
@@ -291,6 +291,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
         </div>
+        </div>
+      
+        <div className="container pb-6">
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-1 space-y-6">
