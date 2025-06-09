@@ -1,6 +1,6 @@
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err)
-})
+// process.on('uncaughtException', (err) => {
+//   console.error('Uncaught Exception:', err)
+// })
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -38,21 +38,30 @@ const nextConfig = {
 
 // Funkcja do łączenia konfiguracji
 function mergeConfig(nextConfig, userConfig) {
-  if (!userConfig) {
+  if (!userConfig || typeof userConfig !== 'object') {
     return;
   }
 
   for (const key in userConfig) {
-    if (typeof nextConfig[key] === "object" && !Array.isArray(nextConfig[key])) {
+    const userVal = userConfig[key];
+    const baseVal = nextConfig[key];
+
+    if (
+      typeof baseVal === "object" &&
+      !Array.isArray(baseVal) &&
+      typeof userVal === "object" &&
+      !Array.isArray(userVal)
+    ) {
       nextConfig[key] = {
-        ...nextConfig[key],
-        ...userConfig[key],
+        ...baseVal,
+        ...userVal,
       };
     } else {
-      nextConfig[key] = userConfig[key];
+      nextConfig[key] = userVal;
     }
   }
 }
+
 
 // Próba importu konfiguracji użytkownika
 let userConfig = undefined;

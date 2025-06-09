@@ -175,6 +175,7 @@ export function AdCard({ ad, image }: AdCardProps) {
                     </h3>
 
                     {/* Oceny w stylu Amazona */}
+                    { ad.comments_count > 0 && (
                     <div className="flex items-center gap-1">
                       <div className="flex text-yellow-500">
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -186,7 +187,7 @@ export function AdCard({ ad, image }: AdCardProps) {
                         ))}
                       </div>
                       <span className="text-xs text-muted-foreground">{ad.comments_count}</span>
-                    </div>
+                    </div>)}
 
                     {/* Kategoria */}
                     <div className="flex flex-wrap gap-2">

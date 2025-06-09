@@ -70,7 +70,7 @@ export async function GET(request: Request) {
       break
       case "rating":
       default:
-      sql += " ORDER BY rating DESC, reviewCount DESC, RAND()"
+      sql += " ORDER BY RAND()" //rating DESC, reviewCount DESC,
       break
     }
 

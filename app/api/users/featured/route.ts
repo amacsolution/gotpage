@@ -39,16 +39,16 @@ export async function GET() {
     if (userId) {
       featuredUsersQuery += `
         WHERE u.id != ? AND u.avatar != '/placeholder-profile.svg?height=100&width=100'
-        ORDER BY adCount DESC, rating , RAND() DESC
+        ORDER BY RAND() DESC
         LIMIT 8
-      `
+      ` //NOTE: adCount DESC, rating ,
     featuredUsers = await query(featuredUsersQuery, [userId]) as UserData[]
     } else {
       featuredUsersQuery += `
         WHERE u.avatar != '/placeholder-profile.svg?height=100&width=100'
-        ORDER BY adCount DESC, rating , RAND() DESC
+        ORDER BY RAND() DESC 
         LIMIT 8
-      `
+      ` //NOTE: adCount DESC, rating ,
       featuredUsers = await query(featuredUsersQuery) as UserData[]
     }
 
