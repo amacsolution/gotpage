@@ -87,7 +87,7 @@ const categories = [
   },
   {
     id: 4,
-    name: "Moda",
+    name: "Moda - kobiety",
     subcategories: ["Ubrania", "Buty", "Dodatki", "Biżuteria", "Torebki", "Zegarki"],
     fields: [
       { name: "marka", label: "Marka", type: "text", required: false, dbField: "brand" },
@@ -106,6 +106,25 @@ const categories = [
   },
   {
     id: 5,
+    name: "Moda - mężczyźni",
+    subcategories: ["Ubrania", "Buty", "Dodatki", "Biżuteria", "Torebki", "Zegarki"],
+    fields: [
+      { name: "marka", label: "Marka", type: "text", required: false, dbField: "brand" },
+      { name: "rozmiar", label: "Rozmiar", type: "text", required: true, dbField: "size" },
+      {
+        name: "stan",
+        label: "Stan",
+        type: "select",
+        options: ["Nowy", "Używany - jak nowy", "Używany - dobry", "Używany - widoczne ślady użytkowania"],
+        required: false,
+        dbField: "condition_type",
+      },
+      { name: "kolor", label: "Kolor", type: "text", required: false, dbField: "color" },
+      { name: "material", label: "Materiał", type: "text", required: false, dbField: "material" },
+    ],
+  },
+  {
+    id: 6,
     name: "Usługi",
     subcategories: ["Remonty", "Transport", "Korepetycje", "Sprzątanie", "Ogrodnicze", "Finansowe"],
     fields: [
@@ -115,7 +134,7 @@ const categories = [
     ],
   },
   {
-    id: 6,
+    id: 7,
     name: "Praca",
     subcategories: ["Etaty", "Freelance", "Zdalna", "Dorywcza", "Sezonowa"],
     fields: [
@@ -127,7 +146,7 @@ const categories = [
     ]
   },
   {
-    id: 7,
+    id: 8,
     name: "Zwierzęta",
     subcategories: ["Psy", "Koty", "Ptaki", "Gryzonie", "Ryby", "Akcesoria"],
     fields: [
@@ -138,7 +157,7 @@ const categories = [
     ]
   },
   {
-    id: 8,
+    id: 9,
     name: "Sport i Hobby",
     subcategories: ["Rowery", "Fitness", "Wędkarstwo", "Instrumenty", "Kolekcje"],
     fields: [
@@ -148,7 +167,7 @@ const categories = [
     ]
   },
   {
-    id: 9,
+    id: 10,
     name: "Dla dzieci",
     subcategories: ["Zabawki", "Wózki", "Ubrania", "Foteliki", "Meble dziecięce"],
     fields: [
@@ -157,20 +176,22 @@ const categories = [
       { name: "kolor", label: "Kolor", type: "text", required: false, dbField: "color" }
     ]
   }
-,
-{
-  id: 10,
-  name: "Rolnictwo",
-  subcategories: ["Maszyny rolnicze", "Zwierzęta hodowlane", "Nawozy", "Zboża", "Usługi rolnicze"],
-  fields: [
-    { name: "typ", label: "Typ", type: "text", required: true, dbField: "type" },
-    { name: "rok", label: "Rok produkcji", type: "number", required: false, dbField: "year" },
-    { name: "moc", label: "Moc (KM)", type: "number", required: false, dbField: "power" }
-  ]
-}
+  ,
+  {
+    id: 11,
+    name: "Rolnictwo",
+    subcategories: ["Maszyny rolnicze", "Zwierzęta hodowlane", "Nawozy", "Zboża", "Usługi rolnicze"],
+    fields: [
+      { name: "typ", label: "Typ", type: "text", required: true, dbField: "type" },
+      { name: "rok", label: "Rok produkcji", type: "number", required: false, dbField: "year" },
+      { name: "moc", label: "Moc (KM)", type: "number", required: false, dbField: "power" }
+    ]
+  }
 
-      
+
 ]
+
+const options = ["Pralka", "Zmywarka", "Głośniki", "Telewizor", "Laptop", "Smartfon"]
 
 // Dynamiczne budowanie schematu walidacji
 const createFormSchema = (selectedCategory: string, selectedSubcategory: string) => {
@@ -282,14 +303,14 @@ export default function AddAdPage() {
     (async () => {
       try {
         const userData = await localStorage.getItem("userData")
-        
+
         if (!userData) {
           toast({
             title: "Nie jesteś zalogowany",
             description: "Zaloguj się, aby dodać ogłoszenie",
             variant: "destructive",
           })
-            router.push("/login")
+          router.push("/login")
         }
       } catch (error) {
         //console.error("Nie jesteś zalogowany", error)
@@ -467,7 +488,7 @@ export default function AddAdPage() {
       formData.append("kod", values.kod)
       formData.append("isPromoted", values.isPromoted.toString())
 
-    
+
 
       // Dodanie pól specyficznych dla kategorii
       const category = categories.find((c) => c.name === selectedCategory)
@@ -508,7 +529,7 @@ export default function AddAdPage() {
       // Przekierowanie na stronę ogłoszenia
       router.push(`/ogloszenia/${data.adId}`)
     } catch (error) {
-      
+
       console.error("Błąd podczas dodawania ogłoszenia:", error)
       toast({
         title: "Błąd",
@@ -624,6 +645,36 @@ export default function AddAdPage() {
                 />
               </div>
 
+              {selectedSubcategory === 'RTV' && (
+                <FormField
+                  key={'podkategoria rtv'}
+                  control={form.control}
+                  name={'podkategoria rtv'}
+                  render={({ field: formField }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Rodzaj sprzętu
+                        *
+                      </FormLabel>
+                      <Select onValueChange={formField.onChange} defaultValue={formField.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={`Wybierz podkategorie RTV`} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {options?.map((option: string) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>)}
+                />
+              )}
+
               <FormField
                 control={form.control}
                 name="location"
@@ -640,35 +691,35 @@ export default function AddAdPage() {
               />
 
               <div className="md:inline-flex gap-4 w-full ">
-              <FormField
-                control={form.control}
-                name="adres"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Adres</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Marszałkowska 12a" {...field} />
-                    </FormControl>
-                    <FormDescription>Podaj ulice i numer</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="adres"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Adres</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Marszałkowska 12a" {...field} />
+                      </FormControl>
+                      <FormDescription>Podaj ulice i numer</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="kod"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kod Pocztowy</FormLabel>
-                    <FormControl>
-                      <Input placeholder="XX-XXX" {...field} />
-                    </FormControl>
-                    <FormDescription>Podaj kod pocztowy</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="kod"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Kod Pocztowy</FormLabel>
+                      <FormControl>
+                        <Input placeholder="XX-XXX" {...field} />
+                      </FormControl>
+                      <FormDescription>Podaj kod pocztowy</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {/* Dynamiczne pola dla wybranej kategorii */}
@@ -676,6 +727,7 @@ export default function AddAdPage() {
                 <div className="bg-muted/30 p-4 rounded-lg space-y-4">
                   <h3 className="font-medium">Informacje dodatkowe</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
                     {categoryFields.map((field) => {
                       if (field.type === "text" || field.type === "number") {
                         return (

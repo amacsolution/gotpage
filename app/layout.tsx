@@ -40,11 +40,19 @@ export const metadata = {
     siteName: "Gotpage",
     locale: "pl_PL",
     type: "website",
+    images: [
+      {
+        url: "https://gotpage.pl/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Gotpage Logo",
+      },
+    ],
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
   },
   twitter: {
     card: "summary_large_image",
@@ -72,18 +80,18 @@ export default function RootLayout({
   return (
     <html lang="pl" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/logo.png" sizes="any" />
       </head>
       <body className={inter.className}>
         {/* Dodany komponent Google Tag Manager */}
-        <GoogleTagManager 
+        <GoogleTagManager
           gtmId={process.env.NEXT_PUBLIC_GTM_ID || "default-gtm-id"} // Replace "default-gtm-id" with a valid fallback ID or handle missing value
           gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} // Zastąp swoim rzeczywistym ID GA4
         />
         <Providers>
-            <UserProvider>{children}</UserProvider>
-            <Toaster />
-            <CookieConsent />
+          <UserProvider>{children}</UserProvider>
+          <Toaster />
+          <CookieConsent />
         </Providers>
       </body>
     </html>
