@@ -86,8 +86,8 @@ export default function VerifyPage(
         </CardContent>
         <CardFooter className="flex justify-center">
           {status === "success" && (
-            <Link href="/login">
-              <Button>Zaloguj się</Button>
+            <Link href="/jak-to-dziala">
+              <Button>Działamy</Button>
             </Link>
           )}
           {status === "error" && (

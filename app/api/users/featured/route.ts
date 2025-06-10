@@ -38,14 +38,14 @@ export async function GET() {
 
     if (userId) {
       featuredUsersQuery += `
-        WHERE u.id != ? AND u.avatar != '/placeholder-profile.svg?height=100&width=100'
+        WHERE u.id != ? AND u.avatar != '/placeholder-profile.svg?height=100&width=100' AND type = "individual" AND u.verified_email = 1
         ORDER BY RAND() DESC
         LIMIT 8
       ` //NOTE: adCount DESC, rating ,
     featuredUsers = await query(featuredUsersQuery, [userId]) as UserData[]
     } else {
       featuredUsersQuery += `
-        WHERE u.avatar != '/placeholder-profile.svg?height=100&width=100'
+        WHERE u.avatar != '/placeholder-profile.svg?height=100&width=100' AND u.type = "individual" AND u.verified_email = 1
         ORDER BY RAND() DESC 
         LIMIT 8
       ` //NOTE: adCount DESC, rating ,
