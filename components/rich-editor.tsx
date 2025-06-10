@@ -3,19 +3,6 @@ import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/use-toast"
 import DOMPurify from "dompurify"
 
-// Register the hook with proper type annotations
-DOMPurify.addHook("uponSanitizeAttribute", (node: Element, data: any) => {
-  if (data.attrName === "style" && node.nodeName === "IMG") {
-    let style = node.getAttribute("style") || ""
-    if (!/max-width\s*:/i.test(style)) {
-      style += " max-width: 400px;"
-    } else {
-      style = style.replace(/max-width\s*:\s*[^;]+;?/i, "max-width: 400px;")
-    }
-    node.setAttribute("style", style.trim())
-  }
-})
-
 // Sanityzacja z wymuszeniem max-width: 400px dla IMG
 const sanitizeWithMaxWidth = (dirtyHtml: string) => {
   return DOMPurify.sanitize(dirtyHtml, {
@@ -44,7 +31,21 @@ export function SimpleEditor({
       editorRef.current.focus()
     }
     document.execCommand(command, false, val)
-    onChange(sanitizeWithMaxWidth(editorRef.current?.innerHTML || ""))
+  const imageInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    DOMPurify.addHook("uponSanitizeAttribute", (node: Element, data: any) => {
+      if (data.attrName === "style" && node.nodeName === "IMG") {
+        let style = node.getAttribute("style") || ""
+        if (!/max-width\s*:/i.test(style)) {
+          style += " max-width: 400px;"
+        } else {
+          style = style.replace(/max-width\s*:\s*[^;]+;?/i, "max-width: 400px;")
+        }
+        node.setAttribute("style", style.trim())
+      }
+    });
+  }, []);
   }
 
   const handleInput = () => {
