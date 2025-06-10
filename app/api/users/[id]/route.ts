@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth"
 import { z } from "zod"
 import type { BusinessData } from "./company/route"
 import type { UserData } from "../../profile/route"
+import { profile } from "console"
 
 const profileDataSchema = z.object({
   name: z.string().min(2, {
@@ -120,6 +121,17 @@ export async function GET(request: Request, { params }: { params: { id: string }
     if (!userId) {
       return NextResponse.json({ error: "Nieprawidłowe ID użytkownika" }, { status: 400 })
     }
+    // Sprawdzenie, czy użytkownik istnieje w tabeli stats
+    const userStats = await query("SELECT * FROM user_stats WHERE user_id = ?", [userId]) as any[]
+    // console.log("userStats", userStats)
+    if (!userStats || userStats.length === 0) {
+      // Jeśli nie ma statystyk, tworzymy nowy wpis
+      await query("INSERT INTO user_stats (user_id, views, last_active) VALUES (?, 1, NOW())", [userId])
+      // console.log(`Utworzono nowy wpis statystyk dla użytkownika ${userId}`)
+    } else {
+      // console.log(`Aktualizacja statystyk dla użytkownika ${userId}`)
+      await query("UPDATE user_stats SET views = views + 1, last_active = NOW() WHERE user_id = ?", [userId])
+    }
 
     // Fetch user data
     const userData = (await query(
@@ -182,9 +194,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const adsCount = (await query("SELECT COUNT(*) as count FROM ads WHERE user_id = ?", [userId])) as QueryResult<{
       count: number
     }>
-    const viewsCount = (await query("SELECT SUM(views) as count FROM ads WHERE user_id = ?", [userId])) as QueryResult<{
-      count: number
-    }>
+    const adsViews = (await query("SELECT SUM(views) as count FROM ads WHERE user_id = ?", [userId])) as {count: number}[]
+
+    const profileViews = (await query("SELECT views FROM user_stats WHERE user_id = ?", [userId])) as {views : number}[]
+
+    const viewsCount = (Number(adsViews[0]?.count) || 0) + (profileViews[0]?.views || 0)
+
+    console.log("adsCount", adsViews, "viewsCount", profileViews)
     const likesCount = (await query(
       "SELECT COUNT(*) as count FROM ad_likes WHERE ad_id IN (SELECT id FROM ads WHERE user_id = ?)",
       [userId],
@@ -201,7 +217,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     user.stats = {
       ads: adsCount[0]?.count || 0,
-      views: viewsCount[0]?.count || 0,
+      views: viewsCount || 0,
       likes: likesCount[0]?.count || 0,
       reviews: reviewsData[0]?.count || 0,
       rating: reviewsData[0]?.avg || 0,

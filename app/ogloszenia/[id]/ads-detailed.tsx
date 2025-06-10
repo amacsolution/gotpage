@@ -19,6 +19,10 @@ import { PageLayout } from "@/components/page-layout"
 import { LikeButton } from "@/components/like-button"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+import DOMPurify from "dompurify"
+
+
+
 
 export default function AdDetailsClient({ id }: { id: string }) {
   const [ad, setAd] = useState<any>(null)
@@ -27,8 +31,10 @@ export default function AdDetailsClient({ id }: { id: string }) {
   const [commentText, setCommentText] = useState("")
   const [similarAds, setSimilarAds] = useState<any[]>([])
   const [isSimilarAdsLoading, setIsSimilarAdsLoading] = useState(true)
+  const [sanitizedHtml, setSanitizedHtml] = useState("")
   const { toast } = useToast()
   const router = useRouter();
+  
 
     const handleMessage = async (userId: number) => {
     try {
@@ -73,6 +79,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
     }
   }
 
+
   useEffect(() => {
     // Pobieranie danych ogłoszenia
     const fetchAd = async () => {
@@ -81,9 +88,14 @@ export default function AdDetailsClient({ id }: { id: string }) {
         const response = await fetch(`/api/ads/${id}`)
         const data = await response.json()
 
+        console.log("Odpowiedź z API:", data)
+
         if (data.error) {
           throw new Error(data.error)
         }
+        setSanitizedHtml(DOMPurify.sanitize(data.description || ""))
+
+        console.log("Pobrano ogłoszenie:", data)
 
         setAd(data)
       } catch (error) {
@@ -167,8 +179,6 @@ export default function AdDetailsClient({ id }: { id: string }) {
       })
     }
   }
-
-  console.log(ad)
   // Skeleton loading dla całej strony
   if (isLoading) {
     return (
@@ -303,6 +313,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <Badge variant="secondary">{ad.category}</Badge>
               {ad.subcategory && <Badge variant="outline">{ad.subcategory}</Badge>}
+              {ad.final_category && <Badge variant="outline">{ad.final_category}</Badge>}
               {ad.promoted ?(
                 <Badge variant="outline" className="text-primary border-primary/30">
                   Promowane
@@ -405,7 +416,10 @@ export default function AdDetailsClient({ id }: { id: string }) {
           </TabsList>
           <TabsContent value="description" className="mt-4">
             <Card className="p-4">
-              <div className="whitespace-pre-line">{ad.content || ad.description}</div>
+              <div className="whitespace-pre-line"><div
+                  dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+                />
+              </div>
             </Card>
           </TabsContent>
           <TabsContent value="parameters" className="mt-4">

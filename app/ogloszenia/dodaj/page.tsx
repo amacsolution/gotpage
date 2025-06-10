@@ -16,6 +16,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { PageLayout } from "@/components/page-layout"
 import { useToast } from "@/hooks/use-toast"
 import { ImagePlus, X, Loader2 } from "lucide-react"
+import { SimpleEditor } from "@/components/rich-editor"
+import { set } from "date-fns"
 
 // Kategorie i podkategorie
 const categories = [
@@ -190,7 +192,6 @@ const categories = [
 
 
 ]
-
 const options = ["Pralka", "Zmywarka", "Głośniki", "Telewizor", "Laptop", "Smartfon"]
 
 // Dynamiczne budowanie schematu walidacji
@@ -210,8 +211,8 @@ const createFormSchema = (selectedCategory: string, selectedSubcategory: string)
       .min(20, {
         message: "Opis musi mieć co najmniej 20 znaków",
       })
-      .max(2000, {
-        message: "Opis nie może przekraczać 2000 znaków",
+      .max(5000, {
+        message: "Opis nie może przekraczać 5000 znaków",
       }),
     category: z.string({
       required_error: "Wybierz kategorię",
@@ -291,6 +292,7 @@ export default function AddAdPage() {
       content: "",
       category: "",
       subcategory: "",
+      finalcategory: "",
       price: "",
       location: "",
       adres: "",
@@ -298,6 +300,7 @@ export default function AddAdPage() {
       isPromoted: false,
     },
   })
+
 
   useEffect(() => {
     (async () => {
@@ -316,27 +319,8 @@ export default function AddAdPage() {
         //console.error("Nie jesteś zalogowany", error)
       }
     })()
+    setIsDataLoading(false)
   }, [router, toast])
-
-  // Symulacja pobierania danych z bazy
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsDataLoading(true)
-        setIsDataLoading(false)
-      } catch (error) {
-        console.error("Błąd podczas pobierania danych:", error)
-        toast({
-          title: "Błąd",
-          description: "Nie udało się pobrać danych. Używamy danych lokalnych.",
-          variant: "destructive",
-        })
-        setIsDataLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [toast])
 
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value)
@@ -647,9 +631,9 @@ export default function AddAdPage() {
 
               {selectedSubcategory === 'RTV' && (
                 <FormField
-                  key={'podkategoria rtv'}
+                  key="finalcategory"
                   control={form.control}
-                  name={'podkategoria rtv'}
+                  name="finalcategory"
                   render={({ field: formField }) => (
                     <FormItem>
                       <FormLabel>
@@ -808,7 +792,7 @@ export default function AddAdPage() {
                   </div>
                 </div>
               )}
-
+{/* 
               <FormField
                 control={form.control}
                 name="content"
@@ -822,7 +806,23 @@ export default function AddAdPage() {
                     <FormMessage />
                   </FormItem>
                 )}
+              /> */}
+
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Opis ogłoszenia</FormLabel>
+                    <FormControl>
+                      <SimpleEditor value={field.value} onChange={field.onChange} />
+                    </FormControl>
+                    <FormDescription>Podaj wszystkie istotne informacje o ofercie</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
+
 
               <FormField
                 control={form.control}

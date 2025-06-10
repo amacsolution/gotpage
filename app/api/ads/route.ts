@@ -34,6 +34,7 @@ export async function POST(request: Request) {
     const location = (formData.get("location") as string) || null
     const adres = (formData.get("adres") as string) || null
     const kod = (formData.get("kod") as string) || null
+    const finalcategory = (formData.get("finalcategory") as string) || null
     const adKey = generateAdKey(title) // Generowanie unikalnego klucza ogłoszenia
 
     // Walidacja podstawowych pól
@@ -74,6 +75,7 @@ export async function POST(request: Request) {
           description, 
           category, 
           subcategory, 
+          final_category,
           price, 
           promoted, 
           location, 
@@ -92,6 +94,7 @@ export async function POST(request: Request) {
         content,
         category,
         subcategory,
+        finalcategory,
         price,
         isPromoted ? 1 : 0,
         location,
@@ -220,6 +223,7 @@ export interface AdData {
   location: string
   category: string
   subcategory: string | null
+  finalcategory: string | null
   image: string | string[] | null
   createdAt: string
   promoted: number

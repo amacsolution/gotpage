@@ -1,6 +1,8 @@
 import type { Metadata, ResolvingMetadata } from "next"
 import AdDetailsClient from "./ads-detailed"
 
+export const dynamic = "force-dynamic";
+
 // Generowanie dynamicznych metadanych dla pojedynczego ogłoszenia
 export async function generateMetadata(props: { params: Promise<{ id: string }> }, parent: ResolvingMetadata): Promise<Metadata> {
   const params = await props.params;
@@ -21,7 +23,6 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   if (!ad) {
     ad = {
       title: "Ogłoszenie",
-      content: "Szczegóły ogłoszenia",
       category: "Kategoria",
       price: 0,
       currency: "PLN",
@@ -30,17 +31,15 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   }
 
   const title = `${ad.title} | Gotpage`
-  const description = ad.content?.length > 160
-    ? ad.content.substring(0, 160) + "..."
-    : ad.content || "Szczegóły ogłoszenia"
 
   return {
     title,
-    description,
+    description : `Zobacz szczegóły ogłoszenia ${ad.title} na Gotpage`,
     keywords: `${ad.title}, ${ad.category}, ogłoszenie, gotpage`,
     openGraph: {
+      url: `https://gotpage.pl/ogloszenia/${id}`,
       title,
-      description,
+      description : `Zobacz szczegóły ogłoszenia ${ad.title} na Gotpage`,
       images: [
         {
           url: ad.images?.[0] || "/og-image-ad-default.jpg",

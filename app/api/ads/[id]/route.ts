@@ -7,7 +7,6 @@ import { promises as fs } from "fs"
 import { RowDataPacket } from "mysql2"
 import { AdData } from "../route"
 import { v4 as uuidv4 } from "uuid"
-import sharp from "sharp"
 
 export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
