@@ -1,9 +1,7 @@
 # deploy.ps1
 
-# Ustaw ścieżkę roboczą na folder, w którym znajduje się skrypt
 Set-Location -Path $PSScriptRoot
 
-# Wczytaj dane
 $sshKeyPath = Join-Path $PSScriptRoot ".ssh/id_ed25519"
 $remoteUser = "biycgepwzk"
 $remoteHost = "s11.cyber-folks.pl"
@@ -11,7 +9,6 @@ $remotePath = "domains/gotpage.pl/public_html"
 $remoteDomain = "gotpage.pl"
 $remotePort = 222
 
-# Wypchnij zmiany do repozytorium
 Write-Host "Wypychanie zmian do repozytorium Git..." -ForegroundColor Cyan
 git add .
 git commit -m "Automatyczny commit przed wdrożeniem"
@@ -22,7 +19,6 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-# Budowanie aplikacji
 Write-Host "Budowanie aplikacji Next.js..." -ForegroundColor Cyan
 npm run build
 
@@ -31,24 +27,16 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-Write-Host "Build zakonczony pomyslnie. Rozpoczynam wdrazanie..." -ForegroundColor Green
+# Pakowanie .next do ZIP-a
+Write-Host "Pakowanie katalogu .next do next.zip..." -ForegroundColor Cyan
+Compress-Archive -Path ".next/*" -DestinationPath "next.zip" -Force
 
-# Przesyłanie plików
+# Przesyłanie plików na serwer
 Write-Host "Przesylanie plikow na serwer..." -ForegroundColor Cyan
-scp -i $sshKeyPath -P $remotePort -r `
-  .next `
-  public `
-  app `
-  lib `
-  emails `
-  hooks `
-  components `
-  middleware.ts `
-  next.config.mjs `
-  package.json `
-  package-lock.json `
-  "$remoteUser@${remoteHost}:${remotePath}"
-
+scp -i $sshKeyPath -P $remotePort `
+  next.zip `
+  -r public app lib emails hooks components middleware.ts next.config.mjs package.json package-lock.json `
+  "$remoteUser@${remoteHost}:$remotePath"
 
 
 if ($LASTEXITCODE -ne 0) {
@@ -56,20 +44,23 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-Write-Host "Pliki przeslane pomyslnie. Instalowanie zaleznosci i restart aplikacji..." -ForegroundColor Green
-
-ssh -i $sshKeyPath -p 222 "$remoteUser@$remoteDomain" "cd $remotePath; npm install; pm2 kill; pm2 start ecosystem.config.js"
+# Rozpakowywanie i uruchomienie na serwerze
+Write-Host "Rozpakowywanie next.zip i restart aplikacji..." -ForegroundColor Cyan
+ssh -i $sshKeyPath -p $remotePort "$remoteUser@$remoteDomain" "
+  cd $remotePath;
+  unzip -o next.zip && rm next.zip;
+  npm install;
+  pm2 kill;
+  pm2 start ecosystem.config.js;
+"
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Instalacja zaleznosci lub restart aplikacji nie powiodly sie!" -ForegroundColor Red
+    Write-Host "Instalacja lub restart nie powiodly sie!" -ForegroundColor Red
     exit $LASTEXITCODE
 }
 
 Write-Host "Wdrazanie zakonczone pomyslnie!" -ForegroundColor Green
-# Powiadomienie na koniec
+
+# Powiadomienie
 [System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null
-if ($LASTEXITCODE -eq 0) {
-    [System.Windows.Forms.MessageBox]::Show('Wdrazanie zakonczone pomyslnie!', 'Sukces', 'OK', 'Information')
-} else {
-    [System.Windows.Forms.MessageBox]::Show('Wystapil blad podczas wdrazania!', 'Blad', 'OK', 'Error')
-}
+[System.Windows.Forms.MessageBox]::Show('Wdrazanie zakonczone pomyslnie!', 'Sukces', 'OK', 'Information')
