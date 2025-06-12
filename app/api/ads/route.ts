@@ -85,7 +85,7 @@ export async function POST(request: Request) {
           user_id, 
           created_at, 
           updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
       `
 
       const values = [
