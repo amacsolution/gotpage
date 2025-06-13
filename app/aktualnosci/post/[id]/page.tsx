@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft } from "lucide-react"
 import Script from "next/script"
 import type { Metadata, ResolvingMetadata } from "next"
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
 type PropsStrony = {
   params: { id: string }
@@ -84,6 +85,7 @@ export default function StronaPojedynczegoWpisu(props: { params: Promise<{ id: s
   const router = useRouter()
   const { toast } = useToast()
   const {id} = params
+  let fragment = "Wpis na naszej platformie ogłoszeniowej"
 
   useEffect(() => {
     const pobierzWpis = async () => {
@@ -121,13 +123,12 @@ export default function StronaPojedynczegoWpisu(props: { params: Promise<{ id: s
     pobierzWpis()
   }, [id, router, toast])
 
+
   return (
+    <>
     <PageLayout>
       <div className="container py-6">
-        <Button variant="ghost" className="mb-6 flex items-center gap-2" onClick={() => router.push("/aktualnosci")}>
-          <ArrowLeft className="h-4 w-4" />
-          Wróć do aktualności
-        </Button>
+          
 
         {ladowanie ? (
           <div className="space-y-4">
@@ -135,7 +136,23 @@ export default function StronaPojedynczegoWpisu(props: { params: Promise<{ id: s
             <Skeleton className="h-64 w-full rounded-lg" />
           </div>
         ) : wpis ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <>
+          <Breadcrumb>
+            <BreadcrumbList>
+             <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/aktualnosci">
+                  Wróć do aktualności
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href={`/profil/${wpis.author.id}`}>{wpis.author.name}</BreadcrumbLink>
+              </BreadcrumbItem>
+
+            </BreadcrumbList>
+          </Breadcrumb>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-2">
             <div className="md:col-span-2">
               <NewsPost post={wpis} />
             </div>
@@ -155,6 +172,7 @@ export default function StronaPojedynczegoWpisu(props: { params: Promise<{ id: s
               </div>
             </div>
           </div>
+          </>
         ) : (
           <div className="text-center py-12 bg-muted/30 rounded-lg">
             <h3 className="text-lg font-medium mb-2">Nie znaleziono wpisu</h3>
@@ -194,5 +212,6 @@ export default function StronaPojedynczegoWpisu(props: { params: Promise<{ id: s
         )}
       </div>
     </PageLayout>
+    </>
   )
 }

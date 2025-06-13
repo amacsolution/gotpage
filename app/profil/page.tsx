@@ -31,6 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { PhotoGallery } from "@/components/photo-gallery"
 import { CompanyCard } from "@/components/company-card"
 import { FollowButton } from "@/components/follow-button"
+import QrButton from "@/components/qr/qr-button"
 
 // Update the UserData interface to include the new fields
 interface UserData {
@@ -549,6 +550,9 @@ export default function ProfilePage() {
                   <span className="font-bold">{user.stats.likes}</span> polubień
                 </div>
               </div>
+              {user.id && (
+                <QrButton url={`https://gotpage.pl/profil/${user.id}`} className="w-full mt-2" />
+              )}
             </div>
 
             {isEditing ? (

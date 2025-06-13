@@ -14,12 +14,14 @@ import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Share2, Flag, MapPin, Phone, Mail, Calendar, Clock, ArrowLeft, Eye, ShieldCheck } from "lucide-react"
+import { Share2, Flag, MapPin, Phone, Mail, Calendar, Clock, ArrowLeft, Eye, ShieldCheck, SlashIcon } from "lucide-react"
 import { PageLayout } from "@/components/page-layout"
 import { LikeButton } from "@/components/like-button"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import DOMPurify from "dompurify"
+import QrButton from "@/components/qr/qr-button"
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 
 
 
@@ -88,14 +90,11 @@ export default function AdDetailsClient({ id }: { id: string }) {
         const response = await fetch(`/api/ads/${id}`)
         const data = await response.json()
 
-        console.log("Odpowiedź z API:", data)
 
         if (data.error) {
           throw new Error(data.error)
         }
         setSanitizedHtml(DOMPurify.sanitize(data.description || ""))
-
-        console.log("Pobrano ogłoszenie:", data)
 
         setAd(data)
       } catch (error) {
@@ -265,10 +264,18 @@ export default function AdDetailsClient({ id }: { id: string }) {
     <PageLayout>
       <div className="container py-6">
         <div className="mb-6">
-          <Link href="/ogloszenia" className="flex items-center text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Wróć do ogłoszeń
-          </Link>
+          <Breadcrumb>
+            <BreadcrumbList>
+             <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/ogloszenia">Ogłoszenia</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem className="text-primary">
+                <BreadcrumbPage>{ad.title}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
 
         {/* Układ: zdjęcie po lewej, informacje po prawej */}
@@ -397,7 +404,11 @@ export default function AdDetailsClient({ id }: { id: string }) {
                 <Flag className="h-4 w-4 mr-2" />
                 Zgłoś
               </Button>
+
             </div>
+              {ad?.id && (
+                <QrButton url={`https://gotpage.pl/ogloszenia/${ad.id}`} className="w-full mt-2" />
+              )}
           </div>
         </div>
 

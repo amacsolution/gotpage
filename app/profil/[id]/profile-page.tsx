@@ -7,6 +7,7 @@ import { FollowStats } from "@/components/follow-stats"
 import { NewsPost } from "@/components/news-post"
 import { PageLayout } from "@/components/page-layout"
 import { PhotoGallery } from "@/components/photo-gallery"
+import QrButton from "@/components/qr/qr-button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -15,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { UserReviews } from "@/components/user-reviews"
 import { useToast } from "@/hooks/use-toast"
+import { se } from "date-fns/locale"
 import {
   AlarmClock,
   Book,
@@ -121,6 +123,7 @@ export default function UserProfilePage({id} : { id: string }) {
   const [error, setError] = useState<string | null>(null)
   const [similarUsers, setSimilarUsers] = useState<any[]>([])
   const [isSimilarUsersLoading, setIsSimilarUsersLoading] = useState(true)
+  const [LoadingMessages, setLoadingMessages] = useState(false)
   const [posts, setPosts] = useState<any[]>([])
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
@@ -168,6 +171,51 @@ export default function UserProfilePage({id} : { id: string }) {
 
     fetchUserProfile()
   }, [id, toast])
+
+  const handleMessage = async (userId: number) => {
+    try {
+      setLoadingMessages(true)
+      // Check if user is logged in
+      const currentUser = localStorage.getItem("userData")
+      if (!currentUser) {
+        toast({
+          title: "Wymagane logowanie",
+          description: "Musisz być zalogowany, aby wysyłać wiadomości",
+          variant: "destructive",
+        })
+        router.push("/login")
+        return
+      }
+
+      // Create or get conversation
+      const response = await fetch("/api/messages/conversations/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          receiverId: userId,
+        }),
+      })
+
+      if (!response.ok) {
+        setLoadingMessages(false)
+        throw new Error(`Error creating conversation: ${response.status}`)
+        
+      }
+
+      setLoadingMessages(false)
+      // Redirect to conversation
+      window.open("/wiadomosci", "_blank")
+    } catch (err) {
+      console.error("Error starting conversation:", err)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się rozpocząć konwersacji. Spróbuj ponownie później.",
+        variant: "destructive",
+      })
+    }
+  }
 
   // Pobieranie postów użytkownika
   useEffect(() => {
@@ -377,6 +425,16 @@ export default function UserProfilePage({id} : { id: string }) {
                 </div>
               </div>
 
+              {user.id && (
+                <>
+                  <QrButton url={`https://gotpage.pl/profil/${user.id}`} className="w-full mt-2" />
+                  
+                  <Button className={`w-full flex items-center bg-primary ${LoadingMessages ? "opacity-50" : ""} text-primary-foreground hover:bg-primary/90`}variant="outline" onClick={() => handleMessage(user.id)}>
+                    {LoadingMessages ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" /> }
+                    Wyślij wiadomość
+                  </Button>
+                </>
+              )}
               {user.type === "business" && user.stats.reviews > 0 && (
                 <div className="flex items-center gap-2">
                   <div className="flex">
