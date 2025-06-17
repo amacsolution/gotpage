@@ -18,7 +18,6 @@ async function findUploadDirectory(type: string): Promise<string> {
   // Sprawdź, czy któryś z katalogów istnieje
   for (const dir of possibleDirs) {
     if (existsSync(dir)) {
-      console.log(`Found existing directory: ${dir}`)
       return dir
     }
   }
@@ -26,7 +25,6 @@ async function findUploadDirectory(type: string): Promise<string> {
   // Jeśli żaden katalog nie istnieje, spróbuj utworzyć pierwszy z listy
   try {
     const dir = possibleDirs[0]
-    console.log(`Creating directory: ${dir}`)
     await mkdir(dir, { recursive: true })
     return dir
   } catch (error) {
@@ -36,7 +34,6 @@ async function findUploadDirectory(type: string): Promise<string> {
     for (let i = 1; i < possibleDirs.length; i++) {
       try {
         const dir = possibleDirs[i]
-        console.log(`Trying alternative directory: ${dir}`)
         await mkdir(dir, { recursive: true })
         return dir
       } catch (altError) {
@@ -53,7 +50,6 @@ async function findUploadDirectory(type: string): Promise<string> {
 async function ensureDirectoryExists(dirPath: string): Promise<void> {
   try {
     if (!existsSync(dirPath)) {
-      console.log(`Creating directory: ${dirPath}`)
       await mkdir(dirPath, { recursive: true })
     }
   } catch (error) {
@@ -109,7 +105,6 @@ export async function uploadImage(
   cropData?: { x: number; y: number; width: number; height: number } | null
 ): Promise<string> {
   try {
-    console.log("uploadImage called with type:", type, "userId:", userId)
     
     // Znajdź odpowiedni katalog do zapisu
     let uploadDir = ""
@@ -123,12 +118,9 @@ export async function uploadImage(
       await ensureDirectoryExists(uploadDir)
     }
     
-    console.log("Upload directory:", uploadDir)
-    
     // Generowanie unikalnej nazwy pliku
     const fileName = `${uuidv4()}${path.extname(file.name)}`
     const filePath = path.join(uploadDir, fileName)
-    console.log("File will be saved to:", filePath)
     
     // Konwersja File na Buffer
     const arrayBuffer = await file.arrayBuffer()
@@ -136,11 +128,9 @@ export async function uploadImage(
     
     // Zapisz plik bezpośrednio bez przetwarzania
     await writeFile(filePath, buffer)
-    console.log("File saved successfully")
     
     // Zwróć URL do pliku
     const fileUrl = `/api/uploads/${type}/${fileName}`
-    console.log("File URL:", fileUrl)
     
     return fileUrl
   } catch (error) {
@@ -152,7 +142,6 @@ export async function uploadImage(
 // Funkcja do usuwania obrazu
 export async function deleteImage(fileUrl: string): Promise<void> {
   try {
-    console.log("deleteImage called with fileUrl:", fileUrl)
     
     // Wyciągnij ścieżkę pliku z URL
     const urlParts = fileUrl.split("/")
@@ -172,7 +161,6 @@ export async function deleteImage(fileUrl: string): Promise<void> {
     for (const filePath of possiblePaths) {
       try {
         if (existsSync(filePath)) {
-          console.log("Deleting file:", filePath)
           await unlink(filePath)
           fileDeleted = true
           break

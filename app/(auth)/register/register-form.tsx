@@ -192,9 +192,6 @@ export function RegisterForm() {
     },
   })
 
-  console.log("Kategorie:", businessCategories)
-  console.log("odczytane" + categoriesBusiness)
-
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)

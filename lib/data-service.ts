@@ -26,7 +26,6 @@ import { createConnection } from "@/lib/db"
 // // Funkcja do pobierania firm z bazy danych
 // export async function getCompaniesFromDatabase(limit = 10, offset = 0, filters: any = {}) {
 //   if (!isServer) {
-//     console.log("Używam mock data dla firm (klient)")
 //     return mockCompanies
 //   }
 
@@ -88,7 +87,7 @@ import { createConnection } from "@/lib/db"
 // // Funkcja do pobierania kategorii z bazy danych
 // export async function getCategoriesFromDatabase() {
 //   if (!isServer) {
-//     console.log("Używam mock data dla kategorii (klient)")
+
 //     return mockCategories
 //   }
 
@@ -122,7 +121,7 @@ import { createConnection } from "@/lib/db"
 // // Funkcja do pobierania szczegółów ogłoszenia z bazy danych
 // export async function getAdDetailsFromDatabase(id: number) {
 //   if (!isServer) {
-//     console.log("Używam mock data dla szczegółów ogłoszenia (klient)")
+
 //     return [mockAdDetails]
 //   }
 
@@ -143,7 +142,7 @@ import { createConnection } from "@/lib/db"
 //       )
 
 //       if (!ad || (Array.isArray(ad) && ad.length === 0)) {
-//         console.log(`Nie znaleziono ogłoszenia o ID ${id}, używam mock data`)
+
 //         await connection.end()
 //         return [mockAdDetails]
 //       }
@@ -239,7 +238,7 @@ import { createConnection } from "@/lib/db"
 // // Funkcja do pobierania szczegółów firmy z bazy danych
 // export async function getCompanyDetailsFromDatabase(id: number) {
 //   if (!isServer) {
-//     console.log("Używam mock data dla szczegółów firmy (klient)")
+
 //     return mockCompanyDetails
 //   }
 

@@ -3,12 +3,7 @@ import mysql from "mysql2/promise"
 // Konfiguracja połączenia z bazą danych
 export async function createConnection() {
   try {
-    // console.log("Próba połączenia z bazą danych...")
-    // console.log("Host:", process.env.DB_HOST)
-    // console.log("Użytkownik:", process.env.DB_USER)
-    // console.log("Baza danych:", process.env.DB_NAME)
-    // console.log("Port:", process.env.DB_PORT || 3306)
-    // console.log("SSL:", process.env.DB_SSL === "true" ? "Włączone" : "Wyłączone")
+
 
     // Opcje połączenia
     const connectionOptions: mysql.ConnectionOptions = {
@@ -22,13 +17,11 @@ export async function createConnection() {
 
     // Dodaj opcje SSL tylko jeśli jest włączone
     if (process.env.DB_SSL === "true") {
-      console.log("Używam połączenia SSL")
       connectionOptions.ssl = {}
     }
 
     const connection = await mysql.createConnection(connectionOptions)
 
-    // console.log("Połączenie z bazą danych ustanowione pomyślnie")
     return connection
   } catch (error) {
     console.error("Błąd połączenia z bazą danych:", error)
@@ -41,8 +34,6 @@ export async function query(sql: string, params: any[] = []) {
   let connection
   try {
     connection = await createConnection()
-    // console.log("Wykonywanie zapytania:", sql)
-    // console.log("Parametry:", params)
 
     const [results] = await connection.execute(sql, params)
     return results
@@ -53,7 +44,6 @@ export async function query(sql: string, params: any[] = []) {
     if (connection) {
       try {
         await connection.end()
-        // console.log("Połączenie z bazą danych zamknięte")
       } catch (closeError) {
         console.error("Błąd podczas zamykania połączenia:", closeError)
       }

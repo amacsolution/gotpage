@@ -60,7 +60,7 @@ try {
   userConfig = userConfigModule.default || {};
 } catch (e) {
   // Ignoruj błąd, jeśli plik nie istnieje
-  console.log('Nie znaleziono pliku konfiguracyjnego użytkownika');
+
 }
 
 mergeConfig(nextConfig, userConfig);

@@ -16,6 +16,24 @@ export default function GlobalError({
   useEffect(() => {
     // Opcjonalnie możesz zalogować błąd do serwisu monitorowania
     console.error("Wystąpił błąd:", error)
+    const notify = async () => {
+        try {
+          await fetch("/api/notify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              message: error?.message || "Brak wiadomości",
+              stack: error?.stack || "Brak stack trace",
+              digest: error?.digest || null,
+              before: document.referrer || null
+            }),
+          })
+        } catch (err) {
+          console.error("Błąd podczas wysyłania informacji o błędzie:", err)
+        }
+      }
+
+      notify()
   }, [error])
 
   return (

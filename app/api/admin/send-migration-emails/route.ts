@@ -31,8 +31,6 @@ export async function POST(request: NextRequest) {
 
     const migrationId = migration.insertId
 
-    console.log(migrationId)
-
     // Wyślij emaile (w trybie testowym tylko do adresów testowych)
     const results = []
     for (const user of users) {

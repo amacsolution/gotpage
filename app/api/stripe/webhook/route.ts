@@ -92,8 +92,6 @@ async function processCompanyPromotion(userId: number, plan: string) {
     // Check if user already has an active promotion
     const existingPromotions = await query("SELECT id FROM user_promotions WHERE user_id = ? AND active = 1", [userId])
 
-    console.log("Existing promotions:", existingPromotions)
-
     if (Array.isArray(existingPromotions) && existingPromotions.length > 0) {
       // Update existing promotion
       await query(

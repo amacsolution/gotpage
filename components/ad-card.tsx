@@ -91,7 +91,7 @@ export function AdCard({ ad, image }: AdCardProps) {
   const handleEditClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    router.push(`/ogloszenia/edytuj/${ad.id}`)
+    router.push(`/ogloszenia/${ad.id}/edytuj`)
   }
 
   const handleViewClick = (e: React.MouseEvent) => {

@@ -42,7 +42,6 @@ export function UserNav() {
         }
 
         const userData = JSON.parse(response)
-        console.log("Fetched user data:", userData)
         setUser(userData)
       } catch (error) {
         setUser(null)

@@ -62,8 +62,6 @@ export async function GET(request: NextRequest) {
     query += " ORDER BY r.created_at DESC LIMIT ? OFFSET ?", [limit, offset]  
     queryParams.push(limit, offset)
 
-    console.log(query)
-
     // Wykonaj zapytanie
     const [reports] = await db.query(query, queryParams)  
 

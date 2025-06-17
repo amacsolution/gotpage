@@ -18,7 +18,6 @@ export async function POST(request: NextRequest) {
       // Próba wykonania prostego zapytania do tabeli
       await db.query("SELECT 1 FROM email_logs LIMIT 1")
     } catch (error) {
-      console.log("Tabela email_logs nie istnieje, tworzenie...")
       await db.query(`
         CREATE TABLE IF NOT EXISTS email_logs (
           id INT AUTO_INCREMENT PRIMARY KEY,

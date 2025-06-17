@@ -11,8 +11,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { AnimatePresence, motion } from "framer-motion"
 
-import { QrCode } from "lucide-react";
+import { Check, Copy, QrCode } from "lucide-react";
 import QRCodeStyling from "qr-code-styling";
 import { useEffect, useRef, useState } from "react";
 
@@ -20,6 +21,7 @@ export default function QrButton({ url, className }: { url: string, className?: 
   const qrRef = useRef<HTMLDivElement>(null);
   const qrCode = useRef<QRCodeStyling | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [copied, setCopied] = useState(false)
 
   // Twórz nowy QR za każdym razem, gdy url się zmienia
   useEffect(() => {
@@ -60,6 +62,13 @@ export default function QrButton({ url, className }: { url: string, className?: 
     }
   }, [dialogOpen, url]);
 
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
   if (!url) return null;
 
   return (
@@ -79,6 +88,42 @@ export default function QrButton({ url, className }: { url: string, className?: 
             ref={qrRef}
             id="qr-code" className="flex items-center justify-center w-full h-80 rounded-lg shadow-md overflow-hidden"
           ></div>
+           <div className="flex items-center gap-2 bg-background border border-muted-foreground px-3 py-2 rounded-md w-full max-w-md">
+            <input
+              type="text"
+              value={url}
+              readOnly
+              className="bg-transparent outline-none text-sm w-full"
+            />
+            <button
+              onClick={copyToClipboard}
+              className="text-foreground hover:text-foreground/50 transition"
+              title="Skopiuj link"
+            >
+              {copied ? 
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  duration: 1,
+                  scale: { type: "spring", visualDuration: 1, bounce: 0.5 }
+                }}
+              >
+                <Check className="w-5 h-5 text-green-500" />
+              </motion.div>
+              : <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                duration: 1,
+                scale: { type: "spring", visualDuration: 0.4, bounce: 0.5 },
+            }}
+              >
+                <Copy className="w-5 h-5 text-foreground transition hover:text-foreground/50" />
+              </motion.div> }
+
+            </button>
+          </div>
           <DialogFooter className="flex justify-between gap-2">
             <DialogClose asChild>
               <Button variant="outline">Anuluj</Button>

@@ -11,7 +11,6 @@ const dbConfig = {
 }
 
 async function seed() {
-  console.log("Rozpoczynam wypełnianie bazy danych...")
 
   try {
     const connection = await mysql.createConnection(dbConfig)
@@ -28,15 +27,12 @@ async function seed() {
     await seedReviews(connection)
 
     await connection.end()
-
-    console.log("Baza danych została pomyślnie wypełniona!")
   } catch (error) {
     console.error("Błąd podczas wypełniania bazy danych:", error)
   }
 }
 
 async function createTables(connection: mysql.Connection) {
-  console.log("Tworzenie tabel...")
 
   // Tabela users
   await connection.execute(`
@@ -125,12 +121,10 @@ async function createTables(connection: mysql.Connection) {
 }
 
 async function seedUsers(connection: mysql.Connection) {
-  console.log("Wypełnianie tabeli users...")
 
   // Sprawdź, czy tabela jest już wypełniona
   const [rows] = await connection.execute("SELECT COUNT(*) as count FROM users")
   if ((rows as any)[0].count > 0) {
-    console.log("Tabela users już zawiera dane, pomijam...")
     return
   }
 
@@ -219,12 +213,10 @@ async function seedUsers(connection: mysql.Connection) {
 }
 
 async function seedCategories(connection: mysql.Connection) {
-  console.log("Wypełnianie tabeli categories...")
 
   // Sprawdź, czy tabela jest już wypełniona
   const [rows] = await connection.execute("SELECT COUNT(*) as count FROM categories")
   if ((rows as any)[0].count > 0) {
-    console.log("Tabela categories już zawiera dane, pomijam...")
     return
   }
 
@@ -285,12 +277,10 @@ async function seedCategories(connection: mysql.Connection) {
 }
 
 async function seedAds(connection: mysql.Connection) {
-  console.log("Wypełnianie tabeli ads...")
 
   // Sprawdź, czy tabela jest już wypełniona
   const [rows] = await connection.execute("SELECT COUNT(*) as count FROM ads")
   if ((rows as any)[0].count > 0) {
-    console.log("Tabela ads już zawiera dane, pomijam...")
     return
   }
 
@@ -410,12 +400,10 @@ async function seedAds(connection: mysql.Connection) {
 }
 
 async function seedAdImages(connection: mysql.Connection) {
-  console.log("Wypełnianie tabeli ad_images...")
 
   // Sprawdź, czy tabela jest już wypełniona
   const [rows] = await connection.execute("SELECT COUNT(*) as count FROM ad_images")
   if ((rows as any)[0].count > 0) {
-    console.log("Tabela ad_images już zawiera dane, pomijam...")
     return
   }
 
@@ -442,12 +430,10 @@ async function seedAdImages(connection: mysql.Connection) {
 }
 
 async function seedAdComments(connection: mysql.Connection) {
-  console.log("Wypełnianie tabeli ad_comments...")
 
   // Sprawdź, czy tabela jest już wypełniona
   const [rows] = await connection.execute("SELECT COUNT(*) as count FROM ad_comments")
   if ((rows as any)[0].count > 0) {
-    console.log("Tabela ad_comments już zawiera dane, pomijam...")
     return
   }
 
@@ -496,12 +482,9 @@ async function seedAdComments(connection: mysql.Connection) {
 }
 
 async function seedReviews(connection: mysql.Connection) {
-  console.log("Wypełnianie tabeli reviews...")
-
   // Sprawdź, czy tabela jest już wypełniona
   const [rows] = await connection.execute("SELECT COUNT(*) as count FROM reviews")
   if ((rows as any)[0].count > 0) {
-    console.log("Tabela reviews już zawiera dane, pomijam...")
     return
   }
 

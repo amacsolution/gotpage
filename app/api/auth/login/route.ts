@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     }
 
     // Sprawdzenie czy użytkownik istnieje
-    const users = await query("SELECT id, name, email, password, type,verified, verified_email, avatar FROM users WHERE email = ?", [email]) as UserData[]
+    const users = await query("SELECT id, name, email, password, type,verified, verified_email, avatar, location, adress FROM users WHERE email = ?", [email]) as UserData[]
 
     if (!Array.isArray(users) || users.length === 0) {
       return NextResponse.json({ error: "Nieprawidłowy email lub hasło" }, { status: 401 })
@@ -27,8 +27,6 @@ export async function POST(request: Request) {
     const user = users[0]
 
     const isVerifiedEmail = user.verified_email === 1
-
-    console.log(isVerifiedEmail)
 
     if (!isVerifiedEmail) {
       const verificationToken = crypto.randomBytes(32).toString("hex")
@@ -81,6 +79,8 @@ export async function POST(request: Request) {
       type: user.type,
       verified: user.verified,
       authChange: true,
+      location: user.location,
+      adress : user.adress,
       avatar: user.avatar // Dodanie flagi dla klienta
     })
   } catch (error) {

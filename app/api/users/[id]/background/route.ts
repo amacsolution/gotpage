@@ -8,9 +8,6 @@ import { v4 as uuidv4 } from "uuid"
 
 export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
-  try {
-    console.log("Background upload started for user ID:", params.id)
-
     // Sprawdzenie, czy użytkownik jest zalogowany
     const user = await auth(request)
     if (!user) {
@@ -41,16 +38,12 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     }
 
     // Obsługa multipart/form-data (dla przesyłania plików)
-    // Parsowanie formularza
-    console.log("Parsing form data...")
     const formData = await request.formData()
     const backgroundFile = formData.get("background") as File
 
     if (!backgroundFile) {
       return NextResponse.json({ error: "Brak pliku" }, { status: 400 })
     }
-
-    console.log("File received:", backgroundFile.name, "Size:", backgroundFile.size, "Type:", backgroundFile.type)
 
     // Sprawdzenie typu pliku
     if (!backgroundFile.type.startsWith("image/")) {
@@ -62,27 +55,19 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     if (backgroundFile.size > maxSize) {
       return NextResponse.json({ error: "Plik jest zbyt duży. Maksymalny rozmiar to 10MB." }, { status: 400 })
     }
-
-    // Pobranie aktualnego tła użytkownika
-    console.log("Fetching current background...")
     const [currentBackgroundResult] = (await query("SELECT background_img FROM users WHERE id = ?", [userId])) as any[]
     const currentBackground = currentBackgroundResult?.background_img
-    console.log("Current background:", currentBackground)
 
     // Próba zapisu pliku bez użycia sharp
     try {
-      console.log("Trying direct file save...")
 
       // Utworzenie ścieżki do folderu z tłami
       let uploadDir = path.join(process.cwd(), "uploads", "backgrounds")
-      console.log("Upload directory:", uploadDir)
 
       // Sprawdzenie, czy folder istnieje, jeśli nie - utworzenie go
       if (!existsSync(uploadDir)) {
         try {
-          console.log("Creating directory:", uploadDir)
           await mkdir(uploadDir, { recursive: true })
-          console.log("Directory created successfully")
         } catch (error) {
           console.error("Error creating directory:", error)
 
@@ -97,13 +82,9 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
 
           for (const dir of altDirs) {
             try {
-              console.log("Trying alternative directory:", dir)
               if (!existsSync(dir)) {
                 await mkdir(dir, { recursive: true })
               }
-
-              // Jeśli udało się utworzyć katalog, użyj go
-              console.log("Using alternative directory:", dir)
               altUploadDir = dir
               break
             } catch (dirError) {
@@ -120,7 +101,6 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       // Generowanie unikalnej nazwy pliku
       const fileName = `${uuidv4()}.jpg`
       const filePath = path.join(uploadDir, fileName)
-      console.log("File will be saved to:", filePath)
 
       // Konwersja File na Buffer
       const arrayBuffer = await backgroundFile.arrayBuffer()
@@ -128,15 +108,12 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
 
       // Zapisz plik bezpośrednio bez przetwarzania
       await writeFile(filePath, buffer)
-      console.log("File saved successfully without processing")
 
       // Ścieżka URL do tła
       const backgroundUrl = `/api/uploads/backgrounds/${fileName}`
-      console.log("Background URL:", backgroundUrl)
 
       // Aktualizacja tła w bazie danych
       await query("UPDATE users SET background_img = ? WHERE id = ?", [backgroundUrl, userId])
-      console.log("Database updated successfully")
 
       // Zwrócenie URL nowego tła
       return NextResponse.json({ backgroundUrl })
@@ -163,7 +140,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       { status: 500 },
     )
   }
-}
+
 
 // Dodajemy również obsługę metody PATCH, która będzie działać tak samo jak POST
 export { POST as PATCH }

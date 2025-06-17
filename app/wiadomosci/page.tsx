@@ -96,17 +96,12 @@ export default function MessagesPage() {
       }
       return
     }
-
-    console.log("Starting polling for new messages")
-
     // Funkcja do pobierania nowych wiadomości
     const pollNewMessages = async () => {
       try {
         const url = `/api/messages/conversations/${activeConversation}${
           lastMessageTimestampRef.current ? `?after=${encodeURIComponent(lastMessageTimestampRef.current)}` : ""
         }`
-
-        console.log(lastMessageTimestampRef)
 
         const response = await fetch(url)
         if (!response.ok) return
@@ -119,7 +114,6 @@ export default function MessagesPage() {
 
           // Aktualizuj timestamp ostatniej wiadomości
           const lastMessage = data.messages[data.messages.length - 1]
-          console.log("Last message:", lastMessage)
           lastMessageTimestampRef.current = lastMessage.timestamp
 
           // Jeśli są nowe wiadomości od innych użytkowników, oznacz je jako przeczytane

@@ -37,7 +37,6 @@ export async function POST(request: NextRequest) {
       // Próba wykonania prostego zapytania do tabeli
       await db.query("SELECT 1 FROM email_logs LIMIT 1")
     } catch (error) {
-      console.log("Tabela email_logs nie istnieje, tworzenie...")
       await db.query(`
         CREATE TABLE IF NOT EXISTS email_logs (
           id INT AUTO_INCREMENT PRIMARY KEY,
@@ -68,7 +67,6 @@ export async function POST(request: NextRequest) {
           "INSERT INTO email_logs (email_to, subject, template_type, status, created_at) VALUES (?, ?, ?, ?, NOW())",
           [to, `[TEST] Email typu: ${emailType}`, emailType, "sent"],
         )
-        console.log("Ręcznie zapisano log emaila")
       } catch (logError) {
         console.error("Błąd podczas ręcznego zapisywania logu:", logError)
       }
@@ -86,7 +84,6 @@ export async function POST(request: NextRequest) {
           "INSERT INTO email_logs (email_to, subject, template_type, status, error_message, created_at) VALUES (?, ?, ?, ?, ?, NOW())",
           [to, `[TEST] Email typu: ${emailType}`, emailType, "error", errorMessage],
         )
-        console.log("Ręcznie zapisano log błędu emaila")
       } catch (logError) {
         console.error("Błąd podczas ręcznego zapisywania logu błędu:", logError)
       }

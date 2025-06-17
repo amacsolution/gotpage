@@ -8,7 +8,6 @@ export async function GET(request: Request) {
     const url = new URL(request.url)
     const token = url.searchParams.get("token")
 
-    console.log("Token weryfikacyjny:", token)
 
     if (!token) {
       return NextResponse.json({ error: "Brak tokenu weryfikacyjnego" }, { status: 400 })
@@ -16,7 +15,6 @@ export async function GET(request: Request) {
 
     // Sprawdź, czy istnieje użytkownik z tym tokenem
     const result = await query("SELECT id, name, email, type,verified, verified_email, avatar  FROM users WHERE verification_token = ?", [token]) as { id: string, email: string, type: string, name: string, verified: boolean }[]
-    console.log("Wynik zapytania:", result)
 
     if (!result || result.length === 0) {
       return NextResponse.json({ error: "Nieprawidłowy token weryfikacyjny" }, { status: 400 })
@@ -38,8 +36,6 @@ export async function GET(request: Request) {
       "UPDATE users SET verified_email = 1, verification_token = NULL, updated_at = NOW() WHERE verification_token = ?",
       [token],
     )
-
-    console.log("Użytkownik zweryfikowany pomyślnie:", result[0].email)
     const user = result[0]
     const tokenJwt = jwt.sign(
       {

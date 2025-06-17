@@ -41,7 +41,6 @@ export class EmailService {
 
       // Sprawdź, czy jesteśmy w trybie testowym
       if (emailConfig.testMode) {
-        console.log(`[EMAIL TEST MODE] Email do: ${to}, temat: ${subject}`)
         to = emailConfig.testEmails
         subject = `[TEST] ${subject}`
       }
@@ -59,8 +58,6 @@ export class EmailService {
         html,
         attachments,
       })
-
-      console.log(`Email wysłany: ${info.messageId}`)
 
       // Zapisz log w bazie danych
       await this.logEmail({
@@ -104,25 +101,6 @@ export class EmailService {
     errorMessage?: string
   }) {
     try {
-      console.log(`Zapisywanie logu emaila: ${to}, ${subject}, ${templateType}, ${status}`)
-
-      // Sprawdź, czy tabela email_logs istnieje
-      try {
-        await db.query("SELECT 1 FROM email_logs LIMIT 1")
-      } catch (error) {
-        console.log("Tabela email_logs nie istnieje, tworzenie...")
-        await db.query(`
-          CREATE TABLE IF NOT EXISTS email_logs (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            email_to VARCHAR(255) NOT NULL,
-            subject VARCHAR(255) NOT NULL,
-            template_type VARCHAR(50) NOT NULL,
-            status VARCHAR(20) NOT NULL,
-            error_message TEXT,
-            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-          )
-        `)
-      }
 
       // Zapisz log do bazy danych
       const result = await db.query(
@@ -130,7 +108,6 @@ export class EmailService {
         [to, subject, templateType, status, errorMessage || null],
       ) as { rows?: { insertId: number } }
 
-      console.log("Log emaila zapisany pomyślnie, ID:", result.rows?.insertId)
     } catch (logError) {
       console.error("Błąd podczas zapisywania logu emaila:", logError)
     }

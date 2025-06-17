@@ -64,13 +64,17 @@ function mergeConfig(nextConfig, userConfig) {
 
 
 // Próba importu konfiguracji użytkownika
-let userConfig = undefined;
+
+let userConfig = {};
 try {
   userConfig = require("./v0-user-next.config");
+  if (!userConfig || typeof userConfig !== 'object') {
+    console.warn("Plik konfiguracyjny użytkownika jest pusty lub niepoprawny");
+    userConfig = {};
+  }
 } catch (e) {
-  console.log("Nie znaleziono pliku konfiguracyjnego użytkownika");
+  userConfig = {};
 }
-
 mergeConfig(nextConfig, userConfig);
 
 module.exports = nextConfig;

@@ -14,13 +14,10 @@ export function useSocket(userId: string | null | undefined) {
     if (!userId || initializingRef.current) return
 
     initializingRef.current = true
-    console.log("Initializing Socket.IO for user:", userId)
 
     // Funkcja do inicjalizacji Socket.IO
     const initSocket = async () => {
       try {
-        // Najpierw zainicjuj endpoint
-        console.log("Fetching Socket.IO initialization endpoint")
         const response = await fetch("/api/socketio")
 
         if (!response.ok) {
@@ -29,10 +26,6 @@ export function useSocket(userId: string | null | undefined) {
         }
 
         const data = await response.json()
-        console.log("Socket.IO initialization response:", data)
-
-        // Utwórz połączenie Socket.IO
-        console.log("Creating Socket.IO connection")
         const socket = io({
           path: "/api/socketio",
           reconnectionAttempts: 3,
@@ -44,7 +37,6 @@ export function useSocket(userId: string | null | undefined) {
 
         // Obsługa zdarzeń
         socket.on("connect", () => {
-          console.log("Socket.IO connected with ID:", socket.id)
           setIsConnected(true)
           setError(null)
 
@@ -53,12 +45,10 @@ export function useSocket(userId: string | null | undefined) {
         })
 
         socket.on("connect_error", (err) => {
-          console.error("Socket.IO connection error:", err)
           setError(`Błąd połączenia: ${err.message}`)
         })
 
         socket.on("disconnect", (reason) => {
-          console.log("Socket.IO disconnected:", reason)
           setIsConnected(false)
         })
 
@@ -68,7 +58,6 @@ export function useSocket(userId: string | null | undefined) {
         })
 
         socket.on("connection_established", (data) => {
-          console.log("Connection confirmed by server:", data)
         })
 
         socketRef.current = socket
@@ -84,7 +73,6 @@ export function useSocket(userId: string | null | undefined) {
 
     return () => {
       if (socketRef.current) {
-        console.log("Disconnecting Socket.IO")
         socketRef.current.disconnect()
         socketRef.current = null
       }
@@ -96,8 +84,6 @@ export function useSocket(userId: string | null | undefined) {
   const joinConversation = useCallback(
     (conversationId: string) => {
       if (!socketRef.current || !isConnected || !userId) return
-
-      console.log(`Joining conversation ${conversationId}`)
       socketRef.current.emit("join_conversation", { userId, conversationId })
     },
     [isConnected, userId],
@@ -107,8 +93,6 @@ export function useSocket(userId: string | null | undefined) {
   const leaveConversation = useCallback(
     (conversationId: string) => {
       if (!socketRef.current || !isConnected || !userId) return
-
-      console.log(`Leaving conversation ${conversationId}`)
       socketRef.current.emit("leave_conversation", { userId, conversationId })
     },
     [isConnected, userId],
@@ -118,8 +102,6 @@ export function useSocket(userId: string | null | undefined) {
   const sendMessage = useCallback(
     (message: any) => {
       if (!socketRef.current || !isConnected || !userId) return false
-
-      console.log(`Sending message to conversation ${message.conversationId}`)
       socketRef.current.emit("new_message", { message, userId })
       return true
     },

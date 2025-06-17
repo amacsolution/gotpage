@@ -9,7 +9,6 @@ import { v4 as uuidv4 } from "uuid"
 
 export async function POST(request: Request) {
   try {
-    console.log("Upload API called")
     
     // Sprawdzenie, czy użytkownik jest zalogowany
     const user = await auth(request)
@@ -28,8 +27,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Brak pliku" }, { status: 400 })
     }
 
-    console.log("File received:", file.name, "Size:", file.size, "Type:", file.type, "Upload type:", type)
-
     // Sprawdzenie typu pliku
     if (!file.type.startsWith("image/")) {
       return NextResponse.json({ error: "Nieprawidłowy format pliku. Akceptowane są tylko obrazy." }, { status: 400 })
@@ -43,16 +40,13 @@ export async function POST(request: Request) {
 
     try {
       // Próba zapisu pliku z użyciem funkcji uploadImage
-      console.log("Trying to upload image using uploadImage function")
       const url = await uploadImage(file, type, userId, cropData)
-      console.log("Image uploaded successfully, URL:", url)
       return NextResponse.json({ url })
     } catch (uploadError) {
       console.error("Error in uploadImage function:", uploadError)
       
       // Próba bezpośredniego zapisu pliku jako fallback
       try {
-        console.log("Trying direct file save as fallback")
         
         // Określenie katalogu docelowego
         let uploadDir = ""
@@ -71,12 +65,10 @@ export async function POST(request: Request) {
             uploadDir = path.join(process.cwd(), "uploads", "general")
         }
         
-        console.log("Target directory:", uploadDir)
         
         // Sprawdzenie, czy katalog istnieje, jeśli nie - utworzenie go
         if (!existsSync(uploadDir)) {
           try {
-            console.log("Creating directory:", uploadDir)
             await mkdir(uploadDir, { recursive: true })
           } catch (mkdirError) {
             console.error("Error creating directory:", mkdirError)
@@ -91,7 +83,6 @@ export async function POST(request: Request) {
             
             for (const dir of altDirs) {
               try {
-                console.log("Trying alternative directory:", dir)
                 await mkdir(dir, { recursive: true })
                 uploadDir = dir
                 break
@@ -105,7 +96,6 @@ export async function POST(request: Request) {
         // Generowanie unikalnej nazwy pliku
         const fileName = `${uuidv4()}${path.extname(file.name)}`
         const filePath = path.join(uploadDir, fileName)
-        console.log("File will be saved to:", filePath)
         
         // Konwersja File na Buffer
         const arrayBuffer = await file.arrayBuffer()
@@ -113,11 +103,9 @@ export async function POST(request: Request) {
         
         // Zapisz plik bezpośrednio
         await writeFile(filePath, buffer)
-        console.log("File saved successfully without processing")
         
         // Zwróć URL do pliku
         const fileUrl = `/api/uploads/${type}/${fileName}`
-        console.log("File URL:", fileUrl)
         
         return NextResponse.json({ url: fileUrl })
       } catch (directSaveError) {

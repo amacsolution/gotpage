@@ -47,17 +47,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       categories: string
       is_following: boolean
     }[]
-
-    console.log("following:", following)
-    console.log("userId:", userId)
-
     // Get total count for pagination
     const countResult = await query("SELECT COUNT(*) as total FROM user_follows WHERE follower_id = ?", [userId]) as {total : number}[]
 
     const total = countResult[0].total || 0
     const hasMore = offset + limit < total
-
-    console.log("total:", total)
 
     // Process the results
     const users = following.map((user) => ({
@@ -65,8 +59,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       categories: user.categories ? JSON.parse(user.categories) : [], 
       isFollowing: Boolean(user.is_following),
     }))
-
-    console.log("users:", users)
 
     return NextResponse.json({
       users,

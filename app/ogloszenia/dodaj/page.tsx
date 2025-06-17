@@ -10,33 +10,80 @@ import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { PageLayout } from "@/components/page-layout"
 import { useToast } from "@/hooks/use-toast"
-import { ImagePlus, X, Loader2 } from "lucide-react"
+import { ImagePlus, X, Loader2, Filter } from "lucide-react"
 import { SimpleEditor } from "@/components/rich-editor"
-import { set } from "date-fns"
+import { Badge } from "@/components/ui/badge"
+import {motion} from "framer-motion"
 
 // Kategorie i podkategorie
 const categories = [
   {
     id: 1,
     name: "Motoryzacja",
-    subcategories: ["Samochody osobowe", "Motocykle", "Części", "Przyczepy", "Ciężarowe", "Inne pojazdy"],
+    subcategories: [
+      "Samochody osobowe", 
+      "Motocykle", 
+      "Części", 
+      "Przyczepy", 
+      "Samochody Ciężarowe", 
+      "Inne pojazdy"
+    ],
+    subsubcategories: {},
     fields: [
-      { name: "marka", label: "Marka", type: "text", required: true, dbField: "make" },
+      { 
+        name: "marka",
+        label: "Markę", 
+        type: "select", 
+        options: [
+          "Aixam", "Alfa Romeo", "Aston Martin", "Audi", "Bentley", "BMW", "Cadillac",
+          "Chevrolet", "Chrysler", "Citroën", "Dacia", "Daewoo", "Daihatsu", "Dodge",
+          "Ferrari", "Fiat", "Ford", "Honda", "Hummer", "Hyundai", "Infiniti", "Jaguar",
+          "Jeep", "Kia", "Lamborghini", "Lancia", "Land Rover", "Lexus", "Lincoln",
+          "Maserati", "Mazda", "McLaren", "Mercedes-Benz", "Mini", "Mitsubishi", "Nissan",
+          "Opel", "Peugeot", "Polonez", "Pontiac", "Porsche", "Renault", "Rolls-Royce",
+          "Rover", "Saab", "Seat", "Škoda", "Smart", "SsangYong", "Subaru", "Suzuki",
+          "Syrena", "Tata", "Tesla", "Toyota", "Trabant", "Volkswagen", "Volvo", "Warszawa",
+          "Wartburg", "Wołga", "Pozostałe"
+        ],
+        // Stwórz obiekt conditionalOptions z poprawnymi kluczami
+        conditionalOptions: {
+          "Samochody Ciężarowe": [
+            "Isuzu", "Iveco", "Mercedes-Benz", "Ford", "Volkswagen", "MAN",
+            "DAF", "Renault", "Scania", "Volvo"
+          ],
+          "Motocykle": [
+            "Aprilia", "BMW", "Ducati", "Harley-Davidson", "Honda", "Kawasaki",
+            "KTM", "Suzuki", "Triumph", "Yamaha"
+          ],
+          "Samochody osobowe": [
+            "Aixam", "Alfa Romeo", "Aston Martin", "Audi", "Bentley", "BMW", "Cadillac",
+            "Chevrolet", "Chrysler", "Citroën", "Dacia", "Daewoo", "Daihatsu", "Dodge",
+            "Ferrari", "Fiat", "Ford", "Honda", "Hummer", "Hyundai", "Infiniti", "Jaguar",
+            "Jeep", "Kia", "Lamborghini", "Lancia", "Land Rover", "Lexus", "Lincoln",
+            "Maserati", "Mazda", "McLaren", "Mercedes-Benz", "Mini", "Mitsubishi", "Nissan",
+            "Opel", "Peugeot", "Polonez", "Pontiac", "Porsche", "Renault", "Rolls-Royce",
+            "Rover", "Saab", "Seat", "Škoda", "Smart", "SsangYong", "Subaru", "Suzuki",
+            "Syrena", "Tata", "Tesla", "Toyota", "Trabant", "Volkswagen", "Volvo", "Warszawa",
+            "Wartburg", "Wołga", "Pozostałe"
+          ]
+        },
+        required: true,
+        dbField: "make"
+      },
       { name: "model", label: "Model", type: "text", required: true, dbField: "model" },
       { name: "rok", label: "Rok produkcji", type: "number", required: true, dbField: "year" },
-      { name: "przebieg", label: "Przebieg (km)", type: "number", required: false, dbField: "mileage" },
-      { name: "pojemnosc", label: "Pojemność silnika (cm³)", type: "number", required: false, dbField: "engine_size" },
+      { name: "przebieg", label: "Przebieg (km)", type: "number", required: true, dbField: "mileage" },
+      { name: "pojemnosc", label: "Pojemność silnika (cm³)", type: "number", required: true, dbField: "engine_size" },
       {
         name: "paliwo",
         label: "Rodzaj paliwa",
         type: "select",
         options: ["Benzyna", "Diesel", "LPG", "Elektryczny", "Hybryda"],
-        required: false,
+        required: true,
         dbField: "fuel_type",
       },
       {
@@ -51,30 +98,71 @@ const categories = [
   },
   {
     id: 2,
-    name: "Nieruchomości",
-    subcategories: ["Mieszkania", "Domy", "Działki", "Biura", "Garaże", "Pokoje"],
+    name: "RTV/AGD",
+    subcategories: ["Telewizory",
+    "Kamery",
+    "Pralki/Suszarki",
+    "Zmywarki",
+    "Kuchenki",
+    "Piekarniki",
+    "Lodówki",
+    "Zamrażarki",
+    "Pozostałe",],
+    subsubcategories: {},
     fields: [
-      { name: "powierzchnia", label: "Powierzchnia (m²)", type: "number", required: true, dbField: "square_meters" },
-      { name: "liczba_pokoi", label: "Liczba pokoi", type: "number", required: false, dbField: "rooms" },
-      { name: "pietro", label: "Piętro", type: "number", required: false, dbField: "floor" },
-      { name: "rok_budowy", label: "Rok budowy", type: "number", required: false, dbField: "year_built" },
+      { name: "marka",
+        label: "markę", 
+        type: "select", 
+        conditionalOptions: {
+          "Telewizory": ["Samsung", "LG", "Sony", "Panasonic", "Philips", "Toshiba", "Sharp", "Grundig", "Hitachi", "Thomson", "Xiaomi", "Hisense", "TCL", "JVC", "Blaupunkt"],
+          "Kamery": ["Sony", "Panasonic", "Canon", "Nikon", "GoPro", "DJI", "JVC", "Blackmagic", "Olympus", "Fujifilm", "Akaso", "YI", "Kodak", "SJCAM"],
+          "Pralki/Suszarki": ["Bosch", "Siemens", "Electrolux", "Samsung", "LG", "Whirlpool", "Amica", "Beko", "Indesit", "Candy", "Gorenje", "Hoover", "Hotpoint", "Miele"],
+          "Zmywarki": ["Bosch", "Siemens", "Electrolux", "Whirlpool", "Beko", "Samsung", "Amica", "Indesit", "Candy", "Hotpoint", "Gorenje", "Miele", "Zanussi"],
+          "Kuchenki": ["Amica", "Bosch", "Electrolux", "Whirlpool", "Samsung", "Beko", "Gorenje", "Indesit", "Candy", "Hotpoint", "Mastercook", "Mora"],
+          "Piekarniki": ["Bosch", "Samsung", "Electrolux", "Whirlpool", "Beko", "Amica", "Siemens", "Gorenje", "Indesit", "Candy", "Hotpoint", "Teka"],
+          "Lodówki": ["Samsung", "LG", "Bosch", "Electrolux", "Whirlpool", "Beko", "Amica", "Gorenje", "Indesit", "Candy", "Miele", "Hisense", "Haier"],
+          "Zamrażarki": ["Electrolux", "Bosch", "Beko", "Whirlpool", "Amica", "Gorenje", "Liebherr", "Samsung", "Indesit", "Candy", "Hotpoint", "Haier"],
+          "Pozostałe": ["Bosch", "Philips", "Tefal", "Braun", "Zelmer", "Moulinex", "Severin", "Russell Hobbs", "Amica", "Ravanson", "Clatronic", "Götze & Jensen"]
+        },
+        required: true, 
+        dbField: "brand" },
+      { name: "model", label: "Model", type: "text", required: true, dbField: "model" },
       {
         name: "stan",
         label: "Stan",
         type: "select",
-        options: ["Nowy", "Bardzo dobry", "Dobry", "Do remontu"],
+        options: ["Nowy", "Używany - jak nowy", "Używany - dobry", "Używany - widoczne ślady użytkowania"],
         required: false,
-        dbField: "heating_type", // Używamy heating_type do przechowywania stanu
+        dbField: "condition_type",
       },
-      { name: "umeblowane", label: "Umeblowane", type: "checkbox", required: false, dbField: "has_balcony" }, // Używamy has_balcony do przechowywania informacji o umeblowaniu
+      { name: "gwarancja", label: "Gwarancja", type: "checkbox", required: false, dbField: "warranty_months" },
     ],
   },
   {
     id: 3,
     name: "Elektronika",
-    subcategories: ["Telefony", "Komputery", "RTV", "Konsole", "Fotografia", "Akcesoria"],
+    subcategories: [ "Telefony i Akcesoria", "Komputery i Akcesoria"],
+    subsubcategories: {
+      "Telefony i Akcesoria": ["Smartfony", "Urządzenia Stacjonarne", "Akcesoria"],
+      "Komputery i Akcesoria": ["Komputery Stacjonarne", "Laptopy/Netbooki", "Tablety/Palmtopy", "Monitory/Projektory", "Drukarki/Skanery", "Akcesoria", "Internet i Sieci", "Oprogramowanie", ],
+    },
     fields: [
-      { name: "marka", label: "Marka", type: "text", required: true, dbField: "brand" },
+      { name: "marka",
+        label: "markę", 
+        type: "select", 
+        options: ["Alcatel", "Apple", "Asus", "BlackBerry", "HTC", "Huawei", "Lenovo", "LG", "Motorola", "Nokia", "Samsung", "Sony", "Sony Ericsson", "Xiaomi", "Pozostałe"],
+        conditionalOptions: {
+          "Smartfony": ["Alcatel", "Apple", "Asus", "BlackBerry", "HTC", "Huawei", "Lenovo", "LG", "Motorola", "Nokia", "Samsung", "Sony", "Sony Ericsson", "Xiaomi", "Pozostałe"],
+          "Urządzenia Stacjonarne": ["Apple", "Dell", "HP", "Lenovo", "Acer", "Asus", "Microsoft"],
+          "Komputery Stacjonarne": ["Acer", "Apple", "Asus", "Dell", "HP", "Huawei", "Lenovo", "Microsoft", "Samsung", "Sony", "Toshiba", "Inne marki"],
+          "Laptopy/Netbooki": ["Acer", "Apple", "Asus", "Dell", "HP", "Huawei", "Lenovo", "Microsoft", "Samsung", "Sony", "Toshiba", "Inne marki"],
+          "Tablety/Palmtopy": ["Acer", "Apple", "Asus", "Dell", "HP", "Huawei", "Lenovo", "Microsoft", "Samsung", "Sony", "Toshiba", "Inne marki"],
+          "Monitory/Projektory": ["Acer", "Apple", "Asus", "Dell", "HP", "Huawei", "Lenovo", "Microsoft", "Samsung", "Sony", "Toshiba", "Inne marki"],
+          "Drukarki/Skanery": ["Acer", "Apple", "Asus", "Dell", "HP", "Huawei", "Lenovo", "Microsoft", "Samsung", "Sony", "Toshiba", "Inne marki"],
+          "Akcesoria": ["Logitech", "Microsoft", "Razer", "Corsair", "SteelSeries", "Asus", "Acer", "Dell", "HP", "Lenovo", "Inne marki"]
+        },
+        required: true, 
+        dbField: "brand" },
       { name: "model", label: "Model", type: "text", required: true, dbField: "model" },
       {
         name: "stan",
@@ -89,8 +177,41 @@ const categories = [
   },
   {
     id: 4,
-    name: "Moda - kobiety",
-    subcategories: ["Ubrania", "Buty", "Dodatki", "Biżuteria", "Torebki", "Zegarki"],
+    name: "Moda",
+    subcategories: ["Kobiety", "Mężczyźni"],
+    subsubcategories: {
+      "Kobiety": [
+          "Sukienki",
+          "Spódnice",
+          "Bluzki i Koszule",
+          "Swetry i Bluzy",
+          "T-shirty i Toppi",
+          "Marynarki i Żakiety",
+          "Kurtki i Płaszcze",
+          "Spodnie i Legginsy",
+          "Buty",
+          "Torebki",
+          "Bielizna",
+          "Stroje Kąpielowe",
+          "Biżuteria",
+          "Akcesoria (czapki, szaliki, rękawiczki)",
+          "Pozostałe"
+        ],
+        "Mężczyźni": [
+          "Koszule",
+          "T-shirty i Polówki",
+          "Swetry i Bluzy",
+          "Marynarki i Garnitury",
+          "Kurtki i Płaszcze",
+          "Spodnie i Jeansy",
+          "Buty",
+          "Bielizna",
+          "Zegarki",
+          "Paski i Portfele",
+          "Akcesoria (czapki, szaliki, rękawiczki)",
+          "Pozostałe"
+        ],
+    },
     fields: [
       { name: "marka", label: "Marka", type: "text", required: false, dbField: "brand" },
       { name: "rozmiar", label: "Rozmiar", type: "text", required: true, dbField: "size" },
@@ -99,7 +220,7 @@ const categories = [
         label: "Stan",
         type: "select",
         options: ["Nowy", "Używany - jak nowy", "Używany - dobry", "Używany - widoczne ślady użytkowania"],
-        required: false,
+        required: true,
         dbField: "condition_type",
       },
       { name: "kolor", label: "Kolor", type: "text", required: false, dbField: "color" },
@@ -108,17 +229,21 @@ const categories = [
   },
   {
     id: 5,
-    name: "Moda - mężczyźni",
-    subcategories: ["Ubrania", "Buty", "Dodatki", "Biżuteria", "Torebki", "Zegarki"],
+    name: "Dom i ogród",
+    subcategories: ["Meble do domu",
+    "Wyposażenie domu",
+    "Narzędzia",
+    "Budownictwo",
+    "Wyposażenie Ogrodu",
+    "Inne"],
+    subsubcategories: {},
     fields: [
-      { name: "marka", label: "Marka", type: "text", required: false, dbField: "brand" },
-      { name: "rozmiar", label: "Rozmiar", type: "text", required: true, dbField: "size" },
       {
         name: "stan",
         label: "Stan",
         type: "select",
         options: ["Nowy", "Używany - jak nowy", "Używany - dobry", "Używany - widoczne ślady użytkowania"],
-        required: false,
+        required: true,
         dbField: "condition_type",
       },
       { name: "kolor", label: "Kolor", type: "text", required: false, dbField: "color" },
@@ -127,18 +252,114 @@ const categories = [
   },
   {
     id: 6,
-    name: "Usługi",
-    subcategories: ["Remonty", "Transport", "Korepetycje", "Sprzątanie", "Ogrodnicze", "Finansowe"],
+    name: "Nieruchomości",
+    subcategories: ["Na sprzedaż" , "Wynajem", "Wynajem krótkoterminowy"],
+    subsubcategories: {
+      "Na sprzedaż" : ["Domy",
+        "Mieszkania",
+        "Działki",
+        "Lokale",
+        "Garaże/Magazyny"],
+      "Na wynajem" : ["Domy",
+        "Mieszkania",
+        "Działki",
+        "Lokale",
+        "Garaże/Magazyny"
+      ],
+      "Na wynajem krótkoterminowy" : ["Domy",
+        "Mieszkania",
+        "Działki",
+        "Lokale",
+        "Garaże/Magazyny"
+      ]
+    },
     fields: [
-      { name: "doswiadczenie", label: "Doświadczenie (lata)", type: "number", required: false, dbField: "job_type" },
-      { name: "dostepnosc", label: "Dostępność", type: "text", required: false, dbField: "availability" },
-      { name: "dojazd", label: "Możliwość dojazdu", type: "checkbox", required: false, dbField: "has_garage" }, // Używamy has_garage do przechowywania informacji o możliwości dojazdu
+      { name: "powierzchnia", label: "Powierzchnia (m²)", type: "number", required: true, dbField: "square_meters" },
+      { name: "liczba_pokoi", label: "Liczba pokoi", type: "number", required: false, dbField: "rooms" },
+      { name: "pietro", label: "Piętro", type: "number", required: false, dbField: "floor" },
+      { name: "rok_budowy", label: "Rok budowy", type: "number", required: false, dbField: "year_built" },
+      { name: "umeblowane", label: "Umeblowane", type: "checkbox", required: false, dbField: "has_balcony" }, // Używamy has_balcony do przechowywania informacji o umeblowaniu
+      {
+        name: "stan",
+        label: "Stan",
+        type: "select",
+        options: [
+          "Do remontu",
+          "Do odświeżenia",
+          "Do zamieszkania",
+          "Stan deweloperski",
+          "Stan surowy otwarty",
+          "Stan surowy zamknięty",
+          "Po generalnym remoncie"
+        ],
+        required: true,
+        dbField: "condition_type"
+      },
     ],
   },
   {
     id: 7,
-    name: "Praca",
+    name: "Dla dzieci",
+    subcategories: ["Ubranka",
+    "Zabawki",
+    "Zdrowie i Higiena",
+    "Akcesoria",
+    "Artykuły Szkolne",
+    "Inne"],
+    fields: [
+      { name: "wiek", label: "Wiek dziecka (lata)", type: "number", required: false, dbField: "child_age" },
+      { name: "marka", label: "Marka", type: "text", required: false, dbField: "brand" },
+      { name: "kolor", label: "Kolor", type: "text", required: false, dbField: "color" },
+      {
+        name: "stan",
+        label: "Stan",
+        type: "select",
+        options: ["Nowy", "Używany - jak nowy", "Używany - dobry", "Używany - widoczne ślady użytkowania"],
+        required: true,
+        dbField: "condition_type",
+      },
+    ]
+  },
+  {
+    id: 8,
+    name: "Zdrowie i Uroda",
+    subcategories: ["Perfumy",
+    "Kosmetyki",
+    "Makijaż",
+    "Apteczka",
+    "Akcesoria",
+    "Pielęgnacja",
+    "Usługi Kosmetyczne",
+    "Usługi Fryzjerskie",
+    "Pozostałe"],
+    fields: [
+      { name: "marka", label: "Marka", type: "text", required: false, dbField: "brand" },
+      { name: "rozmiar", label: "Rozmiar", type: "text", required: true, dbField: "size" },
+      {
+        name: "stan",
+        label: "Stan",
+        type: "select",
+        options: ["Nowy", "Używany - jak nowy", "Używany - dobry", "Używany - widoczne ślady użytkowania"],
+        required: true,
+        dbField: "condition_type",
+      },
+      { name: "kolor", label: "Kolor", type: "text", required: false, dbField: "color" },
+      { name: "material", label: "Materiał", type: "text", required: false, dbField: "material" },
+    ]
+  },
+  {
+    id: 9,
+    name: "Zwierzęta i Akcesoria",
     subcategories: ["Etaty", "Freelance", "Zdalna", "Dorywcza", "Sezonowa"],
+  },
+  {
+    id: 10,
+    name: "Praca",
+    subcategories: ["Zdalna", "Stacjonarnie",],
+    subsubcategories : {
+      "Zdalna" : ["Umowa o Pracę", "B2B", "Umowa Zlecenie", "Umowa o dzieło", "Freelance"],
+      "Stacjonarnie" : ["Umowa o Pracę", "B2B", "Umowa Zlecenie", "Umowa o dzieło", "Staż/Praktyki"]
+    },
     fields: [
       { name: "stanowisko", label: "Stanowisko", type: "text", required: true, dbField: "position" },
       { name: "firma", label: "Firma", type: "text", required: false, dbField: "company" },
@@ -148,51 +369,102 @@ const categories = [
     ]
   },
   {
-    id: 8,
-    name: "Zwierzęta",
-    subcategories: ["Psy", "Koty", "Ptaki", "Gryzonie", "Ryby", "Akcesoria"],
-    fields: [
-      { name: "gatunek", label: "Gatunek", type: "text", required: true, dbField: "species" },
-      { name: "rasa", label: "Rasa", type: "text", required: false, dbField: "breed" },
-      { name: "wiek", label: "Wiek (lata)", type: "number", required: false, dbField: "age" },
-      { name: "szczepienia", label: "Szczepienia", type: "checkbox", required: false, dbField: "vaccinated" }
-    ]
+    id: 11,
+    name: "Sport/Turystyka",
+    subcategories: [ "Rowery i Akcesoria",
+    "Turystyka",
+    "Siłownia/Fitnes",
+    "Wedkarstwo",
+    "Bieganie",
+    "Militaria",
+    "Pozostałe"],
+
   },
   {
-    id: 9,
-    name: "Sport i Hobby",
-    subcategories: ["Rowery", "Fitness", "Wędkarstwo", "Instrumenty", "Kolekcje"],
-    fields: [
-      { name: "typ", label: "Typ", type: "text", required: true, dbField: "type" },
-      { name: "marka", label: "Marka", type: "text", required: false, dbField: "brand" },
-      { name: "stan", label: "Stan", type: "select", options: ["Nowy", "Używany"], required: false, dbField: "condition" }
-    ]
+    id: 12,
+    name: "Bilety/e-Bilety",
   },
   {
-    id: 10,
-    name: "Dla dzieci",
-    subcategories: ["Zabawki", "Wózki", "Ubrania", "Foteliki", "Meble dziecięce"],
+    id: 13,
+    name: "Usługi",
+    subcategories: ["Lokalne", "Internetowe"],
+    subsubcategories: {
+      "Lokalne" : [
+        "Dolnośląskie",
+        "Kujawsko-Pomorskie",
+        "Lubelskie",
+        "Lubuskie",
+        "Łódzkie",
+        "Małopolskie",
+        "Mazowieckie",
+        "Opolskie",
+        "Podkarpackie",
+        "Podlaskie",
+        "Pomorskie",
+        "Śląskie",
+        "Świętokrzyskie",
+        "Warmińsko-Mazurskie",
+        "Wielkopolskie",
+        "Zachodniopomorskie"
+      ],
+      "Internetowe" : ["Freelance"]
+    },
     fields: [
-      { name: "wiek", label: "Wiek dziecka (lata)", type: "number", required: false, dbField: "child_age" },
-      { name: "marka", label: "Marka", type: "text", required: false, dbField: "brand" },
-      { name: "kolor", label: "Kolor", type: "text", required: false, dbField: "color" }
+      { name: "Zawód", label: "Zawód", type: "text", required: true, dbField: "position" },
+      { name: "firma", label: "Firma", type: "text", required: false, dbField: "company" },
+      { name: "wynagrodzenie", label: "Wynagrodzenie (PLN)", type: "number", required: false, dbField: "salary" },
+      { name: "lokalizacja", label: "Lokalizacja", type: "text", required: false, dbField: "location" }
     ]
   }
   ,
   {
-    id: 11,
-    name: "Rolnictwo",
-    subcategories: ["Maszyny rolnicze", "Zwierzęta hodowlane", "Nawozy", "Zboża", "Usługi rolnicze"],
+    id: 14,
+    name: "Przemysł",
+    subcategories: ["Gastronomia",
+    "Hotelarstwo",
+    "Fryzjerstwo/Kosmetyka",
+    "Biuro i Reklama",
+    "Pozostałe"],
     fields: [
-      { name: "typ", label: "Typ", type: "text", required: true, dbField: "type" },
-      { name: "rok", label: "Rok produkcji", type: "number", required: false, dbField: "year" },
-      { name: "moc", label: "Moc (KM)", type: "number", required: false, dbField: "power" }
+      { name: "firma", label: "Firma", type: "text", required: false, dbField: "company" },
+      { name: "lokalizacja", label: "Lokalizacja", type: "text", required: false, dbField: "location" }
     ]
-  }
-
-
+  },
+  {
+    id: 15,
+    name: "Rozrywka",
+    subcategories: ["Filmy",
+    "Muzyka",
+    "Książki/Komiksy",
+    "Gry",
+    "Instrumenty",
+    "Pozostałe"],
+  },
+  {
+    id: 16,
+    name: "Antyki/Kolekcje/Sztuka",
+    subcategories: ["Design/Antyki",
+    "Kolekcje",
+    "Hobby",
+    "Pozostałe"],
+  },
+  {
+    id: 17,
+    name: "Wycieczki/Podróże",
+    subcategories: ["Krajowe",
+    "Zagraniczne",],
+    subsubcategories: {
+      "Krajowe" : [
+        "Morze",
+        "Góry",
+        "Mazury",
+        "Pozostałe Regiony"],
+      "Zagraniczne" : [
+        "Morze",
+        "Góry",]
+    }
+  },
 ]
-const options = ["Pralka", "Zmywarka", "Głośniki", "Telewizor", "Laptop", "Smartfon"]
 
 // Dynamiczne budowanie schematu walidacji
 const createFormSchema = (selectedCategory: string, selectedSubcategory: string) => {
@@ -247,7 +519,7 @@ const createFormSchema = (selectedCategory: string, selectedSubcategory: string)
   // Dodaj pola specyficzne dla kategorii
   const schemaExtension: Record<string, any> = {}
 
-  category.fields.forEach((field) => {
+  category.fields?.forEach((field) => {
     if (field.type === "text") {
       schemaExtension[field.name] = field.required
         ? z.string().min(1, { message: `${field.label} jest wymagane` })
@@ -276,10 +548,13 @@ export default function AddAdPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("")
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("")
   const [subcategories, setSubcategories] = useState<string[]>([])
+  const [subsubcategories, setSubSubcategories] = useState<string[]>([])
   const [categoryFields, setCategoryFields] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isDataLoading, setIsDataLoading] = useState(true)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [selectedSubSubcategory, setSelectedSubSubcategory] = useState<string>("")
+  const [isHelloPage, setIsHelloPage] = useState(true)
 
   // Dynamicznie tworzymy schemat formularza
   const formSchema = createFormSchema(selectedCategory, selectedSubcategory)
@@ -315,6 +590,10 @@ export default function AddAdPage() {
           })
           router.push("/login")
         }
+        const user = userData ? JSON.parse(userData) : false
+
+        user.location ? form.setValue("locaton", user.location) : ""
+        user.adress ? form.setValue("adres", user.adress) : ""
       } catch (error) {
         //console.error("Nie jesteś zalogowany", error)
       }
@@ -322,7 +601,7 @@ export default function AddAdPage() {
     setIsDataLoading(false)
   }, [router, toast])
 
-  const handleCategoryChange = (value: string) => {
+  const handleCategoryChange = async (value: string) => {
     setSelectedCategory(value)
     form.setValue("category", value)
     form.setValue("subcategory", "")
@@ -331,7 +610,7 @@ export default function AddAdPage() {
     // Resetowanie wartości pól specyficznych dla kategorii
     const prevCategory = categories.find((c) => c.name === selectedCategory)
     if (prevCategory) {
-      prevCategory.fields.forEach((field) => {
+      prevCategory.fields?.forEach((field) => {
         form.setValue(field.name as any, field.type === "checkbox" ? false : "")
       })
     }
@@ -346,9 +625,23 @@ export default function AddAdPage() {
     }
   }
 
-  const handleSubcategoryChange = (value: string) => {
+  const handleSubcategoryChange = async (value: string) => {
     setSelectedSubcategory(value)
     form.setValue("subcategory", value)
+    form.setValue("finalcategory", "")
+    setSelectedSubSubcategory("")
+    const category = categories.find((c) => c.name === selectedCategory)
+    if (category && category.subsubcategories) {
+      setSubSubcategories((category.subsubcategories as Record<string, string[]>)[value] || [])
+    } else {
+      setSubSubcategories([])
+    }
+  }
+
+  const handleSubSubcategoryChange = (value: string) => {
+
+    setSelectedSubSubcategory(value)
+    form.setValue("finalcategory", value)
   }
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -477,7 +770,7 @@ export default function AddAdPage() {
       // Dodanie pól specyficznych dla kategorii
       const category = categories.find((c) => c.name === selectedCategory)
       if (category) {
-        category.fields.forEach((field) => {
+        category.fields?.forEach((field) => {
           const fieldValue = form.getValues(field.name as any)
           if (fieldValue !== undefined && fieldValue !== "") {
             // Używamy nazwy pola z formularza, a nie nazwy kolumny w bazie danych
@@ -525,6 +818,14 @@ export default function AddAdPage() {
     }
   }
 
+  const wybory = [
+    {name : "Samochód", icon: "🚗", category: "Motoryzacja", subcategory: "Samochody osobowe", color: "bg-red-100 text-red-800 hover:bg-red-400" },
+    {name : "Dom",icon: "🏠", category: "Nieruchomości", subcategory: "Na sprzedaż", subsubcat : "Domy", color: "bg-blue-100 text-blue-800 hover:bg-blue-400"},
+    {name: "Telefon", icon: "💻",category: "Elektronika", subcategory: "Telefony i Akcesoria", subsubcat: "Smartfony" , color: "bg-purple-100 text-purple-800 hover:bg-purple-400" },
+    { name: "Praca", icon: "💼", category: "Praca", subcategory: "Stacjonarnie", subsubcat: "Umowa o Pracę", color: "bg-amber-100 text-amber-800 hover:bg-amber-400" },
+    {name: "Dom i ogród", category: "Dom i ogród", subcategory: "Wyposażenie Ogrodu", icon: "🌱", color: "bg-emerald-100 text-emerald-800 hover:bg-emerald-400" },
+  ]
+
   if (isDataLoading) {
     return (
       <PageLayout>
@@ -535,6 +836,53 @@ export default function AddAdPage() {
           </div>
         </div>
       </PageLayout>
+    )
+  } else if (isHelloPage) {
+    return (
+    <PageLayout>
+      <div className="container py-6">
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <h1 className="text-3xl font-bold mb-2">Dodaj szybko ogłoszenie</h1>
+          <p className="text-muted-foreground">Skorzystaj z szybkich wyborów</p>
+          <div className="mt-6 flex flex-wrap max-w-[600px] gap-2">            
+              {wybory.map((w, index) => (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut",delay: index * 0.2 }}
+              whileHover={{scale: 1.2, animationDuration:0.1}}>
+                <Badge
+                key= {w.name}
+                  className={`text-sm py-1.5 px-3 cursor-pointer ${w.color? w.color :  "hover:bg-foreground/40 bg-foreground/20"}`}
+                  onClick={async () => {
+                    await handleCategoryChange(w.category);
+                    await handleSubcategoryChange(w.subcategory);
+                    if(w.subsubcat){
+                      handleSubSubcategoryChange(w.subsubcat) } 
+                    setIsHelloPage(false);
+                  }}
+                >
+                  <span className="mr-1">{w.icon}</span> {w.name}
+                </Badge>
+              </motion.div>
+            ))}
+             
+            </div>
+            <p className="text-muted-foreground mt-5 font-bold mb-2">Lub</p>
+            <motion.div
+              initial={{ opacity: 0, y: 0, x: -100}}
+              animate={{ opacity: 1, y: 0, x: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut", delay: 0.5 }}>
+              <Badge
+                className="mt-4 text-sm py-1.5 px-3 cursor-pointer hover:bg-foreground/60 bg-foreground/30"
+                onClick={() => setIsHelloPage(false)}
+              >
+                <Filter className="h-3 w-3 mr-1" /> Dodaj samodzielnie
+              </Badge>
+            </motion.div>
+        </div>
+      </div>
+    </PageLayout>
     )
   }
 
@@ -628,35 +976,37 @@ export default function AddAdPage() {
                   )}
                 />
               </div>
-
-              {selectedSubcategory === 'RTV' && (
-                <FormField
-                  key="finalcategory"
-                  control={form.control}
-                  name="finalcategory"
-                  render={({ field: formField }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Rodzaj sprzętu
-                        *
-                      </FormLabel>
-                      <Select onValueChange={formField.onChange} defaultValue={formField.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={`Wybierz podkategorie RTV`} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {options?.map((option: string) => (
-                            <SelectItem key={option} value={option}>
-                              {option}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>)}
-                />
+              
+              
+              {((selectedSubcategory !== "" && subsubcategories.length > 0) || selectedSubSubcategory !== "") && (
+                    <FormField
+                      key="finalcategory"
+                      control={form.control}
+                      name="finalcategory"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Pochodna Kategorii</FormLabel>
+                          <Select
+                            onValueChange={(value) => handleSubSubcategoryChange(value)}
+                            defaultValue={selectedSubSubcategory || field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Wybierz dokładną pochodną kategorii" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {subsubcategories.map((option: string) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
               )}
 
               <FormField
@@ -736,38 +1086,49 @@ export default function AddAdPage() {
                               </FormItem>
                             )}
                           />
-                        )
-                      } else if (field.type === "select") {
-                        return (
-                          <FormField
+                        );
+                          } else if (field.type === "select") {
+                          // Use conditionalOptions if available for the selected subcategory, otherwise fallback to field.options
+                          const optionsList =
+                            field.conditionalOptions && selectedSubcategory in field.conditionalOptions
+                              ? field.conditionalOptions[selectedSubcategory]
+                              : field.conditionalOptions && selectedSubSubcategory in field.conditionalOptions
+                              ? field.conditionalOptions[selectedSubSubcategory]
+                              : field.options;
+                          return (
+                            <FormField
                             key={field.name}
                             control={form.control}
                             name={field.name as any}
                             render={({ field: formField }) => (
                               <FormItem>
-                                <FormLabel>
-                                  {field.label}
-                                  {field.required && " *"}
-                                </FormLabel>
-                                <Select onValueChange={formField.onChange} defaultValue={formField.value}>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder={`Wybierz ${field.label.toLowerCase()}`} />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {field.options?.map((option: string) => (
-                                      <SelectItem key={option} value={option}>
-                                        {option}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
+                              <FormLabel>
+                                {field.name}
+                                {field.required && " *"}
+                              </FormLabel>
+                              <Select
+                                onValueChange={formField.onChange}
+                                defaultValue={formField.value}
+                              >
+                                <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder={`Wybierz ${field.label.toLowerCase()}`} />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                {optionsList?.map((option: string) => (
+                                  <SelectItem key={option} value={option}>
+                                  {option}
+                                  </SelectItem>
+                                ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
                               </FormItem>
                             )}
-                          />
-                        )
+                            />
+                          );
+                          
                       } else if (field.type === "checkbox") {
                         return (
                           <FormField
@@ -775,7 +1136,7 @@ export default function AddAdPage() {
                             control={form.control}
                             name={field.name as any}
                             render={({ field: formField }) => (
-                              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-4">
+                              <FormItem className="flex flex-row mt-6 items-start space-x-3 space-y-0 rounded-md p-4">
                                 <FormControl>
                                   <Checkbox checked={formField.value} onCheckedChange={formField.onChange} />
                                 </FormControl>

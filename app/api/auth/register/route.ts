@@ -63,9 +63,6 @@ const getCoordinates = async (address: string) => {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-
-
-    console.log(body)
     // Walidacja danych
     const result = registerSchema.safeParse(body)
     if (!result.success) {
@@ -199,9 +196,6 @@ export async function POST(request: Request) {
           verificationToken,
         ],
       )
-
-      console.log("Użytkownik zarejestrowany:", result)
-      console.log("token weryfikacyjny:", verificationToken)
 
       await query('UPDATE users SET verification_token = ? WHERE id = ?', [verificationToken, id])
 

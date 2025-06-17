@@ -40,7 +40,6 @@ export function useWebSocket(userId: string | null | undefined) {
     if (!userId) return
 
     try {
-      console.log("Initializing WebSocket endpoint")
       // Najpierw zainicjuj endpoint
       fetch("/api/websocket")
         .then((response) => {
@@ -51,16 +50,13 @@ export function useWebSocket(userId: string | null | undefined) {
         })
         .then(() => {
           try {
-            console.log("Connecting to WebSocket")
             const wsUrl = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${
               window.location.host
             }/api/websocket?userId=${userId}`
-            console.log("WebSocket URL:", wsUrl)
 
             const ws = new WebSocket(wsUrl)
 
             ws.onopen = () => {
-              console.log("WebSocket connected")
               setIsConnected(true)
               setError(null)
               reconnectAttemptsRef.current = 0
@@ -76,7 +72,6 @@ export function useWebSocket(userId: string | null | undefined) {
             ws.onmessage = (event) => {
               try {
                 const message = JSON.parse(event.data) as WebSocketMessage
-                console.log("WebSocket message received:", message.type)
 
                 // Wywołaj handlery dla tego typu wiadomości
                 const handlers = messageHandlersRef.current.get(message.type)
@@ -100,7 +95,6 @@ export function useWebSocket(userId: string | null | undefined) {
             }
 
             ws.onclose = (event) => {
-              console.log("WebSocket disconnected:", event.code)
               setIsConnected(false)
 
               // Wyczyść interwał ping-pong
@@ -112,7 +106,6 @@ export function useWebSocket(userId: string | null | undefined) {
               // Próba ponownego połączenia
               if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
                 reconnectAttemptsRef.current++
-                console.log(`Reconnecting attempt ${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS}`)
 
                 if (reconnectTimeoutRef.current) {
                   clearTimeout(reconnectTimeoutRef.current)
@@ -121,8 +114,6 @@ export function useWebSocket(userId: string | null | undefined) {
                 reconnectTimeoutRef.current = setTimeout(() => {
                   initWebSocket()
                 }, 2000 * reconnectAttemptsRef.current) // Zwiększaj czas między próbami
-              } else {
-                console.log("Maximum reconnection attempts reached")
                 setError("Nie udało się ponownie połączyć")
               }
             }
@@ -184,7 +175,6 @@ export function useWebSocket(userId: string | null | undefined) {
   // Funkcja do dołączania do konwersacji
   const joinConversation = useCallback(
     (conversationId: string) => {
-      console.log("Joining conversation", conversationId)
       return sendMessage({
         type: "join_conversation",
         userId,
@@ -197,7 +187,6 @@ export function useWebSocket(userId: string | null | undefined) {
   // Funkcja do opuszczania konwersacji
   const leaveConversation = useCallback(
     (conversationId: string) => {
-      console.log("Leaving conversation", conversationId)
       return sendMessage({
         type: "leave_conversation",
         userId,

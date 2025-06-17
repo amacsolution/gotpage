@@ -14,7 +14,7 @@ import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Share2, Flag, MapPin, Phone, Mail, Calendar, Clock, ArrowLeft, Eye, ShieldCheck, SlashIcon } from "lucide-react"
+import { Share2, Flag, MapPin, Phone, Mail, Calendar, Clock, ArrowLeft, Eye, ShieldCheck, SlashIcon, Edit, Trash2 } from "lucide-react"
 import { PageLayout } from "@/components/page-layout"
 import { LikeButton } from "@/components/like-button"
 import { useToast } from "@/hooks/use-toast"
@@ -22,6 +22,8 @@ import { useRouter } from "next/navigation"
 import DOMPurify from "dompurify"
 import QrButton from "@/components/qr/qr-button"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@radix-ui/react-dialog"
+import { DialogFooter, DialogHeader } from "@/components/ui/dialog"
 
 
 
@@ -29,16 +31,19 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 export default function AdDetailsClient({ id }: { id: string }) {
   const [ad, setAd] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isAuthor, setIsAuthor] = useState(false)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [commentText, setCommentText] = useState("")
   const [similarAds, setSimilarAds] = useState<any[]>([])
   const [isSimilarAdsLoading, setIsSimilarAdsLoading] = useState(true)
   const [sanitizedHtml, setSanitizedHtml] = useState("")
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
   const router = useRouter();
   
 
-    const handleMessage = async (userId: number) => {
+  const handleMessage = async (userId: number) => {
     try {
       // Check if user is logged in
       const currentUser = localStorage.getItem("userData")
@@ -85,17 +90,23 @@ export default function AdDetailsClient({ id }: { id: string }) {
   useEffect(() => {
     // Pobieranie danych ogłoszenia
     const fetchAd = async () => {
+      const getUserData = async () => {
+        const userData = localStorage.getItem("userData")
+        const user = userData ? JSON.parse(userData) : false
+        return user
+      }
       try {
         setIsLoading(true)
         const response = await fetch(`/api/ads/${id}`)
         const data = await response.json()
-
-
         if (data.error) {
           throw new Error(data.error)
         }
+        const user = await getUserData()
+        if (data.author && user ) {
+          setIsAuthor(user.id === data.author.id)
+        }
         setSanitizedHtml(DOMPurify.sanitize(data.description || ""))
-
         setAd(data)
       } catch (error) {
         console.error("Błąd podczas pobierania ogłoszenia:", error)
@@ -111,7 +122,6 @@ export default function AdDetailsClient({ id }: { id: string }) {
 
     fetchAd()
   }, [id, toast])
-
 
   // Pobieranie podobnych ogłoszeń z niższym priorytetem
   useEffect(() => {
@@ -178,6 +188,55 @@ export default function AdDetailsClient({ id }: { id: string }) {
       })
     }
   }
+
+    const handleEditClick = (e: React.MouseEvent) => {
+      // e.preventDefault()
+      // e.stopPropagation()
+      // router.push(`/ogloszenia/${ad.id}/edytuj`)
+      toast({
+          title: "Edycja ogłoszenia",
+          description: "Funkcja w przygotowaniu",
+          variant: "default",
+        })
+    }
+  
+    const handleDeleteClick = (e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setShowDeleteDialog(true)
+    }
+  
+    const confirmDelete = async () => {
+      try {
+        setIsDeleting(true)
+        const response = await fetch(`/api/ads/${ad.id}`, {
+          method: "DELETE",
+        })
+  
+        if (!response.ok) {
+          throw new Error("Nie udało się usunąć ogłoszenia")
+        }
+  
+        toast({
+          title: "Sukces",
+          description: "Ogłoszenie zostało usunięte",
+        })
+  
+        // Odświeżenie strony po usunięciu
+        router.push(`/profil/${ad.author.id}`)
+      } catch (error) {
+  
+        toast({
+          title: "Błąd",
+          description: "Nie udało się usunąć ogłoszenia",
+          variant: "destructive",
+        })
+      } finally {
+        setIsDeleting(false)
+        setShowDeleteDialog(false)
+      }
+    }
+
   // Skeleton loading dla całej strony
   if (isLoading) {
     return (
@@ -348,32 +407,72 @@ export default function AdDetailsClient({ id }: { id: string }) {
 
             {/* Informacje o sprzedającym */}
             <Card className="p-4 mb-4">
-              <div className="flex items-center gap-3 mb-4">
-                <Link href={`/profil/${ad.author.id}`}>
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={ad.author.avatar} alt={ad.author.name} />
-                    <AvatarFallback>{ad.author.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                </Link>
-                <div>
-                  <div className="flex items-center gap-1">
-                    <Link href={`/profil/${ad.author.id}`} className="hover:underline">
-                      <h3 className="font-semibold">{ad.author.name}</h3>
-                    </Link>
-                    {ad.author.verified && (
-                      <span className="text-primary" title="Zweryfikowany">
-                        <ShieldCheck />
-                      </span>
-                    )}
+              <div className="flex justify-between">
+                <div className="flex items-center gap-3 mb-4">                
+                  <Link href={`/profil/${ad.author.id}`}>
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={ad.author.avatar} alt={ad.author.name} />
+                      <AvatarFallback>{ad.author.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  </Link>
+                  <div>
+                    <div className="flex items-center gap-1">
+                      <Link href={`/profil/${ad.author.id}`} className="hover:underline">
+                        <h3 className="font-semibold">{ad.author.name}</h3>
+                      </Link>
+                      {ad.author.verified && (
+                        <span className="text-primary" title="Zweryfikowany">
+                          <ShieldCheck />
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {ad.author.type === "individual" ? "Osoba prywatna" : "Firma"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3 inline mr-1" />
+                      Na Gotpage od {new Date(ad.author.joinedAt).toLocaleDateString()}
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {ad.author.type === "individual" ? "Osoba prywatna" : "Firma"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3 inline mr-1" />
-                    Na Gotpage od {new Date(ad.author.joinedAt).toLocaleDateString()}
-                  </p>
                 </div>
+                {isAuthor ? (
+                  <>
+                  <div className="flex gap-2 ">
+                  <Button
+                      onClick={handleEditClick}
+                      className="flex items-center gap-2 bg-primary hover:bg-primary/90"
+                      size="sm"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Edytuj
+                  </Button>
+
+                  <Button onClick={handleDeleteClick} variant="destructive" className="flex items-center gap-2" size="sm">
+                    <Trash2 className="h-4 w-4" />
+                    Usuń
+                  </Button>
+              </div>
+
+              <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Czy na pewno chcesz usunąć to ogłoszenie?</DialogTitle>
+                    <DialogDescription>
+                      Ta akcja jest nieodwracalna. Ogłoszenie zostanie trwale usunięte z systemu.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter className="flex gap-2 sm:gap-0">
+                    <Button variant="outline" onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>
+                      Nie, anuluj
+                    </Button>
+                    <Button variant="destructive" onClick={confirmDelete} disabled={isDeleting}>
+                      {isDeleting ? "Usuwanie..." : "Tak, usuń"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              </>
+                ): ""}
               </div>
               <Separator className="my-4" />
               <div className="flex flex-col gap-3">
@@ -648,7 +747,8 @@ export default function AdDetailsClient({ id }: { id: string }) {
                       <Image
                         src={similarAd.image || "/placeholder.svg?height=200&width=300"}
                         alt={similarAd.title}
-                        className="object-fill"
+                        loading="lazy"
+                        objectFit="cover"
                         layout="fill"
                       />
                     </div>

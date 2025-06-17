@@ -123,13 +123,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
     // Sprawdzenie, czy użytkownik istnieje w tabeli stats
     const userStats = await query("SELECT * FROM user_stats WHERE user_id = ?", [userId]) as any[]
-    // console.log("userStats", userStats)
+
     if (!userStats || userStats.length === 0) {
       // Jeśli nie ma statystyk, tworzymy nowy wpis
       await query("INSERT INTO user_stats (user_id, views, last_active) VALUES (?, 1, NOW())", [userId])
-      // console.log(`Utworzono nowy wpis statystyk dla użytkownika ${userId}`)
     } else {
-      // console.log(`Aktualizacja statystyk dla użytkownika ${userId}`)
       await query("UPDATE user_stats SET views = views + 1, last_active = NOW() WHERE user_id = ?", [userId])
     }
 
@@ -199,8 +197,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const profileViews = (await query("SELECT views FROM user_stats WHERE user_id = ?", [userId])) as {views : number}[]
 
     const viewsCount = (Number(adsViews[0]?.count) || 0) + (profileViews[0]?.views || 0)
-
-    console.log("adsCount", adsViews, "viewsCount", profileViews)
     const likesCount = (await query(
       "SELECT COUNT(*) as count FROM ad_likes WHERE ad_id IN (SELECT id FROM ads WHERE user_id = ?)",
       [userId],

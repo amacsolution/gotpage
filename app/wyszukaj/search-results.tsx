@@ -85,9 +85,6 @@ export function SearchResults({ query, type }: SearchResultsProps) {
         // Poprawne kodowanie parametrów URL
         const encodedQuery = encodeURIComponent(query)
         const apiUrl = `/api/search/results?q=${encodedQuery}&type=${type}`
-
-        console.log("Fetching from URL:", apiUrl)
-
         const response = await fetch(apiUrl, {
           cache: "no-store",
           headers: {
@@ -100,7 +97,6 @@ export function SearchResults({ query, type }: SearchResultsProps) {
         }
 
         const apiData = await response.json()
-        console.log("Search API response:", apiData)
         setData(apiData)
       } catch (err) {
         console.error("Error in SearchResults:", err)

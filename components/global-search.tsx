@@ -57,7 +57,6 @@ export function GlobalSearch({ className = "" }: { className?: string }) {
         }
 
         const data: ApiResponse = await response.json()
-        console.log("API response:", data)
 
         // Transform the data to the format expected by the component
         const transformedResults: SearchResult[] = []

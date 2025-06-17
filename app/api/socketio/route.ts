@@ -8,11 +8,9 @@ export const config = {
 }
 
 const ioHandler = (req: NextApiRequest, res: NextApiResponse) => {
-  console.log("Socket.IO endpoint hit:", req.method, req.url)
 
   // Obsługa metody GET dla inicjalizacji
   if (req.method === "GET") {
-    console.log("Socket.IO initialization endpoint hit via GET")
     res.setHeader("Content-Type", "application/json")
     res.status(200).json({ success: true, message: "Socket.IO server is ready" })
     return
@@ -20,10 +18,8 @@ const ioHandler = (req: NextApiRequest, res: NextApiResponse) => {
 
   // Sprawdź, czy to jest żądanie upgrade dla WebSocket
   if (req.headers.upgrade && req.headers.upgrade.toLowerCase() === "websocket") {
-    console.log("WebSocket upgrade request detected")
 
     if (!res.socket.server.io) {
-      console.log("*First use, starting Socket.IO server...")
 
       // @ts-ignore
       const httpServer = res.socket.server
@@ -43,11 +39,9 @@ const ioHandler = (req: NextApiRequest, res: NextApiResponse) => {
       const conversationConnections = new Map<string, Set<string>>()
 
       io.on("connection", (socket) => {
-        console.log("New Socket.IO connection:", socket.id)
 
         // Obsługa dołączania użytkownika
         socket.on("user_connect", (userId) => {
-          console.log(`User ${userId} connected with socket ${socket.id}`)
 
           // Zapisz socket ID dla użytkownika
           if (!userConnections.has(userId)) {
@@ -67,7 +61,6 @@ const ioHandler = (req: NextApiRequest, res: NextApiResponse) => {
 
         // Obsługa dołączania do konwersacji
         socket.on("join_conversation", ({ userId, conversationId }) => {
-          console.log(`User ${userId} joining conversation ${conversationId}`)
 
           // Dołącz do pokoju konwersacji
           socket.join(`conversation:${conversationId}`)
@@ -84,7 +77,6 @@ const ioHandler = (req: NextApiRequest, res: NextApiResponse) => {
 
         // Obsługa opuszczania konwersacji
         socket.on("leave_conversation", ({ userId, conversationId }) => {
-          console.log(`User ${userId} leaving conversation ${conversationId}`)
 
           // Opuść pokój konwersacji
           socket.leave(`conversation:${conversationId}`)
@@ -98,7 +90,6 @@ const ioHandler = (req: NextApiRequest, res: NextApiResponse) => {
 
         // Obsługa nowych wiadomości
         socket.on("new_message", ({ message, userId }) => {
-          console.log(`New message in conversation ${message.conversationId} from user ${userId}`)
 
           // Wyślij wiadomość do wszystkich w konwersacji
           socket.to(`conversation:${message.conversationId}`).emit("new_message", {
@@ -115,7 +106,6 @@ const ioHandler = (req: NextApiRequest, res: NextApiResponse) => {
 
         // Obsługa pisania
         socket.on("typing", ({ userId, conversationId, isTyping }) => {
-          console.log(`User ${userId} typing status in conversation ${conversationId}: ${isTyping}`)
 
           // Wyślij status pisania do wszystkich w konwersacji oprócz nadawcy
           socket.to(`conversation:${conversationId}`).emit("typing", {
@@ -126,7 +116,6 @@ const ioHandler = (req: NextApiRequest, res: NextApiResponse) => {
 
         // Obsługa rozłączenia
         socket.on("disconnect", () => {
-          console.log(`Socket ${socket.id} disconnected`)
 
           // Znajdź użytkownika dla tego socketu
           let disconnectedUserId: string | null = null
@@ -145,7 +134,6 @@ const ioHandler = (req: NextApiRequest, res: NextApiResponse) => {
 
           // Powiadom innych o statusie offline
           if (disconnectedUserId) {
-            console.log(`User ${disconnectedUserId} is now offline`)
             socket.broadcast.emit("user_status", {
               userId: disconnectedUserId,
               isOnline: false,
@@ -167,10 +155,8 @@ const ioHandler = (req: NextApiRequest, res: NextApiResponse) => {
       // @ts-ignore
       res.socket.server.io = io
     } else {
-      console.log("Socket.IO server already running")
     }
   } else {
-    console.log("Non-WebSocket request to Socket.IO endpoint")
     res.setHeader("Content-Type", "application/json")
     res.status(200).json({ success: true, message: "Socket.IO server is ready" })
   }

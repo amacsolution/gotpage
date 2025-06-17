@@ -33,7 +33,6 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       ])  as { follower_id: string; target_id: string }[]
 
       if (alreadyFollowing.length > 0) {
-        console.log("alreadyFollowing:", alreadyFollowing)
         return NextResponse.json({ message: "Już obserwujesz tego użytkownika" }, { status: 200 })
       }
 
@@ -44,7 +43,6 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       ]) as { affectedRows: number }[]
 
       if (result[0].affectedRows > 0) {
-        console.log("dodano obserwacje:", result[0].affectedRows)
       } else {
         console.error("Nie udało się dodać obserwacji")
         return NextResponse.json({ error: "Nie udało się dodać obserwacji" }, { status: 500 })
