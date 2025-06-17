@@ -44,7 +44,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     if (!backgroundFile) {
       return NextResponse.json({ error: "Brak pliku" }, { status: 400 })
     }
-
+    try{
     // Sprawdzenie typu pliku
     if (!backgroundFile.type.startsWith("image/")) {
       return NextResponse.json({ error: "Nieprawidłowy format pliku. Akceptowane są tylko obrazy." }, { status: 400 })
@@ -140,6 +140,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       { status: 500 },
     )
   }
+}
 
 
 // Dodajemy również obsługę metody PATCH, która będzie działać tak samo jak POST
