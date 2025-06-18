@@ -8,6 +8,11 @@
 next.zip
 /out/
 
+*.zip
+*.rar
+*.7z
+*.tar.gz
+
 # production
 /build
 
