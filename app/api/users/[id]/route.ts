@@ -115,7 +115,7 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
   }
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const userId = (await params).id
     if (!userId) {
@@ -192,9 +192,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const adsCount = (await query("SELECT COUNT(*) as count FROM ads WHERE user_id = ?", [userId])) as QueryResult<{
       count: number
     }>
-    const adsViews = (await query("SELECT SUM(views) as count FROM ads WHERE user_id = ?", [userId])) as {count: number}[]
+    const adsViews = (await query("SELECT SUM(views) as count FROM ads WHERE user_id = ?", [userId])) as { count: number }[]
 
-    const profileViews = (await query("SELECT views FROM user_stats WHERE user_id = ?", [userId])) as {views : number}[]
+    const profileViews = (await query("SELECT views FROM user_stats WHERE user_id = ?", [userId])) as { views: number }[]
 
     const viewsCount = (Number(adsViews[0]?.count) || 0) + (profileViews[0]?.views || 0)
     const likesCount = (await query(

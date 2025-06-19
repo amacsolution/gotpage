@@ -35,19 +35,21 @@ export function LoginForm() {
     try {
       const userData = localStorage.getItem("userData")
       setTimeout(() => {
-      if (userData) {
-        const user = JSON.parse(userData)
-        
-        toast({
-          title: "Jesteś zalogowany",
-          description: "Zalogowano jako " + user.email,
-          variant: "default",
-        })
-        window.history.back()
-      } else {
-        return
-      }}, 1000)
+        if (userData) {
+          const user = JSON.parse(userData)
+
+          toast({
+            title: "Jesteś zalogowany",
+            description: "Zalogowano jako " + user.email,
+            variant: "default",
+          })
+          window.history.back()
+        } else {
+          return
+        }
+      }, 1000)
     } catch (error) {
+      console.error(error)
     }
   }, [toast])
 

@@ -45,11 +45,11 @@ export type BusinessData = {
   services: string | null;
 };
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Sprawdzenie, czy użytkownik jest zalogowany
     const user = await auth(request)
-    const {id} = await params
+    const { id } = await params
     if (!user) {
       return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
     }

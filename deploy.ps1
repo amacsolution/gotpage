@@ -54,7 +54,7 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-$remoteCommand = "cd $remotePath && rm -rf .next && tar -xzf deploy.tar.gz && rm deploy.tar.gz && npm install --omit=dev && pm2 restart ecosystem.config.js --update-env"
+$remoteCommand = "cd $remotePath && rm -rf .next && tar -xzf deploy.tar.gz && rm deploy.tar.gz && npm install --omit=dev && pm2 restart ecosystem.config.js --update-env && pm2 save"
 
 # Zdalne rozpakowanie, usunięcie starego .next, instalacja i restart
 Write-Host "Instalowanie zaleznosci i restart aplikacji..." -ForegroundColor Green

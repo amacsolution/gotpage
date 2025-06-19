@@ -1,15 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { db, query } from "@/lib/db"
-import { auth} from "@/lib/auth"
+import { auth } from "@/lib/auth"
 import { json } from "stream/consumers";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const user = await auth(request)
     if (!user) {
       return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
-    }    
+    }
     const userId = id
     const searchParams = request.nextUrl.searchParams
     const limit = Number.parseInt(searchParams.get("limit") || "10")
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       is_following: boolean
     }[]
     // Get total count for pagination
-    const countResult = await query("SELECT COUNT(*) as total FROM user_follows WHERE follower_id = ?", [userId]) as {total : number}[]
+    const countResult = await query("SELECT COUNT(*) as total FROM user_follows WHERE follower_id = ?", [userId]) as { total: number }[]
 
     const total = countResult[0].total || 0
     const hasMore = offset + limit < total
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Process the results
     const users = following.map((user) => ({
       ...user,
-      categories: user.categories ? JSON.parse(user.categories) : [], 
+      categories: user.categories ? JSON.parse(user.categories) : [],
       isFollowing: Boolean(user.is_following),
     }))
 

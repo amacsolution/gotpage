@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { query } from "@/lib/db"
 import { mkdir, writeFile } from "fs/promises"
 import { NextResponse } from "next/server"
 import path from "path"
@@ -25,7 +26,6 @@ export async function POST(request: Request) {
     }
 
     // Sprawdź, czy użytkownik jest uczestnikiem konwersacji
-    const { query } = await import("@/lib/db")
     const participantCheck = await query(
       `
       SELECT * FROM conversations 

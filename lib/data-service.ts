@@ -1,5 +1,3 @@
-import { query } from "@/lib/db"
-import { createConnection } from "@/lib/db"
 
 // Sprawdzenie, czy kod jest wykonywany po stronie serwera
 // const isServer = typeof window === "undefined"

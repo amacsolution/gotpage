@@ -17,15 +17,15 @@ import { useToast } from "@/hooks/use-toast"
 
 export default function RegisterClientPage() {
   const [open, setOpen] = useState(false)
-  const {toast} = useToast()
+  const { toast } = useToast()
 
-    useEffect(() => {
-      try {
-        const userData = localStorage.getItem("userData")
-        setTimeout(() => {
+  useEffect(() => {
+    try {
+      const userData = localStorage.getItem("userData")
+      setTimeout(() => {
         if (userData) {
           const user = JSON.parse(userData)
-          
+
           toast({
             title: "Jesteś zalogowany",
             description: "Zalogowano jako " + user.email,
@@ -34,10 +34,12 @@ export default function RegisterClientPage() {
           window.history.back()
         } else {
           return
-        }}, 1000)
-      } catch (error) {
-      }
-    }, [toast])
+        }
+      }, 1000)
+    } catch (e) {
+      console.error(e)
+    }
+  }, [toast])
 
   return (
     <>

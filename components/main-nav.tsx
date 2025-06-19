@@ -3,7 +3,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Home, Search, User, Menu, Plus, Building, MessageSquare } from "lucide-react"
+import { Home, Search, User, Menu, Plus, Building, MessageSquare, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -133,9 +133,9 @@ export function MainNav() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/ogloszenia/moje">
-                      <Search className="mr-2 h-4 w-4" />
-                      <span>Moje ogłoszenia</span>
+                    <Link href="/wiadomosci">
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      <span>Wiadomości</span>
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>

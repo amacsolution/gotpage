@@ -10,7 +10,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   const { id } = params
 
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ads/${id}`)
+    const response = await fetch(`https://gotpage.pl/api/ads/${id}`)
     const data = await response.json()
 
     if (!data.error) {
@@ -34,12 +34,12 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
 
   return {
     title,
-    description : `Zobacz szczegóły ogłoszenia ${ad.title} na Gotpage`,
+    description: `Zobacz szczegóły ogłoszenia ${ad.title} na Gotpage`,
     keywords: `${ad.title}, ${ad.category}, ogłoszenie, gotpage`,
     openGraph: {
       url: `https://gotpage.pl/ogloszenia/${id}`,
       title,
-      description : `Zobacz szczegóły ogłoszenia ${ad.title} na Gotpage`,
+      description: `Zobacz szczegóły ogłoszenia ${ad.title} na Gotpage`,
       images: [
         {
           url: ad.images?.[0] || "/og-image-ad-default.jpg",
@@ -54,7 +54,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
 }
 
 // Komponent serwerowy, który renderuje komponent kliencki
-export default async function AdDetailsPage({ params }: { params: { id: string } }) {
+export default async function AdDetailsPage({ params }: { params: Promise<{ id: string }> }) {
 
   const { id } = await params
   return <AdDetailsClient id={id} />

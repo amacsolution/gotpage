@@ -69,8 +69,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
 }
 
 // Komponent serwerowy, który renderuje komponent kliencki
-export default async function AdDetailsPage({ params }: { params: { id: string } }) {
-
+export default async function AdDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   return <UserProfilePage id={id} />
 }

@@ -76,6 +76,9 @@ export const authOptions: NextAuthOptions = {
           }
 
           const user = users[0]
+          if (!credentials.password || !user.password) {
+            throw new Error("Brak hasła")
+          }
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
 
           if (!isPasswordValid) {
@@ -86,8 +89,9 @@ export const authOptions: NextAuthOptions = {
             id: user.id.toString(),
             name: user.name,
             email: user.email,
-            role: user.role,
-            image: user.avatar 
+            role: user.role ?? "user",
+            image: user.avatar
+
           }
         } catch (error) {
           return null

@@ -2,15 +2,15 @@ import { auth } from "@/lib/auth"
 import { query } from "@/lib/db"
 import { type NextRequest, NextResponse } from "next/server"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  try {    
-    
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+
     const user = await auth(request)
     if (!user) {
       return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
-    }    
-      
-      const userId = (await params).id
+    }
+
+    const userId = (await params).id
     const searchParams = request.nextUrl.searchParams
     const limit = Number.parseInt(searchParams.get("limit") || "10")
     const offset = Number.parseInt(searchParams.get("offset") || "0")
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }[]
 
     // Get total count for pagination
-    const countResult = await query("SELECT COUNT(*) as total FROM user_follows WHERE target_id = ?", [userId]) as {total : number}[]
+    const countResult = await query("SELECT COUNT(*) as total FROM user_follows WHERE target_id = ?", [userId]) as { total: number }[]
 
     const total = countResult[0].total || 0
     const hasMore = offset + limit < total

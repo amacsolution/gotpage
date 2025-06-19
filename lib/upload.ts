@@ -1,7 +1,6 @@
-import path from "path"
-import fs from "fs"
-import { mkdir, writeFile, unlink } from "fs/promises"
 import { existsSync } from "fs"
+import { mkdir, unlink, writeFile } from "fs/promises"
+import path from "path"
 import { v4 as uuidv4 } from "uuid"
 
 // Funkcja do znajdowania odpowiedniego katalogu do zapisu plików
@@ -29,7 +28,7 @@ async function findUploadDirectory(type: string): Promise<string> {
     return dir
   } catch (error) {
     console.error(`Failed to create directory ${possibleDirs[0]}:`, error)
-    
+
     // Jeśli nie udało się utworzyć pierwszego katalogu, spróbuj pozostałe
     for (let i = 1; i < possibleDirs.length; i++) {
       try {
@@ -40,7 +39,7 @@ async function findUploadDirectory(type: string): Promise<string> {
         console.error(`Failed to create directory ${possibleDirs[i]}:`, altError)
       }
     }
-    
+
     // Jeśli wszystkie próby zawiodły, zwróć błąd
     throw new Error("Nie można utworzyć katalogu do zapisu plików")
   }
@@ -105,33 +104,33 @@ export async function uploadImage(
   cropData?: { x: number; y: number; width: number; height: number } | null
 ): Promise<string> {
   try {
-    
+
     // Znajdź odpowiedni katalog do zapisu
     let uploadDir = ""
     try {
       uploadDir = await findUploadDirectory(type)
     } catch (error) {
       console.error("Error finding upload directory:", error)
-      
+
       // Fallback do katalogu w bieżącym katalogu
       uploadDir = path.join(process.cwd(), "uploads", type)
       await ensureDirectoryExists(uploadDir)
     }
-    
+
     // Generowanie unikalnej nazwy pliku
     const fileName = `${uuidv4()}${path.extname(file.name)}`
     const filePath = path.join(uploadDir, fileName)
-    
+
     // Konwersja File na Buffer
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
-    
+
     // Zapisz plik bezpośrednio bez przetwarzania
     await writeFile(filePath, buffer)
-    
+
     // Zwróć URL do pliku
     const fileUrl = `/api/uploads/${type}/${fileName}`
-    
+
     return fileUrl
   } catch (error) {
     console.error("Error in uploadImage:", error)
@@ -142,21 +141,21 @@ export async function uploadImage(
 // Funkcja do usuwania obrazu
 export async function deleteImage(fileUrl: string): Promise<void> {
   try {
-    
+
     // Wyciągnij ścieżkę pliku z URL
     const urlParts = fileUrl.split("/")
     const fileName = urlParts[urlParts.length - 1]
     const fileType = urlParts[urlParts.length - 2]
-    
+
     // Lista możliwych lokalizacji pliku
     const possiblePaths = [
       path.join(process.cwd(), "uploads", fileType, fileName),
       path.join(process.cwd(), "public", "uploads", fileType, fileName),
       path.join(process.cwd(), "public", fileType, fileName)
     ]
-    
+
     let fileDeleted = false
-    
+
     // Spróbuj usunąć plik z każdej możliwej lokalizacji
     for (const filePath of possiblePaths) {
       try {
@@ -169,7 +168,7 @@ export async function deleteImage(fileUrl: string): Promise<void> {
         console.error(`Error deleting file ${filePath}:`, error)
       }
     }
-    
+
     if (!fileDeleted) {
       console.warn("File not found in any of the expected locations")
     }
@@ -182,15 +181,15 @@ export async function deleteImage(fileUrl: string): Promise<void> {
 // Funkcja do formatowania ścieżki obrazu
 export function formatImagePath(imagePath: string | null | undefined): string {
   if (!imagePath) return "";
-  
+
   // Jeśli ścieżka już zaczyna się od /api/uploads/, zwróć ją bez zmian
   if (imagePath.startsWith("/api/uploads/")) {
     return imagePath;
   }
-  
+
   // Usuń przedrostek uploads/ jeśli istnieje
   const path = imagePath.startsWith("uploads/") ? imagePath.substring(8) : imagePath;
-  
+
   // Dodaj przedrostek /api/uploads/
   return `/api/uploads/${path}`;
 }
@@ -198,7 +197,7 @@ export function formatImagePath(imagePath: string | null | undefined): string {
 // Funkcja do generowania URL z parametrem odświeżania
 export function getRefreshableImageUrl(url: string | null | undefined, refreshKey?: number): string {
   if (!url) return "";
-  
+
   const formattedUrl = formatImagePath(url);
   return refreshKey ? `${formattedUrl}?v=${refreshKey}` : formattedUrl;
 }

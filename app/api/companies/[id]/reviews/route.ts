@@ -12,11 +12,11 @@ export interface Reviews {
   reviewer_avatar: string
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const userId = Number.parseInt((await params).id)
+    const { id: userId } = await params
 
-    if (isNaN(userId)) {
+    if (userId!) {
       return NextResponse.json({ error: "Nieprawidłowe ID użytkownika" }, { status: 400 })
     }
 
@@ -88,8 +88,8 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Nie jesteś zalogowany" }, { status: 401 })
     }
 
-    const userId = Number.parseInt(params.id)
-    if (isNaN(userId)) {
+    const { id: userId } = await params
+    if (userId!) {
       return NextResponse.json({ error: "Nieprawidłowe ID użytkownika" }, { status: 400 })
     }
 
