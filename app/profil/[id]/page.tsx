@@ -16,9 +16,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   } | null = null;
 
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/${id}`, {
-      next: { revalidate: 60 }, // Opcjonalne: cache na 60 sek. jeśli dane rzadko się zmieniają
-    });
+    const response = await fetch(`https://gotpage.pl/api/users/${id}`);
 
     if (response.ok) {
       const data = await response.json();
@@ -35,7 +33,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   const bio = user?.bio || "Szczegóły profilu użytkownika";
   const avatar = user?.avatar || "/placeholder-user.jpg";
 
-  const title = `Zobacz profil ${name} na Gotpage`;
+  const title = `${name} jest na Gotpage - zobacz profil`;
   const description = bio.length > 160 ? bio.substring(0, 157) + "..." : bio;
   const baseUrl = "https://gotpage.pl";
   const profileUrl = `${baseUrl}/profil/${id}`;

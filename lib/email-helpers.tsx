@@ -9,7 +9,7 @@ import { PaymentConfirmation } from "@/emails/templates/payment-confirmation"
 
 // Dodaj ten import na górze pliku
 import { AdConfirmation } from "@/emails/templates/ad-confirmation"
-import { MigrationInvitation } from "@/emails"
+import { MigrationInvitation, NotifyAdmin } from "@/emails"
 
 /**
  * Wysyła email powitalny po rejestracji
@@ -47,6 +47,24 @@ export async function sendPasswordResetEmail(params: {
     emailComponent: <PasswordReset userName={userName} resetUrl={resetUrl} expirationTime={expirationTime} />,
   })
 }
+
+export async function sendNotifyAdmin(params: {
+  body: string
+  user?: string
+  stack: string
+  url: string
+}) {
+  const { body, user, stack, url } = params
+  const date = new Date
+  const subject = `Błąd na stronie gotpage - ${date}`
+
+  return emailService.sendEmail({
+    to: 'antoni2005ma@gmail.com',
+    subject,
+    emailComponent: <NotifyAdmin body={body} user={user} stack={stack} url={url} />,
+  })
+}
+
 
 /**
  * Wysyła powiadomienie o nowym ogłoszeniu

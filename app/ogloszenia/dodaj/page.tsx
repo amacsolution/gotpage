@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast"
 import { ImagePlus, X, Loader2, Filter } from "lucide-react"
 import { SimpleEditor } from "@/components/rich-editor"
 import { Badge } from "@/components/ui/badge"
-import {motion} from "framer-motion"
+import { motion } from "framer-motion"
 
 // Kategorie i podkategorie
 const categories = [
@@ -25,19 +25,19 @@ const categories = [
     id: 1,
     name: "Motoryzacja",
     subcategories: [
-      "Samochody osobowe", 
-      "Motocykle", 
-      "Części", 
-      "Przyczepy", 
-      "Samochody Ciężarowe", 
+      "Samochody osobowe",
+      "Motocykle",
+      "Części",
+      "Przyczepy",
+      "Samochody Ciężarowe",
       "Inne pojazdy"
     ],
     subsubcategories: {},
     fields: [
-      { 
+      {
         name: "marka",
-        label: "Markę", 
-        type: "select", 
+        label: "Markę",
+        type: "select",
         options: [
           "Aixam", "Alfa Romeo", "Aston Martin", "Audi", "Bentley", "BMW", "Cadillac",
           "Chevrolet", "Chrysler", "Citroën", "Dacia", "Daewoo", "Daihatsu", "Dodge",
@@ -100,19 +100,20 @@ const categories = [
     id: 2,
     name: "RTV/AGD",
     subcategories: ["Telewizory",
-    "Kamery",
-    "Pralki/Suszarki",
-    "Zmywarki",
-    "Kuchenki",
-    "Piekarniki",
-    "Lodówki",
-    "Zamrażarki",
-    "Pozostałe",],
+      "Kamery",
+      "Pralki/Suszarki",
+      "Zmywarki",
+      "Kuchenki",
+      "Piekarniki",
+      "Lodówki",
+      "Zamrażarki",
+      "Pozostałe",],
     subsubcategories: {},
     fields: [
-      { name: "marka",
-        label: "markę", 
-        type: "select", 
+      {
+        name: "marka",
+        label: "markę",
+        type: "select",
         conditionalOptions: {
           "Telewizory": ["Samsung", "LG", "Sony", "Panasonic", "Philips", "Toshiba", "Sharp", "Grundig", "Hitachi", "Thomson", "Xiaomi", "Hisense", "TCL", "JVC", "Blaupunkt"],
           "Kamery": ["Sony", "Panasonic", "Canon", "Nikon", "GoPro", "DJI", "JVC", "Blackmagic", "Olympus", "Fujifilm", "Akaso", "YI", "Kodak", "SJCAM"],
@@ -124,8 +125,9 @@ const categories = [
           "Zamrażarki": ["Electrolux", "Bosch", "Beko", "Whirlpool", "Amica", "Gorenje", "Liebherr", "Samsung", "Indesit", "Candy", "Hotpoint", "Haier"],
           "Pozostałe": ["Bosch", "Philips", "Tefal", "Braun", "Zelmer", "Moulinex", "Severin", "Russell Hobbs", "Amica", "Ravanson", "Clatronic", "Götze & Jensen"]
         },
-        required: true, 
-        dbField: "brand" },
+        required: true,
+        dbField: "brand"
+      },
       { name: "model", label: "Model", type: "text", required: true, dbField: "model" },
       {
         name: "stan",
@@ -141,15 +143,16 @@ const categories = [
   {
     id: 3,
     name: "Elektronika",
-    subcategories: [ "Telefony i Akcesoria", "Komputery i Akcesoria"],
+    subcategories: ["Telefony i Akcesoria", "Komputery i Akcesoria"],
     subsubcategories: {
       "Telefony i Akcesoria": ["Smartfony", "Urządzenia Stacjonarne", "Akcesoria"],
-      "Komputery i Akcesoria": ["Komputery Stacjonarne", "Laptopy/Netbooki", "Tablety/Palmtopy", "Monitory/Projektory", "Drukarki/Skanery", "Akcesoria", "Internet i Sieci", "Oprogramowanie", ],
+      "Komputery i Akcesoria": ["Komputery Stacjonarne", "Laptopy/Netbooki", "Tablety/Palmtopy", "Monitory/Projektory", "Drukarki/Skanery", "Akcesoria", "Internet i Sieci", "Oprogramowanie",],
     },
     fields: [
-      { name: "marka",
-        label: "markę", 
-        type: "select", 
+      {
+        name: "marka",
+        label: "markę",
+        type: "select",
         options: ["Alcatel", "Apple", "Asus", "BlackBerry", "HTC", "Huawei", "Lenovo", "LG", "Motorola", "Nokia", "Samsung", "Sony", "Sony Ericsson", "Xiaomi", "Pozostałe"],
         conditionalOptions: {
           "Smartfony": ["Alcatel", "Apple", "Asus", "BlackBerry", "HTC", "Huawei", "Lenovo", "LG", "Motorola", "Nokia", "Samsung", "Sony", "Sony Ericsson", "Xiaomi", "Pozostałe"],
@@ -161,8 +164,9 @@ const categories = [
           "Drukarki/Skanery": ["Acer", "Apple", "Asus", "Dell", "HP", "Huawei", "Lenovo", "Microsoft", "Samsung", "Sony", "Toshiba", "Inne marki"],
           "Akcesoria": ["Logitech", "Microsoft", "Razer", "Corsair", "SteelSeries", "Asus", "Acer", "Dell", "HP", "Lenovo", "Inne marki"]
         },
-        required: true, 
-        dbField: "brand" },
+        required: true,
+        dbField: "brand"
+      },
       { name: "model", label: "Model", type: "text", required: true, dbField: "model" },
       {
         name: "stan",
@@ -181,36 +185,36 @@ const categories = [
     subcategories: ["Kobiety", "Mężczyźni"],
     subsubcategories: {
       "Kobiety": [
-          "Sukienki",
-          "Spódnice",
-          "Bluzki i Koszule",
-          "Swetry i Bluzy",
-          "T-shirty i Toppi",
-          "Marynarki i Żakiety",
-          "Kurtki i Płaszcze",
-          "Spodnie i Legginsy",
-          "Buty",
-          "Torebki",
-          "Bielizna",
-          "Stroje Kąpielowe",
-          "Biżuteria",
-          "Akcesoria (czapki, szaliki, rękawiczki)",
-          "Pozostałe"
-        ],
-        "Mężczyźni": [
-          "Koszule",
-          "T-shirty i Polówki",
-          "Swetry i Bluzy",
-          "Marynarki i Garnitury",
-          "Kurtki i Płaszcze",
-          "Spodnie i Jeansy",
-          "Buty",
-          "Bielizna",
-          "Zegarki",
-          "Paski i Portfele",
-          "Akcesoria (czapki, szaliki, rękawiczki)",
-          "Pozostałe"
-        ],
+        "Sukienki",
+        "Spódnice",
+        "Bluzki i Koszule",
+        "Swetry i Bluzy",
+        "T-shirty i Toppi",
+        "Marynarki i Żakiety",
+        "Kurtki i Płaszcze",
+        "Spodnie i Legginsy",
+        "Buty",
+        "Torebki",
+        "Bielizna",
+        "Stroje Kąpielowe",
+        "Biżuteria",
+        "Akcesoria (czapki, szaliki, rękawiczki)",
+        "Pozostałe"
+      ],
+      "Mężczyźni": [
+        "Koszule",
+        "T-shirty i Polówki",
+        "Swetry i Bluzy",
+        "Marynarki i Garnitury",
+        "Kurtki i Płaszcze",
+        "Spodnie i Jeansy",
+        "Buty",
+        "Bielizna",
+        "Zegarki",
+        "Paski i Portfele",
+        "Akcesoria (czapki, szaliki, rękawiczki)",
+        "Pozostałe"
+      ],
     },
     fields: [
       { name: "marka", label: "Marka", type: "text", required: false, dbField: "brand" },
@@ -231,11 +235,11 @@ const categories = [
     id: 5,
     name: "Dom i ogród",
     subcategories: ["Meble do domu",
-    "Wyposażenie domu",
-    "Narzędzia",
-    "Budownictwo",
-    "Wyposażenie Ogrodu",
-    "Inne"],
+      "Wyposażenie domu",
+      "Narzędzia",
+      "Budownictwo",
+      "Wyposażenie Ogrodu",
+      "Inne"],
     subsubcategories: {},
     fields: [
       {
@@ -253,20 +257,20 @@ const categories = [
   {
     id: 6,
     name: "Nieruchomości",
-    subcategories: ["Na sprzedaż" , "Wynajem", "Wynajem krótkoterminowy"],
+    subcategories: ["Na sprzedaż", "Wynajem", "Wynajem krótkoterminowy"],
     subsubcategories: {
-      "Na sprzedaż" : ["Domy",
+      "Na sprzedaż": ["Domy",
         "Mieszkania",
         "Działki",
         "Lokale",
         "Garaże/Magazyny"],
-      "Na wynajem" : ["Domy",
+      "Na wynajem": ["Domy",
         "Mieszkania",
         "Działki",
         "Lokale",
         "Garaże/Magazyny"
       ],
-      "Na wynajem krótkoterminowy" : ["Domy",
+      "Na wynajem krótkoterminowy": ["Domy",
         "Mieszkania",
         "Działki",
         "Lokale",
@@ -301,11 +305,11 @@ const categories = [
     id: 7,
     name: "Dla dzieci",
     subcategories: ["Ubranka",
-    "Zabawki",
-    "Zdrowie i Higiena",
-    "Akcesoria",
-    "Artykuły Szkolne",
-    "Inne"],
+      "Zabawki",
+      "Zdrowie i Higiena",
+      "Akcesoria",
+      "Artykuły Szkolne",
+      "Inne"],
     fields: [
       { name: "wiek", label: "Wiek dziecka (lata)", type: "number", required: false, dbField: "child_age" },
       { name: "marka", label: "Marka", type: "text", required: false, dbField: "brand" },
@@ -324,14 +328,14 @@ const categories = [
     id: 8,
     name: "Zdrowie i Uroda",
     subcategories: ["Perfumy",
-    "Kosmetyki",
-    "Makijaż",
-    "Apteczka",
-    "Akcesoria",
-    "Pielęgnacja",
-    "Usługi Kosmetyczne",
-    "Usługi Fryzjerskie",
-    "Pozostałe"],
+      "Kosmetyki",
+      "Makijaż",
+      "Apteczka",
+      "Akcesoria",
+      "Pielęgnacja",
+      "Usługi Kosmetyczne",
+      "Usługi Fryzjerskie",
+      "Pozostałe"],
     fields: [
       { name: "marka", label: "Marka", type: "text", required: false, dbField: "brand" },
       { name: "rozmiar", label: "Rozmiar", type: "text", required: true, dbField: "size" },
@@ -356,9 +360,9 @@ const categories = [
     id: 10,
     name: "Praca",
     subcategories: ["Zdalna", "Stacjonarnie",],
-    subsubcategories : {
-      "Zdalna" : ["Umowa o Pracę", "B2B", "Umowa Zlecenie", "Umowa o dzieło", "Freelance"],
-      "Stacjonarnie" : ["Umowa o Pracę", "B2B", "Umowa Zlecenie", "Umowa o dzieło", "Staż/Praktyki"]
+    subsubcategories: {
+      "Zdalna": ["Umowa o Pracę", "B2B", "Umowa Zlecenie", "Umowa o dzieło", "Freelance"],
+      "Stacjonarnie": ["Umowa o Pracę", "B2B", "Umowa Zlecenie", "Umowa o dzieło", "Staż/Praktyki"]
     },
     fields: [
       { name: "stanowisko", label: "Stanowisko", type: "text", required: true, dbField: "position" },
@@ -371,13 +375,13 @@ const categories = [
   {
     id: 11,
     name: "Sport/Turystyka",
-    subcategories: [ "Rowery i Akcesoria",
-    "Turystyka",
-    "Siłownia/Fitnes",
-    "Wedkarstwo",
-    "Bieganie",
-    "Militaria",
-    "Pozostałe"],
+    subcategories: ["Rowery i Akcesoria",
+      "Turystyka",
+      "Siłownia/Fitnes",
+      "Wedkarstwo",
+      "Bieganie",
+      "Militaria",
+      "Pozostałe"],
 
   },
   {
@@ -389,7 +393,7 @@ const categories = [
     name: "Usługi",
     subcategories: ["Lokalne", "Internetowe"],
     subsubcategories: {
-      "Lokalne" : [
+      "Lokalne": [
         "Dolnośląskie",
         "Kujawsko-Pomorskie",
         "Lubelskie",
@@ -407,7 +411,7 @@ const categories = [
         "Wielkopolskie",
         "Zachodniopomorskie"
       ],
-      "Internetowe" : ["Freelance"]
+      "Internetowe": ["Freelance"]
     },
     fields: [
       { name: "Zawód", label: "Zawód", type: "text", required: true, dbField: "position" },
@@ -421,10 +425,10 @@ const categories = [
     id: 14,
     name: "Przemysł",
     subcategories: ["Gastronomia",
-    "Hotelarstwo",
-    "Fryzjerstwo/Kosmetyka",
-    "Biuro i Reklama",
-    "Pozostałe"],
+      "Hotelarstwo",
+      "Fryzjerstwo/Kosmetyka",
+      "Biuro i Reklama",
+      "Pozostałe"],
     fields: [
       { name: "firma", label: "Firma", type: "text", required: false, dbField: "company" },
       { name: "lokalizacja", label: "Lokalizacja", type: "text", required: false, dbField: "location" }
@@ -434,32 +438,32 @@ const categories = [
     id: 15,
     name: "Rozrywka",
     subcategories: ["Filmy",
-    "Muzyka",
-    "Książki/Komiksy",
-    "Gry",
-    "Instrumenty",
-    "Pozostałe"],
+      "Muzyka",
+      "Książki/Komiksy",
+      "Gry",
+      "Instrumenty",
+      "Pozostałe"],
   },
   {
     id: 16,
     name: "Antyki/Kolekcje/Sztuka",
     subcategories: ["Design/Antyki",
-    "Kolekcje",
-    "Hobby",
-    "Pozostałe"],
+      "Kolekcje",
+      "Hobby",
+      "Pozostałe"],
   },
   {
     id: 17,
     name: "Wycieczki/Podróże",
     subcategories: ["Krajowe",
-    "Zagraniczne",],
+      "Zagraniczne",],
     subsubcategories: {
-      "Krajowe" : [
+      "Krajowe": [
         "Morze",
         "Góry",
         "Mazury",
         "Pozostałe Regiony"],
-      "Zagraniczne" : [
+      "Zagraniczne": [
         "Morze",
         "Góry",]
     }
@@ -483,8 +487,8 @@ const createFormSchema = (selectedCategory: string, selectedSubcategory: string)
       .min(20, {
         message: "Opis musi mieć co najmniej 20 znaków",
       })
-      .max(5000, {
-        message: "Opis nie może przekraczać 5000 znaków",
+      .max(10000, {
+        message: "Opis nie może przekraczać 10000 znaków",
       }),
     category: z.string({
       required_error: "Wybierz kategorię",
@@ -819,11 +823,11 @@ export default function AddAdPage() {
   }
 
   const wybory = [
-    {name : "Samochód", icon: "🚗", category: "Motoryzacja", subcategory: "Samochody osobowe", color: "bg-red-100 text-red-800 hover:bg-red-400" },
-    {name : "Dom",icon: "🏠", category: "Nieruchomości", subcategory: "Na sprzedaż", subsubcat : "Domy", color: "bg-blue-100 text-blue-800 hover:bg-blue-400"},
-    {name: "Telefon", icon: "💻",category: "Elektronika", subcategory: "Telefony i Akcesoria", subsubcat: "Smartfony" , color: "bg-purple-100 text-purple-800 hover:bg-purple-400" },
+    { name: "Samochód", icon: "🚗", category: "Motoryzacja", subcategory: "Samochody osobowe", color: "bg-red-100 text-red-800 hover:bg-red-400" },
+    { name: "Dom", icon: "🏠", category: "Nieruchomości", subcategory: "Na sprzedaż", subsubcat: "Domy", color: "bg-blue-100 text-blue-800 hover:bg-blue-400" },
+    { name: "Telefon", icon: "💻", category: "Elektronika", subcategory: "Telefony i Akcesoria", subsubcat: "Smartfony", color: "bg-purple-100 text-purple-800 hover:bg-purple-400" },
     { name: "Praca", icon: "💼", category: "Praca", subcategory: "Stacjonarnie", subsubcat: "Umowa o Pracę", color: "bg-amber-100 text-amber-800 hover:bg-amber-400" },
-    {name: "Dom i ogród", category: "Dom i ogród", subcategory: "Wyposażenie Ogrodu", icon: "🌱", color: "bg-emerald-100 text-emerald-800 hover:bg-emerald-400" },
+    { name: "Dom i ogród", category: "Dom i ogród", subcategory: "Wyposażenie Ogrodu", icon: "🌱", color: "bg-emerald-100 text-emerald-800 hover:bg-emerald-400" },
   ]
 
   if (isDataLoading) {
@@ -839,38 +843,39 @@ export default function AddAdPage() {
     )
   } else if (isHelloPage) {
     return (
-    <PageLayout>
-      <div className="container py-6">
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <h1 className="text-3xl font-bold mb-2">Dodaj szybko ogłoszenie</h1>
-          <p className="text-muted-foreground">Skorzystaj z szybkich wyborów</p>
-          <div className="mt-6 flex flex-wrap max-w-[600px] gap-2">            
+      <PageLayout>
+        <div className="container py-6">
+          <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <h1 className="text-3xl font-bold mb-2">Dodaj szybko ogłoszenie</h1>
+            <p className="text-muted-foreground">Skorzystaj z szybkich wyborów</p>
+            <div className="mt-6 flex flex-wrap max-w-[600px] gap-2">
               {wybory.map((w, index) => (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut",delay: index * 0.2 }}
-              whileHover={{scale: 1.2, animationDuration:0.1}}>
-                <Badge
-                key= {w.name}
-                  className={`text-sm py-1.5 px-3 cursor-pointer ${w.color? w.color :  "hover:bg-foreground/40 bg-foreground/20"}`}
-                  onClick={async () => {
-                    await handleCategoryChange(w.category);
-                    await handleSubcategoryChange(w.subcategory);
-                    if(w.subsubcat){
-                      handleSubSubcategoryChange(w.subsubcat) } 
-                    setIsHelloPage(false);
-                  }}
-                >
-                  <span className="mr-1">{w.icon}</span> {w.name}
-                </Badge>
-              </motion.div>
-            ))}
-             
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, ease: "easeOut", delay: index * 0.2 }}
+                  whileHover={{ scale: 1.2, animationDuration: 0.1 }}>
+                  <Badge
+                    key={w.name}
+                    className={`text-sm py-1.5 px-3 cursor-pointer ${w.color ? w.color : "hover:bg-foreground/40 bg-foreground/20"}`}
+                    onClick={async () => {
+                      await handleCategoryChange(w.category);
+                      await handleSubcategoryChange(w.subcategory);
+                      if (w.subsubcat) {
+                        handleSubSubcategoryChange(w.subsubcat)
+                      }
+                      setIsHelloPage(false);
+                    }}
+                  >
+                    <span className="mr-1">{w.icon}</span> {w.name}
+                  </Badge>
+                </motion.div>
+              ))}
+
             </div>
             <p className="text-muted-foreground mt-5 font-bold mb-2">Lub</p>
             <motion.div
-              initial={{ opacity: 0, y: 0, x: -100}}
+              initial={{ opacity: 0, y: 0, x: -100 }}
               animate={{ opacity: 1, y: 0, x: 0 }}
               transition={{ duration: 0.4, ease: "easeOut", delay: 0.5 }}>
               <Badge
@@ -880,9 +885,9 @@ export default function AddAdPage() {
                 <Filter className="h-3 w-3 mr-1" /> Dodaj samodzielnie
               </Badge>
             </motion.div>
+          </div>
         </div>
-      </div>
-    </PageLayout>
+      </PageLayout>
     )
   }
 
@@ -976,37 +981,37 @@ export default function AddAdPage() {
                   )}
                 />
               </div>
-              
-              
+
+
               {((selectedSubcategory !== "" && subsubcategories.length > 0) || selectedSubSubcategory !== "") && (
-                    <FormField
-                      key="finalcategory"
-                      control={form.control}
-                      name="finalcategory"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pochodna Kategorii</FormLabel>
-                          <Select
-                            onValueChange={(value) => handleSubSubcategoryChange(value)}
-                            defaultValue={selectedSubSubcategory || field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Wybierz dokładną pochodną kategorii" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {subsubcategories.map((option: string) => (
-                                <SelectItem key={option} value={option}>
-                                  {option}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                <FormField
+                  key="finalcategory"
+                  control={form.control}
+                  name="finalcategory"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Pochodna Kategorii</FormLabel>
+                      <Select
+                        onValueChange={(value) => handleSubSubcategoryChange(value)}
+                        defaultValue={selectedSubSubcategory || field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Wybierz dokładną pochodną kategorii" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {subsubcategories.map((option: string) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               )}
 
               <FormField
@@ -1087,48 +1092,48 @@ export default function AddAdPage() {
                             )}
                           />
                         );
-                          } else if (field.type === "select") {
-                          // Use conditionalOptions if available for the selected subcategory, otherwise fallback to field.options
-                          const optionsList =
-                            field.conditionalOptions && selectedSubcategory in field.conditionalOptions
-                              ? field.conditionalOptions[selectedSubcategory]
-                              : field.conditionalOptions && selectedSubSubcategory in field.conditionalOptions
+                      } else if (field.type === "select") {
+                        // Use conditionalOptions if available for the selected subcategory, otherwise fallback to field.options
+                        const optionsList =
+                          field.conditionalOptions && selectedSubcategory in field.conditionalOptions
+                            ? field.conditionalOptions[selectedSubcategory]
+                            : field.conditionalOptions && selectedSubSubcategory in field.conditionalOptions
                               ? field.conditionalOptions[selectedSubSubcategory]
                               : field.options;
-                          return (
-                            <FormField
+                        return (
+                          <FormField
                             key={field.name}
                             control={form.control}
                             name={field.name as any}
                             render={({ field: formField }) => (
                               <FormItem>
-                              <FormLabel>
-                                {field.name}
-                                {field.required && " *"}
-                              </FormLabel>
-                              <Select
-                                onValueChange={formField.onChange}
-                                defaultValue={formField.value}
-                              >
-                                <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder={`Wybierz ${field.label.toLowerCase()}`} />
-                                </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                {optionsList?.map((option: string) => (
-                                  <SelectItem key={option} value={option}>
-                                  {option}
-                                  </SelectItem>
-                                ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
+                                <FormLabel>
+                                  {field.name}
+                                  {field.required && " *"}
+                                </FormLabel>
+                                <Select
+                                  onValueChange={formField.onChange}
+                                  defaultValue={formField.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder={`Wybierz ${field.label.toLowerCase()}`} />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {optionsList?.map((option: string) => (
+                                      <SelectItem key={option} value={option}>
+                                        {option}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
                               </FormItem>
                             )}
-                            />
-                          );
-                          
+                          />
+                        );
+
                       } else if (field.type === "checkbox") {
                         return (
                           <FormField
@@ -1153,7 +1158,7 @@ export default function AddAdPage() {
                   </div>
                 </div>
               )}
-{/* 
+              {/* 
               <FormField
                 control={form.control}
                 name="content"
