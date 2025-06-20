@@ -1,12 +1,13 @@
 "use client"
 
 import { useEffect, useRef, useState, useCallback } from "react"
-import { io, type Socket } from "socket.io-client"
+import io from "socket.io-client"
+import type { Socket } from "socket.io-client"
 
 export function useSocket(userId: string | null | undefined) {
   const [isConnected, setIsConnected] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const socketRef = useRef<Socket | null>(null)
+  const socketRef = useRef<Socket.IOClient | null>(null)
   const initializingRef = useRef(false)
 
   // Inicjalizacja Socket.IO
@@ -44,11 +45,11 @@ export function useSocket(userId: string | null | undefined) {
           socket.emit("user_connect", userId)
         })
 
-        socket.on("connect_error", (err) => {
+        socket.on("connect_error", (err: Error) => {
           setError(`Błąd połączenia: ${err.message}`)
         })
 
-        socket.on("disconnect", (reason) => {
+        socket.on("disconnect", () => {
           setIsConnected(false)
         })
 
@@ -57,7 +58,7 @@ export function useSocket(userId: string | null | undefined) {
           setError("Nie udało się ponownie połączyć")
         })
 
-        socket.on("connection_established", (data) => {
+        socket.on("connection_established", () => {
         })
 
         socketRef.current = socket
@@ -120,7 +121,7 @@ export function useSocket(userId: string | null | undefined) {
 
   // Funkcja do nasłuchiwania zdarzeń
   const on = useCallback((event: string, callback: (...args: any[]) => void) => {
-    if (!socketRef.current) return () => {}
+    if (!socketRef.current) return () => { }
 
     socketRef.current.on(event, callback)
     return () => {

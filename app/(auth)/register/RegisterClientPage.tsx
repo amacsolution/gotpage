@@ -3,15 +3,6 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { CardContent, CardDescription, CardFooter, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import { MultiStepRegisterForm } from "@/components/register-form"
 import { useToast } from "@/hooks/use-toast"
 
@@ -46,20 +37,7 @@ export default function RegisterClientPage() {
       <CardTitle className="text-2xl font-bold">Rejestracja</CardTitle>
       <CardDescription>Utwórz nowe konto w serwisie Gotpage</CardDescription>
       <CardContent className="pt-6">
-        <Dialog open={open} onOpenChange={setOpen} >
-          <DialogTrigger asChild>
-            <Button className="w-full">Zarejestruj się</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[825px] h-dvh md:h-full overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Utwórz nowe konto</DialogTitle>
-              <DialogDescription>
-                Wypełnij poniższy formularz, aby utworzyć nowe konto w serwisie Gotpage.
-              </DialogDescription>
-            </DialogHeader>
-            <MultiStepRegisterForm />
-          </DialogContent>
-        </Dialog>
+        <MultiStepRegisterForm />
       </CardContent>
       <CardFooter className="flex justify-center">
         <div className="text-sm text-muted-foreground">

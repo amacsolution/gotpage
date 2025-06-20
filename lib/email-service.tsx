@@ -37,7 +37,10 @@ export class EmailService {
   }: SendEmailOptions): Promise<{ success: boolean; messageId?: string; error?: any }> {
     try {
       // Pobierz typ szablonu z nazwy komponentu
-      const templateType = emailComponent.type.name || "unknown"
+      const templateType =
+        typeof emailComponent.type === "string"
+          ? emailComponent.type
+          : emailComponent.type.name || "unknown"
 
       // Sprawdź, czy jesteśmy w trybie testowym
       if (emailConfig.testMode) {
@@ -75,7 +78,9 @@ export class EmailService {
       await this.logEmail({
         to: Array.isArray(to) ? to.join(", ") : to,
         subject,
-        templateType: emailComponent.type.name || "unknown",
+        templateType: typeof emailComponent.type === "string"
+          ? emailComponent.type
+          : emailComponent.type.name || "unknown",
         status: "error",
         errorMessage: error instanceof Error ? error.message : String(error),
       })
