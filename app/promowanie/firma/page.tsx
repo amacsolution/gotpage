@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Image from "next/legacy/image"
 import { PageLayout } from "@/components/page-layout"
 import { Button } from "@/components/ui/button"
@@ -21,19 +21,17 @@ import {
   Crown,
   Shield,
   Rocket,
-  LineChart,
   Briefcase,
   Eye,
   ArrowDown,
   ArrowUpNarrowWide,
 } from "lucide-react"
 import { CompanyCard } from "@/components/company-card"
-import { Arrow } from "@radix-ui/react-select"
-import { link } from "fs"
-import { usePathname, useSearchParams, useRouter } from "next/navigation"
+
+import { useRouter } from "next/navigation"
 
 const business = {
-  id: 1,
+  id: "1",
   name: "Auto Serwis Kowalski",
   logo: "/logo-mock.png?height=100&width=100&text=Auto+Serwis",
   description:
@@ -43,7 +41,7 @@ const business = {
   rating: 4.8,
   reviewCount: 124,
   verified: true,
-  phone : "123456789"
+  phone: "123456789"
 };
 
 export default function PromoteBusinessPage() {
@@ -218,7 +216,7 @@ export default function PromoteBusinessPage() {
                   <Skeleton className="h-[400px] w-full rounded-lg" />
                 ) : (
                   <div className="relative z-10 transform hover:scale-110 scale-105 transition-transform duration-300">
-                    <CompanyCard company={business}/>
+                    <CompanyCard company={business} />
                   </div>
                 )}
               </div>

@@ -37,7 +37,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       }
 
       // Add follow relationship
-      const result = await db.query("INSERT INTO user_follows (follower_id, target_id, created_at) VALUES (?, ?, NOW())", [
+      const result = await query("INSERT INTO user_follows (follower_id, target_id, created_at) VALUES (?, ?, NOW())", [
         user.id,
         targetUserId,
       ]) as { affectedRows: number }[]
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       return NextResponse.json({ message: "Obserwujesz użytkownika" }, { status: 200 })
     } else if (action === "unfollow") {
       // Remove follow relationship
-      await db.query("DELETE FROM user_follows WHERE follower_id = ? AND target_id = ?", [
+      await query("DELETE FROM user_follows WHERE follower_id = ? AND target_id = ?", [
         user.id,
         targetUserId,
       ])

@@ -7,6 +7,16 @@ import { Button } from "@/components/ui/button"
 import { Users, FileText, MessageSquare, AlertTriangle, RefreshCw } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 
+type Activity = {
+  type: "user" | "ad" | "comment" | "report";
+  user?: string;
+  action?: string;
+  title?: string;
+  target?: string;
+  time: string;
+  // add other fields as needed
+};
+
 export default function AdminPage() {
   const [stats, setStats] = useState({
     users: { total: 0, today: 0 },
@@ -49,10 +59,10 @@ export default function AdminPage() {
     }
   }
 
-  const formatTimeAgo = (dateString : Date) => {
+  const formatTimeAgo = (dateString : string) => {
     const now = new Date()
     const date = new Date(dateString)
-    const diffInSeconds = Math.floor((now - date) / 1000)
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
 
     if (diffInSeconds < 60) {
       return `${diffInSeconds} sekund temu`
@@ -165,7 +175,7 @@ export default function AdminPage() {
                 <div className="py-8 text-center text-muted-foreground">Brak aktywności do wyświetlenia</div>
               ) : (
                 <div className="space-y-4">
-                  {recentActivity.map((activity, index) => (
+                  {recentActivity.map((activity : Activity, index) => (
                     <div key={index} className="flex items-start pb-4 space-x-4 border-b last:border-0">
                       <div className="p-2 rounded-full bg-primary/10">
                         {activity.type === "user" && <Users className="w-4 h-4 text-primary" />}

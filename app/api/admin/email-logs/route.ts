@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { db, query } from "@/lib/db"
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,25 +14,25 @@ export async function GET(request: NextRequest) {
     // Sprawdź, czy tabela email_logs istnieje
 
     // Przygotuj zapytanie z wyszukiwaniem
-    let query = "SELECT * FROM email_logs"
+    let fquery = "SELECT * FROM email_logs"
     let countQuery = "SELECT COUNT(*) as total FROM email_logs"
     let params: any[] = []
 
     if (search) {
-      query += " WHERE email_to LIKE ? OR subject LIKE ? OR template_type LIKE ?"
+      fquery += " WHERE email_to LIKE ? OR subject LIKE ? OR template_type LIKE ?"
       countQuery += " WHERE email_to LIKE ? OR subject LIKE ? OR template_type LIKE ?"
       const searchParam = `%${search}%`
       params = [searchParam, searchParam, searchParam]
     }
 
     // Dodaj sortowanie i paginację
-    query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+    fquery += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
     const queryParams = [...params, limit, offset]
 
     // Pobierz logi
-    const result = await db.query(query, queryParams)
+    const result = await query(fquery, queryParams) as any[]
     // Pobierz całkowitą liczbę logów
-    const countResult = await db.query(countQuery, search ? [params[0], params[1], params[2]] : []) as { rows?: { total: number }[] } 
+    const countResult = await query(countQuery, search ? [params[0], params[1], params[2]] : []) as { rows?: { total: number }[] } 
     const total = countResult.rows && countResult.rows.length > 0 ? countResult.rows[0].total : 0
     const totalPages = Math.ceil(total / limit) || 1
 

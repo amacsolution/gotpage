@@ -50,7 +50,7 @@ export function EditAdClient({ id }: { id: string }) {
     const fetchAd = async () => {
       try {
         setIsLoading(true)
-        const response = await fetch(`/api/ads/${id}`)
+        const response = await fetch(`/api/ogloszenia/${id}`)
         const data = await response.json()
 
         if (data.error) {
@@ -208,7 +208,7 @@ export function EditAdClient({ id }: { id: string }) {
       formData.append("imagesToDelete", JSON.stringify(imagesToDelete))
 
       // Wysłanie danych
-      const response = await fetch(`/api/ads/${id}`, {
+      const response = await fetch(`/api/ogloszenia/${id}`, {
         method: "PUT",
         body: formData,
       })

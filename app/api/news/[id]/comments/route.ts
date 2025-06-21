@@ -39,7 +39,7 @@ JOIN users u ON c.user_id = u.id
 WHERE c.post_id = ?
 ORDER BY c.created_at DESC`,
       [postId],
-    )
+    ) as {id: number, content: string, has_link: number, link_url: string, created_at: string, author_id: string, author_name: string, author_avatar: string}[]
 
     if (!Array.isArray(comments)) {
       return NextResponse.json([])
@@ -101,7 +101,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     const result = await query(
       "INSERT INTO news_comments (post_id, user_id, content, has_link, link_url, created_at) VALUES (?, ?, ?, ?, ?, NOW())",
       [postId, user.id, content, hasLink, linkUrl],
-    )
+    ) as {insertId: number}
 
     if (!result || !result.insertId) {
       throw new Error("Nie udało się dodać komentarza")
@@ -123,7 +123,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       JOIN users u ON c.user_id = u.id
       WHERE c.id = ?`,
       [result.insertId],
-    )
+    ) as {id: number, content: string, created_at: string, author_id: string, author_name: string, author_avatar: string}[]
 
     if (!Array.isArray(comments) || comments.length === 0) {
       throw new Error("Nie udało się pobrać dodanego komentarza")

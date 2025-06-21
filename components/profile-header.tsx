@@ -6,7 +6,7 @@ import { ProfileBackgroundUpload } from "./profile-background-upload"
 import { ProfileImageUpload } from "./profile-image-upload"
 
 interface ProfileHeaderProps {
-  userId: number
+  userId: string
   username: string
   avatarUrl?: string
   backgroundUrl?: string

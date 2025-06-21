@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
         VALUES (?, ?, ?, ?, ?, NOW(), 'new')
       `,
       [name, email, phone || null, subject, message]
-    )
+    ) as {insertId: number}
 
     return NextResponse.json({ success: true, id: result.insertId })
   } catch (error) {
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
         ${status !== "all" ? statusFilter : ""}
         `,
         status !== "all" ? [status] : []
-    )
+    ) as {total: number}[]
 
     const total = countResult[0].total
 

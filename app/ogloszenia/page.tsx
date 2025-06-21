@@ -21,6 +21,7 @@ import {
   PlusCircle,
   Star,
   Tag,
+  TagsIcon,
   TrendingUp,
 } from "lucide-react"
 import dynamic from "next/dynamic"
@@ -40,19 +41,259 @@ const AdsMap = dynamic(() => import("@/components/ads-map"), {
 // Kategorie ogłoszeń z ikonami
 const adCategories = [
   { id: "Motoryzacja", name: "Motoryzacja", icon: "🚗", color: "bg-red-100 text-red-800" },
-  { id: "Nieruchomości", name: "Nieruchomości", icon: "🏠", color: "bg-blue-100 text-blue-800" },
+  { id: "RTV/AGD", name: "RTV/AGD", icon: "📺", color: "bg-indigo-100 text-indigo-800" },
   { id: "Elektronika", name: "Elektronika", icon: "💻", color: "bg-purple-100 text-purple-800" },
-  { id: "Moda", name: "Moda", icon: "👕", color: "bg-pink-100 text-pink-800" },
-  { id: "Usługi", name: "Usługi", icon: "🔧", color: "bg-yellow-100 text-yellow-800" },
-  { id: "Dom i ogród", name: "Dom i ogród", icon: "🌱", color: "bg-emerald-100 text-emerald-800" },
-  { id: "Sport i hobby", name: "Sport i hobby", icon: "⚽", color: "bg-orange-100 text-orange-800" },
-  { id: "Edukacja", name: "Edukacja", icon: "📚", color: "bg-indigo-100 text-indigo-800" },
-  { id: "Zdrowie i uroda", name: "Zdrowie i uroda", icon: "💆", color: "bg-rose-100 text-rose-800" },
-  { id: "Praca", name: "Praca", icon: "💼", color: "bg-amber-100 text-amber-800" },
-  { id: "Zwierzęta", name: "Zwierzęta", icon: "🐾", color: "bg-lime-100 text-lime-800" },
+  { id: "Moda", name: "Moda", icon: "👗", color: "bg-pink-100 text-pink-800" },
+  { id: "Dom i ogród", name: "Dom i ogród", icon: "🏡", color: "bg-green-100 text-green-800" },
+  { id: "Nieruchomości", name: "Nieruchomości", icon: "🏠", color: "bg-blue-100 text-blue-800" },
   { id: "Dla dzieci", name: "Dla dzieci", icon: "🧸", color: "bg-cyan-100 text-cyan-800" },
-  { id: "Inne", name: "Inne", icon: "🔍", color: "bg-gray-100 text-gray-800" },
-]
+  { id: "Zdrowie i Uroda", name: "Zdrowie i Uroda", icon: "💆‍♀️", color: "bg-rose-100 text-rose-800" },
+  { id: "Zwierzęta i Akcesoria", name: "Zwierzęta i Akcesoria", icon: "🐾", color: "bg-lime-100 text-lime-800" },
+  { id: "Praca", name: "Praca", icon: "💼", color: "bg-amber-100 text-amber-800" },
+  { id: "Sport/Turystyka", name: "Sport/Turystyka", icon: "🏕️", color: "bg-orange-100 text-orange-800" },
+  { id: "Bilety/e-Bilety", name: "Bilety/e-Bilety", icon: "🎫", color: "bg-yellow-100 text-yellow-800" },
+  { id: "Usługi", name: "Usługi", icon: "🔧", color: "bg-yellow-200 text-yellow-900" },
+  { id: "Przemysł", name: "Przemysł", icon: "🏭", color: "bg-stone-100 text-stone-800" },
+  { id: "Rozrywka", name: "Rozrywka", icon: "🎮", color: "bg-fuchsia-100 text-fuchsia-800" },
+  { id: "Antyki/Kolekcje/Sztuka", name: "Antyki/Kolekcje/Sztuka", icon: "🖼️", color: "bg-gray-100 text-gray-800" },
+  { id: "Wycieczki/Podróże", name: "Wycieczki/Podróże", icon: "✈️", color: "bg-teal-100 text-teal-800" },
+];
+
+const finalCategories = [
+  {
+    name: "Motoryzacja",
+    subcategories: [
+      { name: "Samochody osobowe" },
+      { name: "Motocykle" },
+      { name: "Części" },
+      { name: "Przyczepy" },
+      { name: "Samochody Ciężarowe" },
+      { name: "Inne pojazdy" }
+    ]
+  },
+  {
+    name: "RTV/AGD",
+    subcategories: [
+      { name: "Telewizory" },
+      { name: "Kamery" },
+      { name: "Pralki/Suszarki" },
+      { name: "Zmywarki" },
+      { name: "Kuchenki" },
+      { name: "Piekarniki" },
+      { name: "Lodówki" },
+      { name: "Zamrażarki" },
+      { name: "Pozostałe" }
+    ]
+  },
+  {
+    name: "Elektronika",
+    subcategories: [
+      {
+        name: "Telefony i Akcesoria",
+        subsubcategories: [
+          "Smartfony",
+          "Urządzenia Stacjonarne",
+          "Akcesoria"
+        ]
+      },
+      {
+        name: "Komputery i Akcesoria",
+        subsubcategories: [
+          "Komputery Stacjonarne",
+          "Laptopy/Netbooki",
+          "Tablety/Palmtopy",
+          "Monitory/Projektory",
+          "Drukarki/Skanery",
+          "Akcesoria",
+          "Internet i Sieci",
+          "Oprogramowanie"
+        ]
+      }
+    ]
+  },
+  {
+    name: "Moda",
+    subcategories: [
+      {
+        name: "Kobiety",
+        subsubcategories: [
+          "Sukienki", "Spódnice", "Bluzki i Koszule", "Swetry i Bluzy",
+          "T-shirty i Toppi", "Marynarki i Żakiety", "Kurtki i Płaszcze",
+          "Spodnie i Legginsy", "Buty", "Torebki", "Bielizna",
+          "Stroje Kąpielowe", "Biżuteria", "Akcesoria (czapki, szaliki, rękawiczki)",
+          "Pozostałe"
+        ]
+      },
+      {
+        name: "Mężczyźni",
+        subsubcategories: [
+          "Koszule", "T-shirty i Polówki", "Swetry i Bluzy", "Marynarki i Garnitury",
+          "Kurtki i Płaszcze", "Spodnie i Jeansy", "Buty", "Bielizna",
+          "Zegarki", "Paski i Portfele", "Akcesoria (czapki, szaliki, rękawiczki)",
+          "Pozostałe"
+        ]
+      }
+    ]
+  },
+  {
+    name: "Dom i ogród",
+    subcategories: [
+      { name: "Meble do domu" },
+      { name: "Wyposażenie domu" },
+      { name: "Narzędzia" },
+      { name: "Budownictwo" },
+      { name: "Wyposażenie Ogrodu" },
+      { name: "Inne" }
+    ]
+  },
+  {
+    name: "Nieruchomości",
+    subcategories: [
+      {
+        name: "Na sprzedaż",
+        subsubcategories: ["Domy", "Mieszkania", "Działki", "Lokale", "Garaże/Magazyny"]
+      },
+      {
+        name: "Wynajem",
+        subsubcategories: ["Domy", "Mieszkania", "Działki", "Lokale", "Garaże/Magazyny"]
+      },
+      {
+        name: "Wynajem krótkoterminowy",
+        subsubcategories: ["Domy", "Mieszkania", "Działki", "Lokale", "Garaże/Magazyny"]
+      }
+    ]
+  },
+  {
+    name: "Dla dzieci",
+    subcategories: [
+      { name: "Ubranka" },
+      { name: "Zabawki" },
+      { name: "Zdrowie i Higiena" },
+      { name: "Akcesoria" },
+      { name: "Artykuły Szkolne" },
+      { name: "Inne" }
+    ]
+  },
+  {
+    name: "Zdrowie i Uroda",
+    subcategories: [
+      { name: "Perfumy" },
+      { name: "Kosmetyki" },
+      { name: "Makijaż" },
+      { name: "Apteczka" },
+      { name: "Akcesoria" },
+      { name: "Pielęgnacja" },
+      { name: "Usługi Kosmetyczne" },
+      { name: "Usługi Fryzjerskie" },
+      { name: "Pozostałe" }
+    ]
+  },
+  {
+    name: "Zwierzęta i Akcesoria",
+    subcategories: [
+      { name: "Etaty" },
+      { name: "Freelance" },
+      { name: "Zdalna" },
+      { name: "Dorywcza" },
+      { name: "Sezonowa" }
+    ]
+  },
+  {
+    name: "Praca",
+    subcategories: [
+      {
+        name: "Zdalna",
+        subsubcategories: [
+          "Umowa o Pracę", "B2B", "Umowa Zlecenie", "Umowa o dzieło", "Freelance"
+        ]
+      },
+      {
+        name: "Stacjonarnie",
+        subsubcategories: [
+          "Umowa o Pracę", "B2B", "Umowa Zlecenie", "Umowa o dzieło", "Staż/Praktyki"
+        ]
+      }
+    ]
+  },
+  {
+    name: "Sport/Turystyka",
+    subcategories: [
+      { name: "Rowery i Akcesoria" },
+      { name: "Turystyka" },
+      { name: "Siłownia/Fitnes" },
+      { name: "Wedkarstwo" },
+      { name: "Bieganie" },
+      { name: "Militaria" },
+      { name: "Pozostałe" }
+    ]
+  },
+  {
+    name: "Bilety/e-Bilety",
+    subcategories: []
+  },
+  {
+    name: "Usługi",
+    subcategories: [
+      {
+        name: "Lokalne",
+        subsubcategories: [
+          "Dolnośląskie", "Kujawsko-Pomorskie", "Lubelskie", "Lubuskie", "Łódzkie",
+          "Małopolskie", "Mazowieckie", "Opolskie", "Podkarpackie", "Podlaskie",
+          "Pomorskie", "Śląskie", "Świętokrzyskie", "Warmińsko-Mazurskie",
+          "Wielkopolskie", "Zachodniopomorskie"
+        ]
+      },
+      {
+        name: "Internetowe",
+        subsubcategories: ["Freelance"]
+      }
+    ]
+  },
+  {
+    name: "Przemysł",
+    subcategories: [
+      { name: "Gastronomia" },
+      { name: "Hotelarstwo" },
+      { name: "Fryzjerstwo/Kosmetyka" },
+      { name: "Biuro i Reklama" },
+      { name: "Pozostałe" }
+    ]
+  },
+  {
+    name: "Rozrywka",
+    subcategories: [
+      { name: "Filmy" },
+      { name: "Muzyka" },
+      { name: "Książki/Komiksy" },
+      { name: "Gry" },
+      { name: "Instrumenty" },
+      { name: "Pozostałe" }
+    ]
+  },
+  {
+    name: "Antyki/Kolekcje/Sztuka",
+    subcategories: [
+      { name: "Design/Antyki" },
+      { name: "Kolekcje" },
+      { name: "Hobby" },
+      { name: "Pozostałe" }
+    ]
+  },
+  {
+    name: "Wycieczki/Podróże",
+    subcategories: [
+      {
+        name: "Krajowe",
+        subsubcategories: ["Morze", "Góry", "Mazury", "Pozostałe Regiony"]
+      },
+      {
+        name: "Zagraniczne",
+        subsubcategories: ["Morze", "Góry"]
+      }
+    ]
+  }
+];
+
 
 export default function AdsPage() {
   const searchParams = useSearchParams()
@@ -65,16 +306,18 @@ export default function AdsPage() {
   const [hasMore, setHasMore] = useState(true)
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid")
   const [locations, setLocations] = useState<string[]>([])
-  const [subcategories, setSubcategories] = useState<string[]>([])
+  const [subcategories, setSubcategories] = useState<{ name: string; subsubcategories?: string[] }[]>([])
   const [activeFilters, setActiveFilters] = useState<string[]>([])
   const [showFilters, setShowFilters] = useState(false)
   const filtersRef = useRef<HTMLDivElement>(null)
+  const [finalcategories, setFinalCategories] = useState<string[]>([])
   const { toast } = useToast()
 
   // Get search parameters from URL
   const query = searchParams?.get("q") || ""
   const category = searchParams?.get("category") || ""
   const subcategory = searchParams?.get("subcategory") || ""
+  const finalcategory = searchParams?.get("finalcategory") || ""
   const location = searchParams?.get("location") || ""
   const sortBy = searchParams?.get("sortBy") || "newest"
 
@@ -94,7 +337,7 @@ export default function AdsPage() {
         }
 
         // Fetch featured ads
-        const featuredResponse = await fetch("/api/ads?promoted=true&limit=3")
+        const featuredResponse = await fetch("/api/ogloszenia?promoted=true&limit=3")
         if (featuredResponse.ok) {
           const featuredData = await featuredResponse.json()
           setFeaturedAds(featuredData.ads || [])
@@ -102,13 +345,37 @@ export default function AdsPage() {
 
         // Fetch subcategories if category is selected
         if (category) {
-          const subcatResponse = await fetch(`/api/categories/${category}/subcategories`)
-          if (subcatResponse.ok) {
-            const subcatData = await subcatResponse.json()
-            setSubcategories(subcatData.subcategories || [])
+        //   const subcatResponse = await fetch(`/api/categories/${category}/subcategories`)
+        //   if (subcatResponse.ok) {
+        //     const subcatData = await subcatResponse.json()
+        //     setSubcategories(subcatData.subcategories || [])
+        //   }
+        // } else {
+          const fcategory = finalCategories.find((c) => c.name === category)
+          if (fcategory) {
+            setSubcategories(fcategory.subcategories || [])
+          } else {
+            setSubcategories([])
           }
-        } else {
-          setSubcategories([])
+        }
+
+        // Set final-categories when subcategory is selected
+        if(subcategory) {
+          const fcategory = finalCategories.find((c) =>
+            (c.subcategories || []).some((sub) => sub.name === subcategory)
+          )
+          if (fcategory) {
+            // Find the selected subcategory
+            const fsubcategory = (fcategory.subcategories || []).find((sub) => sub.name === subcategory)
+            if (fsubcategory && "subsubcategories" in fsubcategory && Array.isArray(fsubcategory.subsubcategories)) {
+              // Do something with subcategory.subsubcategories, e.g. set state
+              setFinalCategories(fsubcategory.subsubcategories)
+            } else {
+              setFinalCategories([])
+            }
+          } else {
+            setFinalCategories([])
+          }
         }
 
         // Build query URL
@@ -123,7 +390,7 @@ export default function AdsPage() {
         if (query) params.append("q", query)
 
         // Fetch ads
-        const response = await fetch(`/api/ads?${params.toString()}`)
+        const response = await fetch(`/api/ogloszenia?${params.toString()}`)
 
         if (!response.ok) {
           throw new Error("Nie udało się pobrać ogłoszeń")
@@ -182,11 +449,10 @@ export default function AdsPage() {
       params.delete(type)
       setActiveFilters(activeFilters.filter((filter) => filter !== value))
     }
-
     // Jeśli zmieniamy kategorię, usuń podkategorię
-    if (type === "category") {
-      params.delete("subcategory")
-    }
+    if (type === "category") params.delete("subcategory")
+
+    if (type === "subcategory") params.delete("finalcategory")
 
     router.push(`/ogloszenia?${params.toString()}`)
   }
@@ -220,7 +486,7 @@ export default function AdsPage() {
       if (location) params.append("location", location)
       if (query) params.append("q", query)
 
-      const response = await fetch(`/api/ads?${params.toString()}`)
+      const response = await fetch(`/api/ogloszenia?${params.toString()}`)
 
       if (!response.ok) {
         throw new Error("Nie udało się pobrać ogłoszeń")
@@ -424,6 +690,42 @@ export default function AdsPage() {
                     </Badge>
                   ))}
                 </div>
+                              {/* Podkategorie - pokazuj tylko jeśli wybrano kategorię */}
+              {category && subcategories.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium mb-3">Podkategorie dla {category}</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {subcategories.map((subcat) => (
+                      <Badge
+                        key={subcat.name}
+                        className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${subcategory === subcat.name ? "bg-primary text-white" : "bg-muted hover:bg-muted/80"
+                          }`}
+                        onClick={() => handleFilterChange("subcategory", subcat.name)}
+                      >
+                        <Tag className="h-3 w-3" /> {subcat.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {subcategory && finalcategories.length > 0 &&(
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium mb-3">Szczegółowe kategorie dla {subcategory}</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {finalcategories.map((subcat) => (
+                      <Badge
+                        key={subcat}
+                        className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${finalcategory === subcat ? "bg-primary text-white" : "bg-muted hover:bg-muted/80"
+                          }`}
+                        onClick={() => handleFilterChange("finalcategory", subcat)}
+                      >
+                        <TagsIcon className="h-3 w-3" /> {subcat}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
               </div>
 
               <div>
@@ -458,26 +760,9 @@ export default function AdsPage() {
               </div>
             </div>
 
-            {/* Podkategorie - pokazuj tylko jeśli wybrano kategorię */}
-            {category && subcategories.length > 0 && (
-              <div className="mt-4">
-                <h4 className="text-sm font-medium mb-3">Podkategorie dla {category}</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                  {subcategories.map((subcat) => (
-                    <Badge
-                      key={subcat}
-                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${subcategory === subcat ? "bg-purple-100 text-purple-800" : "bg-muted hover:bg-muted/80"
-                        }`}
-                      onClick={() => handleFilterChange("subcategory", subcat)}
-                    >
-                      <Tag className="h-3 w-3" /> {subcat}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
         )}
+
 
         {/* Widok ogłoszeń */}
         <Tabs value={viewMode} className="mt-6">

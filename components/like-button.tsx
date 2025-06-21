@@ -23,7 +23,7 @@ export function LikeButton({ adId, initialLikes, className = "", showCount = tru
   useEffect(() => {
     const checkLikeStatus = async () => {
       try {
-        const response = await fetch(`/api/ads/like?adId=${adId}`)
+        const response = await fetch(`/api/ogloszenia/like?adId=${adId}`)
         const data = await response.json()
         setIsLiked(data.liked)
         setIsLoading(false)
@@ -38,7 +38,7 @@ export function LikeButton({ adId, initialLikes, className = "", showCount = tru
   const handleLike = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch("/api/ads/like", {
+      const response = await fetch("/api/ogloszenia/like", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

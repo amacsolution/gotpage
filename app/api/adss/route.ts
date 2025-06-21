@@ -1,7 +1,7 @@
 import { query } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { UserData } from '../profile/route';
-import { AdData } from '../ads/route';
+import { AdData } from '../ogloszenia/route';
 import { categories } from '@/lib/ad-categories';
 
 

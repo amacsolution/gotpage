@@ -44,9 +44,9 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       
       let url;
       if (isUserProfile && userId) {
-        url = `/api/users/${userId}/ads?page=${pageNum || 1}&limit=6&sortBy=${sort || 'desc'}`;
+        url = `/api/users/${userId}/ogloszenia?page=${pageNum || 1}&limit=6&sortBy=${sort || 'desc'}`;
       } else {
-        url = `/api/ads?page=${pageNum || 1}&limit=12&sortBy=${sort || 'desc'}`;
+        url = `/api/ogloszenia?page=${pageNum || 1}&limit=12&sortBy=${sort || 'desc'}`;
       }
 
       // Dodanie parametrów filtrowania
@@ -61,7 +61,7 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
         if (location) params.append("location", location)
         if (searchQuery) params.append("q", searchQuery)
 
-        url = `/api/ads?${params.toString()}`
+        url = `/api/ogloszenia?${params.toString()}`
       }
 
       const response = await fetch(url)

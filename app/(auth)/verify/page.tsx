@@ -47,6 +47,7 @@ export default function VerifyPage(
           setError(data.error || "Wystąpił błąd podczas weryfikacji konta")
         }
       } catch (error) {
+        console.error(error)
         setStatus("error")
         setError("Wystąpił błąd podczas weryfikacji konta")
       }

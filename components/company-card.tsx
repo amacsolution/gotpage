@@ -8,9 +8,20 @@ import { Building, Clock, ExternalLink, Mail, MapPin, Phone, ShieldCheck, Star }
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
+
+interface CompanyItem {
+  id: string
+  name: string
+  avatar: string
+  bio: string
+  location: string
+  categories: string
+  type: string
+}
+
 export interface CompanyCardProps {
   company: {
-    id: number
+    id: string
     name: string
     avatar?: string
     logo: string | null
@@ -28,7 +39,7 @@ export function CompanyCard({ company, featured = false }: CompanyCardProps) {
   const categories = Array.isArray(company.categories) ? company.categories : [];
   const router = useRouter();
 
-  const handleMessage = async (userId: number) => {
+  const handleMessage = async (userId: string) => {
     try {
       // Check if user is logged in
       const getUserData = async () => {

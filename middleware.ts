@@ -23,7 +23,7 @@ const publicApiRoutes = [
   "/api/auth/register",
   "/api/auth/logout",
   "/api/auth/me",
-  "/api/ads",
+  "/api/ogloszenia",
   "/api/users",
   "/api/admin/verify",
   "/api/admin/login",

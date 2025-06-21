@@ -21,7 +21,7 @@ export function AdminSidebar() {
     { href: "/admin", label: "Dashboard", icon: Home },
     { href: "/admin/reports", label: "Zgłoszenia", icon: Flag },
     { href: "/admin/users", label: "Użytkownicy", icon: Users },
-    { href: "/admin/ads", label: "Ogłoszenia", icon: MessageSquare },
+    { href: "/admin/ogloszenia", label: "Ogłoszenia", icon: MessageSquare },
     { href: "/admin/companies", label: "Firmy", icon: Building },
     { href: "/admin/settings", label: "Ustawienia", icon: Settings },
     { href: "/admin/kontakt", label: "Formularze kontaktowe", icon: MessageSquare },

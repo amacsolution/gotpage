@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     // Używamy is_read zamiast read, ponieważ read jest słowem zarezerwowanym
     const result = await query("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0", [
       user.id, 
-    ])
+    ]) as {count : number}[]
 
     if (!Array.isArray(result) || result.length === 0) {
       return NextResponse.json({ count: 0 })

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { db, query } from "@/lib/db"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
 
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     const { token, password } = result.data
 
     // Sprawdź, czy token jest ważny i nie wygasł
-    const userResult = await db.query("SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > NOW()", [
+    const userResult = await query("SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > NOW()", [
       token,
     ]) as { id: string }[]
 
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // Aktualizuj hasło i wyczyść token resetowania
-    await db.query(
+    await query(
       "UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL, updated_at = NOW() WHERE id = ?",
       [hashedPassword, userId],
     )

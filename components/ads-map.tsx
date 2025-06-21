@@ -8,6 +8,13 @@ import "leaflet/dist/leaflet.css"
 import { formatDistanceToNow } from "date-fns"
 import { pl } from "date-fns/locale"
 
+// Extend Leaflet types for markerClusterGroup
+declare global {
+  namespace L {
+    function markerClusterGroup(options?: any): any;
+  }
+}
+
 // Komponent do aktualizacji widoku mapy
 function MapUpdater({ center }: { center?: { lat: number; lng: number } }) {
   const map = useMap()
@@ -113,7 +120,7 @@ function MarkerClusterHandler({ ads }: { ads: any[] }) {
         // Utwórz nową grupę klastrów
         const clusterGroup = L.markerClusterGroup({
           maxClusterRadius: 60,
-          iconCreateFunction: (cluster) => {
+          iconCreateFunction: (cluster : any) => {
             const count = cluster.getChildCount()
             let size, className
 

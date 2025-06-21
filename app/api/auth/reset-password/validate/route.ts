@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { db, query } from "@/lib/db"
 
 export async function GET(request: Request) {
   try {
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     }
 
     // Sprawdź, czy istnieje użytkownik z tym tokenem i czy token nie wygasł
-    const result = await db.query("SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > NOW()", [token]) as {id: string} []
+    const result = await query("SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > NOW()", [token]) as {id: string} []
 
     if (!result || result.length === 0) {
       return NextResponse.json(

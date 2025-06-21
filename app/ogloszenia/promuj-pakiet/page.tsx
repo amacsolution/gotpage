@@ -131,8 +131,8 @@ export default function PromotePackagePage() {
       // Budowanie URL zapytania
       let url =
         userId
-          ? `/api/users/${userId}/ads?page=${pageNum}&limit=12&sortBy=${sort}`
-          : `/api/ads?page=${pageNum}&limit=12&sortBy=${sort}`
+          ? `/api/users/${userId}/ogloszenia?page=${pageNum}&limit=12&sortBy=${sort}`
+          : `/api/ogloszenia?page=${pageNum}&limit=12&sortBy=${sort}`
 
       // Dodanie parametrów filtrowania
 
@@ -206,8 +206,6 @@ export default function PromotePackagePage() {
     setIsLoading(true)
 
     try {
-      // Tutaj byłoby rzeczywiste wywołanie API
-      await new Promise((resolve) => setTimeout(resolve, 1500))
 
       toast({
         title: "Promocja zakupiona",

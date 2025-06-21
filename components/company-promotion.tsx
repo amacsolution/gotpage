@@ -86,9 +86,6 @@ export function CompanyPromotion({ isPromoted = false, promotionEndDate, promoti
        description: "Za chwilę zostaniesz przekierowany do systemu płatności",
      })
 
-     // Symulacja opóźnienia
-     await new Promise((resolve) => setTimeout(resolve, 1500))
-
      // Przekierowanie do Stripe (w rzeczywistej implementacji)
      window.location.href = `/api/stripe/create-checkout?plan=${selectedPlan}&promotionType=company`
    } catch (error) {

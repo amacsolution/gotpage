@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { db, query } from "@/lib/db"
 import crypto from "crypto"
 import { sendPasswordResetEmail } from "@/lib/email-helpers"
 import { z } from "zod"
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     const { email } = result.data
 
     // Sprawdź, czy użytkownik istnieje
-    const userResult = await db.query("SELECT id, name FROM users WHERE email = ?", [email]) as { id: string,  name: string }[]
+    const userResult = await query("SELECT id, name FROM users WHERE email = ?", [email]) as { id: string,  name: string }[]
 
     // Nawet jeśli użytkownik nie istnieje, nie informujemy o tym (ze względów bezpieczeństwa)
     // Zamiast tego, zawsze zwracamy sukces, aby zapobiec atakom polegającym na sprawdzaniu, czy email istnieje
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     resetTokenExpires.setHours(resetTokenExpires.getHours() + 1)
 
     // Zapisz token w bazie danych
-    await db.query("UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?", [
+    await query("UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?", [
       resetToken,
       resetTokenExpires,
       user.id,

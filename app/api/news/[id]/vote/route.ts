@@ -24,7 +24,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     }
 
     // Sprawdzenie, czy wpis istnieje i jest typu poll
-    const posts = await query("SELECT id, poll_data FROM news_posts WHERE id = ? AND type = 'poll'", [postId])
+    const posts = await query("SELECT id, poll_data FROM news_posts WHERE id = ? AND type = 'poll'", [postId]) as {id: number, poll_data: string}[]
 
     if (!Array.isArray(posts) || posts.length === 0) {
       return NextResponse.json({ error: "Wpis nie istnieje lub nie jest ankietą" }, { status: 404 })

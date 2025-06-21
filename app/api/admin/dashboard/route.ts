@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { db } from "@/lib/db"
+import { db, query } from "@/lib/db"
 
 // Define types for query results
 type UserStats = { total: number; today: number };
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       FROM users
       ${period !== "all" ? dateCondition : ""}
     `
-    const [usersStats]= await db.query(usersQuery) as UserStats[]
+    const [usersStats]= await query(usersQuery) as UserStats[]
 
     // Pobierz statystyki ogłoszeń
     const adsQuery = `
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
         FROM ads
       ${period !== "all" ? dateCondition : ""}
     `
-    const [adsStats] = await db.query(adsQuery) as AdsStats[]
+    const [adsStats] = await query(adsQuery) as AdsStats[]
 
     // Pobierz statystyki komentarzy
     const commentsQuery = `
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     (SELECT COUNT(*) FROM news_comments WHERE DATE(created_at) = CURDATE()) AS today
       ${period !== "all" ? dateCondition : ""}
     `
-    const [commentsStats] = await db.query(commentsQuery) as CommentsStats[]
+    const [commentsStats] = await query(commentsQuery) as CommentsStats[]
 
     // Pobierz statystyki zgłoszeń
     const reportsQuery = `
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
       FROM reports
       ${period !== "all" ? dateCondition : ""}
     `
-    const [reportsStats] = await db.query(reportsQuery) as ReportsStats[]
+    const [reportsStats] = await query(reportsQuery) as ReportsStats[]
 
     // Pobierz ostatnią aktywność
     const recentActivityQuery = `
@@ -169,30 +169,30 @@ LIMIT 10;
 
     `
 
-    const [recentActivity] = await db.query(recentActivityQuery) as [RecentActivityItem[]];
+    const recentActivity = await query(recentActivityQuery) as RecentActivityItem[];
 
     // Przygotuj dane do odpowiedzi
     const dashboardData = {
       stats: {
         users: {
-          total: usersStats[0].total ,
-          today: usersStats[0].today || 0 ,
+          total: usersStats.total ,
+          today: usersStats.today || 0 ,
         },
         ads: {
-          total: adsStats[0].total ,
-          today: adsStats[0].today || 0 ,
+          total: adsStats.total ,
+          today: adsStats.today || 0 ,
         },
         comments: {
-          total: commentsStats[0].total,
-          today: commentsStats[0].today || 0,
+          total: commentsStats.total,
+          today: commentsStats.today || 0,
         },
         reports: {
-          total: reportsStats[0].total,
-          pending: reportsStats[0].pending || 0,
-          today: reportsStats[0].today || 0,
+          total: reportsStats.total,
+          pending: reportsStats.pending || 0,
+          today: reportsStats.today || 0,
         },
       },
-      recentActivity: (recentActivity as RecentActivityItem[]).map((item) => ({
+      recentActivity: recentActivity.map((item) => ({
         ...item,
         time: item.time, // Zachowaj oryginalny format daty
         timeFormatted: new Date(item.time).toLocaleString("pl-PL"), // Dodaj sformatowaną datę

@@ -238,7 +238,7 @@ export interface AdData {
   author_phone: string
   author_joined_at: string
   comments_count: number
-  parameters: Record<string, any> | null
+  parameters: string | null
   ad_key: string
   created_at: string
   updated_at: string

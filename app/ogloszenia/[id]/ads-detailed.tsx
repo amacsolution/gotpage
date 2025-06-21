@@ -97,7 +97,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
       }
       try {
         setIsLoading(true)
-        const response = await fetch(`/api/ads/${id}`)
+        const response = await fetch(`/api/ogloszeniaoszenia/${id}`)
         const data = await response.json()
         if (data.error) {
           throw new Error(data.error)
@@ -129,7 +129,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
       const fetchSimilarAds = async () => {
         try {
           setIsSimilarAdsLoading(true)
-          const response = await fetch(`/api/ads/similar?id=${ad.id}&category=${ad.category}`)
+          const response = await fetch(`/api/ogloszenia/similar?id=${ad.id}&category=${ad.category}`)
           const data = await response.json()
 
           if (data.error) {
@@ -153,7 +153,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
     if (!commentText.trim()) return
 
     try {
-      const response = await fetch(`/api/ads/${id}/comments`, {
+      const response = await fetch(`/api/ogloszenia/${id}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -209,7 +209,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
     const confirmDelete = async () => {
       try {
         setIsDeleting(true)
-        const response = await fetch(`/api/ads/${ad.id}`, {
+        const response = await fetch(`/api/ogloszenia/${ad.id}`, {
           method: "DELETE",
         })
   

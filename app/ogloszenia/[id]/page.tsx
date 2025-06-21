@@ -10,7 +10,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   const { id } = params
 
   try {
-    const response = await fetch(`https://gotpage.pl/api/ads/${id}`)
+    const response = await fetch(`https://gotpage.pl/api/ogloszenia/${id}`)
     const data = await response.json()
 
     if (!data.error) {

@@ -34,7 +34,6 @@ export function LoginForm() {
   useEffect(() => {
     try {
       const userData = localStorage.getItem("userData")
-      setTimeout(() => {
         if (userData) {
           const user = JSON.parse(userData)
 
@@ -47,7 +46,6 @@ export function LoginForm() {
         } else {
           return
         }
-      }, 1000)
     } catch (error) {
       console.error(error)
     }

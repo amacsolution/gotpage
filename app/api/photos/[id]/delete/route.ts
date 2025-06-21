@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import fs from "fs"
 import path from "path"
 import { auth } from "@/lib/auth"

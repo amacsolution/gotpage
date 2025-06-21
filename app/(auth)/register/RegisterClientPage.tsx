@@ -13,7 +13,6 @@ export default function RegisterClientPage() {
   useEffect(() => {
     try {
       const userData = localStorage.getItem("userData")
-      setTimeout(() => {
         if (userData) {
           const user = JSON.parse(userData)
 
@@ -26,7 +25,6 @@ export default function RegisterClientPage() {
         } else {
           return
         }
-      }, 1000)
     } catch (e) {
       console.error(e)
     }

@@ -19,28 +19,24 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 
 const testEmailFormSchema = z.object({
-  email: z.string().email({
-    message: "Wprowadź poprawny adres email",
-  }),
+  email: z.string().email(),
   name: z.string().optional(),
-  oldServiceName: z.string().default("gotpage"),
-  newServiceName: z.string().default("Nowy Serwis Ogłoszeniowy"),
+  oldServiceName: z.string(), // remove .default()
+  newServiceName: z.string(), // remove .default()
   adminPassword: z.string().min(1, {
     message: "Hasło administratora jest wymagane",
   }),
-})
+});
 
 const bulkEmailFormSchema = z.object({
-  users: z.string().min(1, {
-    message: "Lista użytkowników jest wymagana",
-  }),
-  oldServiceName: z.string().default("gotpage"),
-  newServiceName: z.string().default("Nowy Serwis Ogłoszeniowy"),
+  users: z.string(),
+  oldServiceName: z.string(),
+  newServiceName: z.string(),
   adminPassword: z.string().min(1, {
     message: "Hasło administratora jest wymagane",
   }),
-  testMode: z.boolean().default(true),
-})
+  testMode: z.boolean(),
+});
 
 export default function MigrationEmailsPage() {
   const { toast } = useToast()
@@ -50,27 +46,26 @@ export default function MigrationEmailsPage() {
 
   // Formularz dla pojedynczego emaila testowego
   const testForm = useForm<z.infer<typeof testEmailFormSchema>>({
-    resolver: zodResolver(testEmailFormSchema),
-    defaultValues: {
-      email: "",
-      name: "",
-      oldServiceName: "gotpage",
-      newServiceName: "Nowy Serwis Ogłoszeniowy",
-      adminPassword: "",
-    },
-  })
+  resolver: zodResolver(testEmailFormSchema),
+  defaultValues: {
+    email: "",
+    name: "",
+    oldServiceName: "gotpage",
+    newServiceName: "Nowy Serwis Ogłoszeniowy",
+    adminPassword: "",
+  },
+});
 
-  // Formularz dla masowej wysyłki
-  const bulkForm = useForm<z.infer<typeof bulkEmailFormSchema>>({
-    resolver: zodResolver(bulkEmailFormSchema),
-    defaultValues: {
-      users: "",
-      oldServiceName: "gotpage",
-      newServiceName: "Nowy Serwis Ogłoszeniowy",
-      adminPassword: "",
-      testMode: true,
-    },
-  })
+const bulkForm = useForm<z.infer<typeof bulkEmailFormSchema>>({
+  resolver: zodResolver(bulkEmailFormSchema),
+  defaultValues: {
+    users: "",
+    oldServiceName: "gotpage",
+    newServiceName: "Nowy Serwis Ogłoszeniowy",
+    adminPassword: "",
+    testMode: true,
+  },
+});
 
   // Obsługa wysyłki pojedynczego emaila testowego
   async function onTestSubmit(values: z.infer<typeof testEmailFormSchema>) {

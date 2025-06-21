@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if post exists
-    const postResult = await query("SELECT id FROM news_posts WHERE id = ?", [postId])
+    const postResult = await query("SELECT id FROM news_posts WHERE id = ?", [postId]) as {id: number}[]
 
     if (!postResult || postResult.length === 0) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 })
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     const result = await query(
       "INSERT INTO news_comments (post_id, user_id, content, created_at) VALUES (?, ?, ?, NOW())",
       [postId, user.id, content],
-    )
+    ) as {insertId: number}
 
     if (!result || !result.insertId) {
       throw new Error("Failed to create comment")
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       JOIN users u ON c.user_id = u.id
       WHERE c.id = ?`,
       [result.insertId],
-    )
+    ) as any[]
 
     if (!commentResult || commentResult.length === 0) {
       throw new Error("Failed to retrieve created comment")

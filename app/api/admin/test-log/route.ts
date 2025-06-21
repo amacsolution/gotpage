@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { db, query } from "@/lib/db"
 
 // Hasło administratora z zmiennych środowiskowych
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
@@ -16,9 +16,9 @@ export async function POST(request: NextRequest) {
     // Sprawdź, czy tabela email_logs istnieje
     try {
       // Próba wykonania prostego zapytania do tabeli
-      await db.query("SELECT 1 FROM email_logs LIMIT 1")
+      await query("SELECT 1 FROM email_logs LIMIT 1")
     } catch (error) {
-      await db.query(`
+      await query(`
         CREATE TABLE IF NOT EXISTS email_logs (
           id INT AUTO_INCREMENT PRIMARY KEY,
           email_to VARCHAR(255) NOT NULL,
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Spróbuj zapisać testowy log
-    const result = await db.query(
+    const result = await query(
       "INSERT INTO email_logs (email_to, subject, template_type, status, created_at) VALUES (?, ?, ?, ?, NOW())",
       ["test@example.com", "Test zapisu do tabeli", "test", "sent"],
     ) as {rows?: { insertId: number }}

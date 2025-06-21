@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { emailService } from "@/lib/email-service"
 import { emailExamples } from "@/emails/examples"
-import { db } from "@/lib/db"
+import { db, query } from "@/lib/db"
 
 // Hasło administratora z zmiennych środowiskowych
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
@@ -35,9 +35,9 @@ export async function POST(request: NextRequest) {
     // Sprawdź, czy tabela email_logs istnieje
     try {
       // Próba wykonania prostego zapytania do tabeli
-      await db.query("SELECT 1 FROM email_logs LIMIT 1")
+      await query("SELECT 1 FROM email_logs LIMIT 1")
     } catch (error) {
-      await db.query(`
+      await query(`
         CREATE TABLE IF NOT EXISTS email_logs (
           id INT AUTO_INCREMENT PRIMARY KEY,
           email_to VARCHAR(255) NOT NULL,
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     // Ręcznie zapisz log, jeśli wysyłanie się powiodło, ale log nie został zapisany
     if (result.success) {
       try {
-        await db.query(
+        await query(
           "INSERT INTO email_logs (email_to, subject, template_type, status, created_at) VALUES (?, ?, ?, ?, NOW())",
           [to, `[TEST] Email typu: ${emailType}`, emailType, "sent"],
         )
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       // Ręcznie zapisz log błędu
       try {
         const errorMessage = result.error instanceof Error ? result.error.message : String(result.error)
-        await db.query(
+        await query(
           "INSERT INTO email_logs (email_to, subject, template_type, status, error_message, created_at) VALUES (?, ?, ?, ?, ?, NOW())",
           [to, `[TEST] Email typu: ${emailType}`, emailType, "error", errorMessage],
         )

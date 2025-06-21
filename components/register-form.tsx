@@ -264,6 +264,19 @@ export function MultiStepRegisterForm() {
   async function onSubmit(values: FormValues) {
     setIsLoading(true)
 
+    if (values.nip) {
+      const nip = validateNIP(values.nip) 
+      if(nip) {
+        toast({
+        title: "Błąd walidacji",
+        description: "Podaj prawdziwy numer NIP",
+        variant: "destructive",
+      })
+      setIsLoading(false)
+      return
+    } 
+  }
+
     try {
       // Przygotowanie danych do wysłania
       const userData = {
@@ -318,6 +331,10 @@ export function MultiStepRegisterForm() {
       const data = await response.json()
 
       if (!response.ok) {
+        toast({
+          title: "Wystąpił błąd!",
+          description: data.error,
+          })
         throw new Error(data.error || "Wystąpił błąd podczas rejestracji")
       }
 

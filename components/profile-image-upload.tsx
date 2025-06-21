@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 
 interface ProfileImageUploadProps {
   userId: string
-  currentAvatar: string
+  currentAvatar: string | undefined
   userName: string
   onAvatarUpdate: (newAvatarUrl: string) => void
 }

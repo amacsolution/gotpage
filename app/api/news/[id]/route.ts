@@ -2,6 +2,31 @@ import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
 
+export type PostProps = {
+    id: number
+    content: string
+    has_link: number
+    link_url?: string
+    likes: number
+    comments: number
+    createdAt: string
+    isLiked: boolean
+    type: "text" | "image" | "poll"
+    imageUrl?: string
+    imageUrls?: string[] // Dodane pole dla wielu zdjęć
+    pollData?: {
+      options: string[]
+      votes: number[]
+      totalVotes: number
+      userVote?: number
+    }
+    author_id: string
+    author_name: string
+    author_avatar: string
+    author_type: string
+    author_verified: number
+  }
+
 export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {
@@ -29,7 +54,7 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
       JOIN users u ON p.user_id = u.id
       WHERE p.id = ?`,
       [postId],
-    )
+    ) as PostProps[]
 
     if (!Array.isArray(posts) || posts.length === 0) {
       return NextResponse.json({ error: "Wpis nie został znaleziony" }, { status: 404 })

@@ -9,31 +9,33 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
 import { AdCard } from "@/components/ad-card"
+import { type AdCardProps } from "@/components/ad-card"
 import { Sparkles, TrendingUp, Eye, BarChart3, Zap, CheckCircle2, ChevronRight, Crown, ChevronDown } from "lucide-react"
 
-// Add a new interface for promoted ads
-interface PromotedAd {
-  id: number
-  title: string
-  content: string
-  category: string
-  subcategory?: string
-  price: number | null
-  currency?: string
-  location?: string
-  images: string[]
-  createdAt: Date
-  promoted: boolean
-  author: {
+// Add a new type alias for promoted ads
+type PromotedAd = {
     id: number
-    name: string
-    avatar: string
-    type: string
-    verified: boolean
-  } 
-  likes: number
-  comments: number
-}
+    title: string
+    content: string
+    category: string
+    subcategory?: string
+    price: number | null
+    currency?: string | null
+    location?: string
+    image: string
+    createdAt: Date
+    promoted: number
+    comments_count: number
+    author: {
+      id: string
+      name: string
+      avatar: string
+      type: string
+      verified: boolean
+    }
+    likes: number
+    comments: number
+  }
 
 export default function PromoteAdsPage() {
   const { toast } = useToast()
@@ -47,7 +49,7 @@ export default function PromoteAdsPage() {
       setIsLoading(true)
       try {
         // Fetch only promoted ads with limit=3
-        const response = await fetch("/api/ads?promoted=true&limit=3")
+        const response = await fetch("/api/ogloszenia?promoted=true&limit=3")
         if (!response.ok) {
           throw new Error("Failed to fetch promoted ads")
         }
@@ -64,7 +66,7 @@ export default function PromoteAdsPage() {
           variant: "destructive",
         })
         // Set fallback example ads if fetch fails
-        setPromotedAds([exampleAd])
+        setPromotedAds([])
       } finally {
         setIsLoading(false)
       }
@@ -152,31 +154,6 @@ export default function PromoteAdsPage() {
       icon: <BarChart3 className="h-8 w-8 text-green-500" />,
     },
   ]
-
-  // Przykładowe dane ogłoszenia do wyświetlenia w AdCard (jako fallback)
-  const exampleAd = {
-    id: 1,
-    title: "Nowoczesny apartament w centrum miasta",
-    content:
-      "Przestronny apartament z pięknym widokiem na miasto. Doskonała lokalizacja, blisko komunikacji miejskiej i sklepów.",
-    category: "Nieruchomości",
-    subcategory: "Mieszkania",
-    price: 499000,
-    currency: "PLN",
-    location: "Warszawa, Mazowieckie",
-    images: ["/placeholder.svg?height=300&width=500&text=Przykładowe+ogłoszenie"],
-    createdAt: new Date(),
-    promoted: true,
-    author: {
-      id: 1,
-      name: "Jan Kowalski",
-      avatar: "/placeholder.svg?height=40&width=40&text=JK",
-      type: "individual",
-      verified: true,
-    },
-    likes: 24,
-    comments: 5,
-  }
 
   return (
     <PageLayout>
@@ -353,6 +330,7 @@ export default function PromoteAdsPage() {
         </div>
 
         {/* Przykłady promowanych ogłoszeń */}
+        {promotedAds &&
         <div className="py-16 bg-primary/10 px-4 sm:px-6 lg:px-8">
           <div className="container mx-auto max-w-6xl">
             <div className="text-center mb-12">
@@ -370,45 +348,13 @@ export default function PromoteAdsPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {promotedAds.length > 0
-                  ? promotedAds.map((ad) => (
+                {promotedAds.length > 0 &&
+                  promotedAds.map((ad) => (
                       <div key={ad.id} className="transform hover:scale-105 transition-transform duration-300">
                         <AdCard ad={ad}/>
                       </div>
                     ))
-                  : // Fallback to example ads if no promoted ads are available
-                    [
-                      {
-                        ...exampleAd,
-                        id: 2,
-                        title: "Nowoczesny laptop gamingowy",
-                        content: "Wydajny laptop dla graczy z najnowszą kartą graficzną i procesorem.",
-                        category: "Elektronika",
-                        subcategory: "Laptopy",
-                        price: 5999,
-                      },
-                      {
-                        ...exampleAd,
-                        id: 3,
-                        title: "Apartament z widokiem na morze",
-                        content: "Luksusowy apartament z panoramicznym widokiem na morze, blisko plaży.",
-                        location: "Gdańsk, Pomorskie",
-                        price: 899000,
-                      },
-                      {
-                        ...exampleAd,
-                        id: 4,
-                        title: "Samochód terenowy 4x4",
-                        content: "Niezawodny samochód terenowy, idealny na wyprawy w trudnym terenie.",
-                        category: "Motoryzacja",
-                        subcategory: "Samochody",
-                        price: 89900,
-                      },
-                    ].map((ad) => (
-                      <div key={ad.id} className="transform hover:scale-105 transition-transform duration-300">
-                        <AdCard ad={ad} image={ad.images[0].image_url}/>
-                      </div>
-                    ))}
+                  }
               </div>
             )}
 
@@ -423,6 +369,7 @@ export default function PromoteAdsPage() {
             </div>
           </div>
         </div>
+        }
 
         {/* Sekcja FAQ */}
         <div className="py-16 px-4 sm:px-6 lg:px-8">

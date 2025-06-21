@@ -34,7 +34,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     const result = await query(
       "INSERT INTO ad_comments (ad_id, user_id, content, created_at) VALUES (?, ?, ?, NOW())",
       [adId, user.id, content],
-    )
+    ) as {insertId: number}
 
     if (!result || !result.insertId) {
       throw new Error("Nie udało się dodać komentarza")
@@ -53,7 +53,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       JOIN users u ON c.user_id = u.id
       WHERE c.id = ?`,
       [result.insertId],
-    )
+    ) as {id: number, content: string, created_at: string, author_id: string, author_name: string, author_avatar: string}[]
 
     if (!Array.isArray(comments) || comments.length === 0) {
       throw new Error("Nie udało się pobrać dodanego komentarza")
@@ -62,7 +62,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     const comment = comments[0]
 
     // Pobranie informacji o autorze ogłoszenia
-    const adAuthor = await query("SELECT user_id FROM ads WHERE id = ?", [adId])
+    const adAuthor = await query("SELECT user_id FROM ads WHERE id = ?", [adId]) as {user_id: string}[]
 
     const isAuthor = Array.isArray(adAuthor) && adAuthor.length > 0 && adAuthor[0].user_id === user.id
 

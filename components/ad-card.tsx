@@ -24,7 +24,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 
-interface AdCardProps {
+export interface AdCardProps {
   ad: {
     id: number
     title: string
@@ -109,7 +109,7 @@ export function AdCard({ ad, image }: AdCardProps) {
   const confirmDelete = async () => {
     try {
       setIsDeleting(true)
-      const response = await fetch(`/api/ads/${ad.id}`, {
+      const response = await fetch(`/api/ogloszenia/${ad.id}`, {
         method: "DELETE",
       })
 

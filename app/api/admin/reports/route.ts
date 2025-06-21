@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { db } from "@/lib/db"
+import { db, query } from "@/lib/db"
 
 // Funkcja pomocnicza do sprawdzania uwierzytelnienia administratora
 async function isAdmin(request: NextRequest) {
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const offset = Number.parseInt(searchParams.get("offset") || "0")
 
     // Buduj zapytanie SQL
-    let query = `
+    let fquery = `
       SELECT 
         r.id,
         r.reported_type AS type,
@@ -55,15 +55,15 @@ export async function GET(request: NextRequest) {
 
     // Dodaj warunki do zapytania, jeśli istnieją
     if (conditions.length > 0) {
-      query += " WHERE " + conditions.join(" AND ")
+      fquery += " WHERE " + conditions.join(" AND ")
     }
 
     // Dodaj sortowanie i paginację
-    query += " ORDER BY r.created_at DESC LIMIT ? OFFSET ?", [limit, offset]  
+    fquery += " ORDER BY r.created_at DESC LIMIT ? OFFSET ?", [limit, offset]  
     queryParams.push(limit, offset)
 
     // Wykonaj zapytanie
-    const [reports] = await db.query(query, queryParams)  
+    const [reports] = await query(fquery, queryParams)   as any[]
 
     type Reports = {
       id: number,
@@ -103,12 +103,12 @@ export async function GET(request: NextRequest) {
 
         // Pobierz tytuł zgłoszonego elementu w zależności od typu
         if (report.type === "ad") {
-          const ad = await db.query("SELECT title FROM ads WHERE id = ?", [report.targetId]) as Ad[]
+          const ad = await query("SELECT title FROM ads WHERE id = ?", [report.targetId]) as Ad[]
           targetTitle = ad[0].title || `Ogłoszenie #${report.targetId}`
 
         } 
         else if (report.type === "ad_comment") {
-          const comment = await db.query(
+          const comment = await query(
             `SELECT c.content, a.title FROM ad_comments c JOIN ads a ON c.ad_id = a.id WHERE c.id = ?`
             [report.targetId]
           ) as Comment[]
@@ -116,20 +116,20 @@ export async function GET(request: NextRequest) {
 
         } 
         else if (report.type === "news_comment") {
-          const comment = await db.query(
+          const comment = await query(
             `SELECT c.content as news_comment_content, a.content as post_content FROM news_comments c JOIN news_posts a ON c.post_id = a.id WHERE c.id = ?`
             [report.targetId] )  as Comment[]
             targetTitle = comment[0] ? `Komentarz do wpisu "${comment[0].title}"` : `Wpis #${report.targetId}`
 
         } 
         else if (report.type === "user") {
-          const user = await db.query("SELECT name FROM users WHERE id = ?", [report.targetId]) as User[]
+          const user = await query("SELECT name FROM users WHERE id = ?", [report.targetId]) as User[]
           targetTitle = user[0]?.username || `Użytkownik #${report.targetId}`
 
         }
 
         // Pobierz pełną treść zgłoszenia
-        const reportDetails = await db.query("SELECT reason FROM reports WHERE id = ?", [report.id]) as Details[]
+        const reportDetails = await query("SELECT reason FROM reports WHERE id = ?", [report.id]) as Details[]
 
         const description = reportDetails[0]?.reason || ""
 
@@ -167,7 +167,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Aktualizuj status zgłoszenia
-    await db.query("UPDATE reports SET status = ? WHERE id = ?", [status, id])
+    await query("UPDATE reports SET status = ? WHERE id = ?", [status, id])
 
     return NextResponse.json({ success: true })
   } catch (error) {
@@ -192,7 +192,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Usuń zgłoszenie
-    await db.query("DELETE FROM reports WHERE id = ?", [id])
+    await query("DELETE FROM reports WHERE id = ?", [id])
 
     return NextResponse.json({ success: true })
   } catch (error) {

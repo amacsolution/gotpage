@@ -59,7 +59,7 @@ export async function sendNotifyAdmin(params: {
   const subject = `Błąd na stronie gotpage - ${date}`
 
   return emailService.sendEmail({
-    to: 'antoni2005ma@gmail.com',
+    to: 'bugs@gotpage.pl',
     subject,
     emailComponent: <NotifyAdmin body={body} user={user} stack={stack} url={url} />,
   })

@@ -75,13 +75,11 @@ export async function uploadFile(file: File, path: string): Promise<{ url: strin
         // W prawdziwej aplikacji byłby to URL do przesłanego pliku
 
         // Symulacja opóźnienia przesyłania
-        setTimeout(() => {
           // Zwróć URL do "przesłanego" pliku
           // W rzeczywistej aplikacji byłby to URL zwrócony przez serwer
           resolve({
             url: reader.result as string,
           })
-        }, 1000)
       }
 
       reader.onerror = () => {

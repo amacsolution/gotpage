@@ -790,7 +790,7 @@ export default function AddAdPage() {
       })
 
       // Wysłanie formularza
-      const response = await fetch("/api/ads", {
+      const response = await fetch("/api/ogloszenia", {
         method: "POST",
         body: formData,
       })

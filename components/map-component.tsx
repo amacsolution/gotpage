@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
@@ -22,6 +22,9 @@ const fixLeafletIcons = () => {
     shadowUrl: "/leaflet/marker-shadow.png",
   })
 }
+
+// Call fixLeafletIcons once on module load (before any map is created)
+fixLeafletIcons()
 
 // Component to update map view
 function MapUpdater({ center }: { center?: { lat: number; lng: number } }) {
@@ -52,20 +55,7 @@ interface MapComponentProps {
 }
 
 export default function MapComponent({ companies, center }: MapComponentProps) {
-  const mapRef = useRef<L.Map | null>(null)
-
-  // Initialize Leaflet icons
-  useEffect(() => {
-    fixLeafletIcons()
-
-    // Cleanup function to properly destroy the map when component unmounts
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove()
-        mapRef.current = null
-      }
-    }
-  }, [])
+  // No need for manual map initialization; react-leaflet handles it internally.
 
   return (
     <MapContainer
@@ -73,9 +63,6 @@ export default function MapComponent({ companies, center }: MapComponentProps) {
       zoom={7}
       style={{ height: "100%", width: "100%" }}
       scrollWheelZoom={false}
-      whenCreated={(map) => {
-        mapRef.current = map
-      }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { UserData } from '../profile/route';
-import { AdData } from '../ads/route';
+import { AdData } from '../ogloszenia/route';
 import { categories } from '@/lib/ad-categories'; // zakładam że masz kategorie tutaj
 import { cities } from '@/lib/cites'; // jeśli masz listę miast (np. ['Warszawa', 'Kraków'])
 // Removed unused import

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
-import { AdData } from "@/app/api/ads/route"
+import { AdData } from "@/app/api/ogloszenia/route"
 
 export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -90,7 +90,6 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
           promoted: ad.promoted === 1,
           likes: ad.likes,
           views: ad.views,
-          likedAt: ad.liked_at,
           author: {
             id: ad.author_id,
             name: ad.author_name,

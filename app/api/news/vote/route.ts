@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get the post and check if it's a poll
-    const postResult = await query("SELECT id, poll_data FROM news_posts WHERE id = ? AND type = 'poll'", [postId])
+    const postResult = await query("SELECT id, poll_data FROM news_posts WHERE id = ? AND type = 'poll'", [postId]) as {id: number, poll_data: string}[]
 
     if (!postResult || postResult.length === 0) {
       return NextResponse.json({ error: "Poll not found" }, { status: 404 })
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       pollData: {
-        options: pollData.options.map((option, index) => ({
+        options: pollData.options.map((option: string, index : number) => ({
           id: `opt${index + 1}`,
           text: option,
           votes: pollData.votes[index] || 0,

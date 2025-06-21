@@ -5,9 +5,10 @@ import io from "socket.io-client"
 import type { Socket } from "socket.io-client"
 
 export function useSocket(userId: string | null | undefined) {
+  type Soc = typeof Socket
   const [isConnected, setIsConnected] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const socketRef = useRef<Socket.IOClient | null>(null)
+  const socketRef = useRef<Soc | null>(null)
   const initializingRef = useRef(false)
 
   // Inicjalizacja Socket.IO

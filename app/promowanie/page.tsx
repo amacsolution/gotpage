@@ -9,16 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ArrowRight, Building, Tag } from "lucide-react"
 
 export default function PromotionPage() {
-  const [isLoading, setIsLoading] = useState(true)
-
-  // Symulacja ładowania danych
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 100)
-
-    return () => clearTimeout(timer)
-  }, [])
+  const [isLoading, setIsLoading] = useState(false)
 
   return (
     <PageLayout>

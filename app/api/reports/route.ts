@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth"
 import { query } from "@/lib/db"
 import { type NextRequest, NextResponse } from "next/server"
-import { AdData } from "../ads/route"
+import { AdData } from "../ogloszenia/route"
 
 export async function POST(req: NextRequest) {
   try {
