@@ -7,7 +7,7 @@ export interface Reviews {
   rating: number
   content: string
   createdAt: string
-  reviewer_id: number
+  reviewer_id: string
   reviewer_name: string
   reviewer_avatar: string
 }
@@ -16,7 +16,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id: userId } = await params
 
-    if (userId!) {
+    if (!userId) {
       return NextResponse.json({ error: "Nieprawidłowe ID użytkownika" }, { status: 400 })
     }
 

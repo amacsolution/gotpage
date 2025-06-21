@@ -16,7 +16,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { UserReviews } from "@/components/user-reviews"
 import { useToast } from "@/hooks/use-toast"
-import { se } from "date-fns/locale"
 import {
   AlarmClock,
   Book,
@@ -344,14 +343,28 @@ export default function UserProfilePage({id} : { id: string }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-1 space-y-6">
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold">{user.name}</h1>
                 {user.verified ? (
                   <Badge variant="outline" className="text-primary border-primary/30">
-                    Zweryfikowana
+                    Zweryfikowany użytkownik
                   </Badge>
                 ) : (
                   ""
+                )}
+                {user.type === "business" && user.stats.reviews > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className="h-4 w-4 text-yellow-500"
+                          fill={star <= Math.round(user.stats.rating) ? "currentColor" : "none"}
+                        />
+                      ))}
+                    </div>
+                    <span className="font-bold">{Number(user.stats.rating).toFixed(1) || 0}</span>
+                  </div>
                 )}
               </div>
 
@@ -435,21 +448,7 @@ export default function UserProfilePage({id} : { id: string }) {
                   </Button>
                 </>
               )}
-              {user.type === "business" && user.stats.reviews > 0 && (
-                <div className="flex items-center gap-2">
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className="h-4 w-4 text-yellow-500"
-                        fill={star <= Math.round(user.stats.rating) ? "currentColor" : "none"}
-                      />
-                    ))}
-                  </div>
-                  <span className="font-bold">{user.stats.rating.toFixed(1)}</span>
-                  <span className="text-muted-foreground">({user.stats.reviews} opinii)</span>
-                </div>
-              )}
+              
             </div>
 
             <Card>
@@ -588,7 +587,7 @@ export default function UserProfilePage({id} : { id: string }) {
                                     <div className="flex items-center gap-1">
                                       <span className="font-medium text-sm">{similarUser.name}</span>
                                       {similarUser.verified ? (
-                                        <span className="text-primary text-xs" title="Zweryfikowany">
+                                        <span className="text-primary text-xs" title="Zweryfikowany użytkownik">
                                           <ShieldCheck className="h-4 w-4" />
                                         </span>
                                       ) : (
@@ -856,15 +855,13 @@ export default function UserProfilePage({id} : { id: string }) {
                             />
                           ))}
                         </div>
-                        <span className="font-bold">{user.stats.rating?.toFixed(1)}</span>
+                        <span className="font-bold">{Number(user.stats.rating)?.toFixed(1)}</span>
                         <span className="text-muted-foreground">({user.stats.reviews} opinii)</span>
                       </div>
-                      <UserReviews userId={user.id} />
+                      <UserReviews showAddReview userId={user.id} firma={user.name}/>
                     </>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <p>Brak opinii</p>
-                    </div>
+                  ): (
+                      <UserReviews showAddReview userId={user.id} firma={user.name}/>
                   )}
                 </TabsContent>
               )}

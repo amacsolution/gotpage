@@ -3,7 +3,7 @@ import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
 import { z } from "zod"
 import type { BusinessData } from "./company/route"
-import type { UserData } from "../../profile/route"
+import type { Promotions, UserData } from "../../profile/route"
 import { profile } from "console"
 
 const profileDataSchema = z.object({
@@ -115,24 +115,14 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
   }
 }
 
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET({ params }: { params: Promise<{ id: string }> }): Promise<Response> {
   try {
     const userId = (await params).id
     if (!userId) {
       return NextResponse.json({ error: "Nieprawidłowe ID użytkownika" }, { status: 400 })
     }
     // Sprawdzenie, czy użytkownik istnieje w tabeli stats
-    const userStats = await query("SELECT * FROM user_stats WHERE user_id = ?", [userId]) as any[]
-
-    if (!userStats || userStats.length === 0) {
-      // Jeśli nie ma statystyk, tworzymy nowy wpis
-      await query("INSERT INTO user_stats (user_id, views, last_active) VALUES (?, 1, NOW())", [userId])
-    } else {
-      await query("UPDATE user_stats SET views = views + 1, last_active = NOW() WHERE user_id = ?", [userId])
-    }
-
-    // Fetch user data
-    const userData = (await query(
+    const users = (await query(
       `SELECT 
         u.id, 
         u.name, 
@@ -141,101 +131,127 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         u.phone, 
         u.bio, 
         u.avatar, 
-        u.background_img as backgroundImage,
+        u.background_img,
         u.type, 
         u.verified, 
         u.created_at as joinedAt, 
         u.location,
         u.adress,
-        u.categories,
         u.occupation,
         u.interests,
-        u.services,
+        u.website,
         u.company_size,
-        u.website
-      FROM users u 
-      WHERE u.id = ?`,
+        u.categories,
+        u.opening_hours,
+        u.services,
+        u.social_media,
+        (SELECT COUNT(*) FROM ads WHERE user_id = u.id) as ads_count,
+        (SELECT SUM(views) FROM user_stats WHERE user_id = u.id) as views_count,
+        (SELECT COUNT(*) FROM ad_likes WHERE ad_id IN (SELECT id FROM ads WHERE user_id = u.id)) as likes_count,
+        (SELECT COUNT(*) FROM user_reviews WHERE user_id = u.id) as reviews_count,
+        (SELECT AVG(rating) FROM user_reviews WHERE user_id = u.id) as rating_avg
+      FROM users u
+      WHERE u.id = ?
+      LIMIT 1`,
       [userId],
     )) as UserData[]
 
-    if (!userData || userData.length === 0) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    if (!Array.isArray(users) || users.length === 0) {
+      return NextResponse.json({ error: "Nie znaleziono użytkownika" }, { status: 404 })
     }
 
-    const user = userData[0]
+    const userData = users[0]
 
-    // Parse categories if it's a JSON string
-    if (user.categories && typeof user.categories === "string") {
+    // Sprawdzenie czy użytkownik ma aktywną promocję (tylko dla firm)
+    let promotionData = null
+    if (userData.type === "business") {
       try {
-        user.categories = JSON.parse(user.categories)
-      } catch (e) {
-        user.categories = ""
+        // Sprawdzamy czy tabela user_promotions istnieje
+        const promotions = (await query(
+          `SELECT 
+            plan, 
+            active, 
+            end_date as endDate 
+          FROM user_promotions 
+          WHERE user_id = ? AND active = 1 AND end_date > NOW() 
+          ORDER BY end_date DESC 
+          LIMIT 1`,
+          [userId],
+        )) as Promotions[]
+
+        if (Array.isArray(promotions) && promotions.length > 0) {
+          promotionData = {
+            active: true,
+            plan: promotions[0].plan,
+            endDate: promotions[0].endDate,
+          }
+        }
+      } catch (error) {
+        // Jeśli tabela nie istnieje lub wystąpił inny błąd, ignorujemy go
+        console.error("Błąd podczas pobierania danych promocji:", error)
       }
-    } else {
-      user.categories = ""
     }
 
-    // Fetch business data if user is a business
-    if (user.type === "business") {
-      const businessData = (await query("SELECT nip, regon, krs FROM business_details WHERE user_id = ?", [
-        userId,
-      ])) as BusinessData[]
+    // Pobieranie danych biznesowych
+    const businessData =
+      userData.type === "business"
+        ? await query("SELECT nip, regon, krs FROM business_details WHERE user_id = ?", [userId])
+        : []
 
-      if (businessData && businessData.length > 0) {
-        user.businessData = businessData[0]
-      }
+    // Pobieranie statystyk obserwujących
+    const followers = (await query(`SELECT COUNT(*) as count FROM user_follows WHERE target_id = ?`, [userId])) as {
+      count: string
+    }[]
+
+    const following = (await query(`SELECT COUNT(*) as count FROM user_follows WHERE follower_id = ?`, [userId])) as {
+      count: string
+    }[]
+
+    // Formatowanie danych
+    const formattedUser = {
+      id: userData.id,
+      name: userData.name,
+      fullname: userData.fullname,
+      email: userData.email,
+      phone: userData.phone || "",
+      bio: userData.bio || "",
+      avatar: userData.avatar,
+      backgroundImage: userData.background_img || "",
+      type: userData.type,
+      verified: userData.verified === 1,
+      joinedAt: userData.joinedAt,
+      location: userData.location || "",
+      adress: userData.adress || "",
+      occupation: userData.occupation || "",
+      interests: userData.interests || "",
+      website: userData.website || "",
+      company_size: userData.company_size || "",
+      categories: userData.categories ? JSON.parse(userData.categories) : [],
+      stats: {
+        ads: userData.ads_count || 0,
+        views: userData.views_count || 0,
+        likes: userData.likes_count || 0,
+        reviews: userData.reviews_count || 0,
+        rating: userData.rating_avg || 0,
+        followers: Number.parseInt(followers[0]?.count || "0"),
+        following: Number.parseInt(following[0]?.count || "0"),
+      },
+      businessData: Array.isArray(businessData) && businessData.length > 0 ? businessData[0] : null,
+      promotion: promotionData,
+      opening_hours: userData.opening_hours,
+      social: userData.social_media ? JSON.parse(userData.social_media) : null,
+      services: userData.services,
     }
 
-    // Fetch user stats
-    type QueryResult<T> = T[] // Define a generic type for query results
-
-    const adsCount = (await query("SELECT COUNT(*) as count FROM ads WHERE user_id = ?", [userId])) as QueryResult<{
-      count: number
-    }>
-    const adsViews = (await query("SELECT SUM(views) as count FROM ads WHERE user_id = ?", [userId])) as { count: number }[]
-
-    const profileViews = (await query("SELECT views FROM user_stats WHERE user_id = ?", [userId])) as { views: number }[]
-
-    const viewsCount = (Number(adsViews[0]?.count) || 0) + (profileViews[0]?.views || 0)
-    const likesCount = (await query(
-      "SELECT COUNT(*) as count FROM ad_likes WHERE ad_id IN (SELECT id FROM ads WHERE user_id = ?)",
-      [userId],
-    )) as QueryResult<{ count: number }>
-    const reviewsData = (await query("SELECT COUNT(*) as count, AVG(rating) as avg FROM reviews WHERE user_id = ?", [
-      userId,
-    ])) as QueryResult<{ count: number; avg: number }>
-    const followersCount = (await query("SELECT COUNT(*) as count FROM user_follows WHERE target_id = ?", [
-      userId,
-    ])) as QueryResult<{ count: number }>
-    const followingCount = (await query("SELECT COUNT(*) as count FROM user_follows WHERE follower_id = ?", [
-      userId,
-    ])) as QueryResult<{ count: number }>
-
-    user.stats = {
-      ads: adsCount[0]?.count || 0,
-      views: viewsCount || 0,
-      likes: likesCount[0]?.count || 0,
-      reviews: reviewsData[0]?.count || 0,
-      rating: reviewsData[0]?.avg || 0,
-      followers: followersCount[0]?.count || 0,
-      following: followingCount[0]?.count || 0,
-    }
-
-    // Check if current user is following this user
-    const currentUser = await auth(request)
-    let isFollowing = false
-    if (currentUser) {
-      const followData = (await query("SELECT * FROM user_follows WHERE follower_id = ? AND target_id = ?", [
-        currentUser.id,
-        userId,
-      ])) as any[]
-      isFollowing = followData && followData.length > 0
-    }
-    user.isFollowing = isFollowing
-
-    return NextResponse.json(user)
+    return NextResponse.json(formattedUser)
   } catch (error) {
-    console.error("Error fetching user data:", error)
-    return NextResponse.json({ error: "Failed to fetch user data" }, { status: 500 })
+    console.error("Błąd podczas pobierania danych profilu:", error)
+    return NextResponse.json(
+      {
+        error: "Wystąpił błąd podczas pobierania danych profilu",
+        details: error instanceof Error ? error.message : "Nieznany błąd",
+      },
+      { status: 500 },
+    )
   }
 }

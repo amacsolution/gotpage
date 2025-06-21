@@ -61,7 +61,7 @@ export type UserData = {
   verified_email? : number
 }
 
-type Promotions = {
+export type Promotions = {
   plan: string
   active: number
   endDate: string

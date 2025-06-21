@@ -5,9 +5,9 @@ import { UserData } from "../../profile/route"
 export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {
-    const companyId = Number.parseInt(params.id)
+    const companyId =  params.id
 
-    if (isNaN(companyId)) {
+    if (!companyId) {
       return NextResponse.json({ error: "Nieprawidłowe ID firmy" }, { status: 400 })
     }
 

@@ -122,7 +122,7 @@ export function CompanyCard({ company, featured = false }: CompanyCardProps) {
                 <span className="truncate">{company.location}</span>
               </div>
               <div className="flex items-center mt-1">
-                {company.rating !== 0 ? (
+                {company.rating > 0 ? (
                   <>
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star

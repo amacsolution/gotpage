@@ -15,6 +15,7 @@ import { useUser } from "@/lib/user-context"
 interface UserReviewsProps {
   userId: string
   showAddReview?: boolean
+  firma?: string
 }
 
 interface Review {
@@ -29,7 +30,7 @@ interface Review {
   }
 }
 
-export function UserReviews({ userId, showAddReview = true }: UserReviewsProps) {
+export  function UserReviews({ userId, showAddReview = true, firma}: UserReviewsProps) {
   const [reviews, setReviews] = useState<Review[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [page, setPage] = useState(1)
@@ -39,7 +40,9 @@ export function UserReviews({ userId, showAddReview = true }: UserReviewsProps) 
   const [content, setContent] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
-  const { user } = useUser()
+  const user = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
+  console.log(user)
+
 
   useEffect(() => {
     fetchReviews(1)
@@ -147,9 +150,9 @@ export function UserReviews({ userId, showAddReview = true }: UserReviewsProps) 
   return (
     <div className="space-y-6">
       {/* Formularz dodawania opinii */}
-      {showAddReview && user && user.id !== userId && (
+      {showAddReview && userId !== user.id && user && (
         <div className="mb-6 p-4 border rounded-lg">
-          <h3 className="font-medium mb-4">Dodaj opinię</h3>
+          <h3 className="font-medium mb-4">Dodaj opinię {firma? `o firmie ${firma}` : "" }</h3>
           <form onSubmit={handleSubmitReview}>
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">Ocena</label>
@@ -258,7 +261,7 @@ export function UserReviews({ userId, showAddReview = true }: UserReviewsProps) 
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground">
-          <p>Brak opinii</p>
+          <p>Brak opinii. Bądź pierwszy!</p>
         </div>
       )}
     </div>
