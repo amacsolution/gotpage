@@ -115,9 +115,10 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
   }
 }
 
-export async function GET({ params }: { params: Promise<{ id: string }> }): Promise<Response> {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = props.params
   try {
-    const userId = (await params).id
+    const { id: userId } = await params
     if (!userId) {
       return NextResponse.json({ error: "Nieprawidłowe ID użytkownika" }, { status: 400 })
     }

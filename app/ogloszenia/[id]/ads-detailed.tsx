@@ -41,7 +41,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
   const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
   const router = useRouter();
-  
+
 
   const handleMessage = async (userId: number) => {
     try {
@@ -97,13 +97,13 @@ export default function AdDetailsClient({ id }: { id: string }) {
       }
       try {
         setIsLoading(true)
-        const response = await fetch(`/api/ogloszeniaoszenia/${id}`)
+        const response = await fetch(`/api/ogloszenia/${id}`)
         const data = await response.json()
         if (data.error) {
           throw new Error(data.error)
         }
         const user = await getUserData()
-        if (data.author && user ) {
+        if (data.author && user) {
           setIsAuthor(user.id === data.author.id)
         }
         setSanitizedHtml(DOMPurify.sanitize(data.description || ""))
@@ -189,53 +189,53 @@ export default function AdDetailsClient({ id }: { id: string }) {
     }
   }
 
-    const handleEditClick = (e: React.MouseEvent) => {
-      // e.preventDefault()
-      // e.stopPropagation()
-      // router.push(`/ogloszenia/${ad.id}/edytuj`)
-      toast({
-          title: "Edycja ogłoszenia",
-          description: "Funkcja w przygotowaniu",
-          variant: "default",
-        })
-    }
-  
-    const handleDeleteClick = (e: React.MouseEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      setShowDeleteDialog(true)
-    }
-  
-    const confirmDelete = async () => {
-      try {
-        setIsDeleting(true)
-        const response = await fetch(`/api/ogloszenia/${ad.id}`, {
-          method: "DELETE",
-        })
-  
-        if (!response.ok) {
-          throw new Error("Nie udało się usunąć ogłoszenia")
-        }
-  
-        toast({
-          title: "Sukces",
-          description: "Ogłoszenie zostało usunięte",
-        })
-  
-        // Odświeżenie strony po usunięciu
-        router.push(`/profil/${ad.author.id}`)
-      } catch (error) {
-  
-        toast({
-          title: "Błąd",
-          description: "Nie udało się usunąć ogłoszenia",
-          variant: "destructive",
-        })
-      } finally {
-        setIsDeleting(false)
-        setShowDeleteDialog(false)
+  const handleEditClick = (e: React.MouseEvent) => {
+    // e.preventDefault()
+    // e.stopPropagation()
+    // router.push(`/ogloszenia/${ad.id}/edytuj`)
+    toast({
+      title: "Edycja ogłoszenia",
+      description: "Funkcja w przygotowaniu",
+      variant: "default",
+    })
+  }
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setShowDeleteDialog(true)
+  }
+
+  const confirmDelete = async () => {
+    try {
+      setIsDeleting(true)
+      const response = await fetch(`/api/ogloszenia/${ad.id}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        throw new Error("Nie udało się usunąć ogłoszenia")
       }
+
+      toast({
+        title: "Sukces",
+        description: "Ogłoszenie zostało usunięte",
+      })
+
+      // Odświeżenie strony po usunięciu
+      router.push(`/profil/${ad.author.id}`)
+    } catch (error) {
+
+      toast({
+        title: "Błąd",
+        description: "Nie udało się usunąć ogłoszenia",
+        variant: "destructive",
+      })
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
     }
+  }
 
   // Skeleton loading dla całej strony
   if (isLoading) {
@@ -325,7 +325,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
         <div className="mb-6">
           <Breadcrumb>
             <BreadcrumbList>
-             <BreadcrumbSeparator />
+              <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink href="/ogloszenia">Ogłoszenia</BreadcrumbLink>
               </BreadcrumbItem>
@@ -352,14 +352,13 @@ export default function AdDetailsClient({ id }: { id: string }) {
             </div>
             {ad.images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
-                {ad.images.map((image : string , index: number) => (
-                    <div
+                {ad.images.map((image: string, index: number) => (
+                  <div
                     key={index}
-                    className={`relative w-24 h-24 rounded-md overflow-hidden cursor-pointer border-2 ${
-                      activeImageIndex === index ? "border-primary" : "border-transparent"
-                    }`}
+                    className={`relative w-24 h-24 rounded-md overflow-hidden cursor-pointer border-2 ${activeImageIndex === index ? "border-primary" : "border-transparent"
+                      }`}
                     onClick={() => setActiveImageIndex(index)}
-                    >
+                  >
                     <Image
                       src={image}
                       alt={`${ad.title} - zdjęcie ${index + 1}`}
@@ -367,7 +366,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
                       className="object-cover" // 🔥 Zmiana tutaj!
                       priority={index === 0}
                     />
-                    </div>
+                  </div>
                 ))}
               </div>
             )}
@@ -380,11 +379,11 @@ export default function AdDetailsClient({ id }: { id: string }) {
               <Badge variant="secondary">{ad.category}</Badge>
               {ad.subcategory && <Badge variant="outline">{ad.subcategory}</Badge>}
               {ad.final_category && <Badge variant="outline">{ad.final_category}</Badge>}
-              {ad.promoted ?(
+              {ad.promoted ? (
                 <Badge variant="outline" className="text-primary border-primary/30">
                   Promowane
                 </Badge>
-              ): ("")}
+              ) : ("")}
               <span className="text-muted-foreground text-sm">
                 <Clock className="h-4 w-4 inline mr-1" />
                 {formatDistanceToNow(new Date(ad.created_at), {
@@ -408,7 +407,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
             {/* Informacje o sprzedającym */}
             <Card className="p-4 mb-4">
               <div className="flex justify-between">
-                <div className="flex items-center gap-3 mb-4">                
+                <div className="flex items-center gap-3 mb-4">
                   <Link href={`/profil/${ad.author.id}`}>
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={ad.author.avatar} alt={ad.author.name} />
@@ -437,42 +436,42 @@ export default function AdDetailsClient({ id }: { id: string }) {
                 </div>
                 {isAuthor ? (
                   <>
-                  <div className="flex gap-2 ">
-                  <Button
-                      onClick={handleEditClick}
-                      className="flex items-center gap-2 bg-primary hover:bg-primary/90"
-                      size="sm"
-                    >
-                      <Edit className="h-4 w-4" />
-                      Edytuj
-                  </Button>
+                    <div className="flex gap-2 ">
+                      <Button
+                        onClick={handleEditClick}
+                        className="flex items-center gap-2 bg-primary hover:bg-primary/90"
+                        size="sm"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edytuj
+                      </Button>
 
-                  <Button onClick={handleDeleteClick} variant="destructive" className="flex items-center gap-2" size="sm">
-                    <Trash2 className="h-4 w-4" />
-                    Usuń
-                  </Button>
-              </div>
+                      <Button onClick={handleDeleteClick} variant="destructive" className="flex items-center gap-2" size="sm">
+                        <Trash2 className="h-4 w-4" />
+                        Usuń
+                      </Button>
+                    </div>
 
-              <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Czy na pewno chcesz usunąć to ogłoszenie?</DialogTitle>
-                    <DialogDescription>
-                      Ta akcja jest nieodwracalna. Ogłoszenie zostanie trwale usunięte z systemu.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter className="flex gap-2 sm:gap-0">
-                    <Button variant="outline" onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>
-                      Nie, anuluj
-                    </Button>
-                    <Button variant="destructive" onClick={confirmDelete} disabled={isDeleting}>
-                      {isDeleting ? "Usuwanie..." : "Tak, usuń"}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              </>
-                ): ""}
+                    <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Czy na pewno chcesz usunąć to ogłoszenie?</DialogTitle>
+                          <DialogDescription>
+                            Ta akcja jest nieodwracalna. Ogłoszenie zostanie trwale usunięte z systemu.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter className="flex gap-2 sm:gap-0">
+                          <Button variant="outline" onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>
+                            Nie, anuluj
+                          </Button>
+                          <Button variant="destructive" onClick={confirmDelete} disabled={isDeleting}>
+                            {isDeleting ? "Usuwanie..." : "Tak, usuń"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </>
+                ) : ""}
               </div>
               <Separator className="my-4" />
               <div className="flex flex-col gap-3">
@@ -482,10 +481,10 @@ export default function AdDetailsClient({ id }: { id: string }) {
                     {ad.author.phone}
                   </Button>
                 </a>
-                
+
                 <Button className="w-full" variant="outline" onClick={() => handleMessage(ad.author.id)}>
                   <Mail className="h-4 w-4 mr-2" />
-                  Wyślij wiadomość 
+                  Wyślij wiadomość
                 </Button>
               </div>
             </Card>
@@ -505,9 +504,9 @@ export default function AdDetailsClient({ id }: { id: string }) {
               </Button>
 
             </div>
-              {ad?.id && (
-                <QrButton url={`https://gotpage.pl/ogloszenia/${ad.id}`} className="w-full mt-2" />
-              )}
+            {ad?.id && (
+              <QrButton url={`https://gotpage.pl/ogloszenia/${ad.id}`} className="w-full mt-2" />
+            )}
           </div>
         </div>
 
@@ -527,8 +526,8 @@ export default function AdDetailsClient({ id }: { id: string }) {
           <TabsContent value="description" className="mt-4">
             <Card className="p-4">
               <div className="whitespace-pre-line"><div
-                  dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-                />
+                dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+              />
               </div>
             </Card>
           </TabsContent>
@@ -537,12 +536,12 @@ export default function AdDetailsClient({ id }: { id: string }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {ad.parameters &&
                   Object.entries(ad.parameters).map(([key, value], index) => (
-                  <div key={index} className="flex justify-between p-2 border-b">
-                    <span className="text-muted-foreground">{key}:</span>
-                    <span className="font-medium">
-                    {typeof value === "boolean" ? (value ? "Tak" : "Nie") : String(value)}
-                    </span>
-                  </div>
+                    <div key={index} className="flex justify-between p-2 border-b">
+                      <span className="text-muted-foreground">{key}:</span>
+                      <span className="font-medium">
+                        {typeof value === "boolean" ? (value ? "Tak" : "Nie") : String(value)}
+                      </span>
+                    </div>
                   ))}
 
                 {/* Wyświetlanie pól specyficznych dla kategorii */}

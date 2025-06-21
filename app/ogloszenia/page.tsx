@@ -345,12 +345,12 @@ export default function AdsPage() {
 
         // Fetch subcategories if category is selected
         if (category) {
-        //   const subcatResponse = await fetch(`/api/categories/${category}/subcategories`)
-        //   if (subcatResponse.ok) {
-        //     const subcatData = await subcatResponse.json()
-        //     setSubcategories(subcatData.subcategories || [])
-        //   }
-        // } else {
+          //   const subcatResponse = await fetch(`/api/categories/${category}/subcategories`)
+          //   if (subcatResponse.ok) {
+          //     const subcatData = await subcatResponse.json()
+          //     setSubcategories(subcatData.subcategories || [])
+          //   }
+          // } else {
           const fcategory = finalCategories.find((c) => c.name === category)
           if (fcategory) {
             setSubcategories(fcategory.subcategories || [])
@@ -360,7 +360,7 @@ export default function AdsPage() {
         }
 
         // Set final-categories when subcategory is selected
-        if(subcategory) {
+        if (subcategory) {
           const fcategory = finalCategories.find((c) =>
             (c.subcategories || []).some((sub) => sub.name === subcategory)
           )
@@ -690,42 +690,42 @@ export default function AdsPage() {
                     </Badge>
                   ))}
                 </div>
-                              {/* Podkategorie - pokazuj tylko jeśli wybrano kategorię */}
-              {category && subcategories.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium mb-3">Podkategorie dla {category}</h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {subcategories.map((subcat) => (
-                      <Badge
-                        key={subcat.name}
-                        className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${subcategory === subcat.name ? "bg-primary text-white" : "bg-muted hover:bg-muted/80"
-                          }`}
-                        onClick={() => handleFilterChange("subcategory", subcat.name)}
-                      >
-                        <Tag className="h-3 w-3" /> {subcat.name}
-                      </Badge>
-                    ))}
+                {/* Podkategorie - pokazuj tylko jeśli wybrano kategorię */}
+                {category && subcategories.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium mb-3">Podkategorie dla {category}</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {subcategories.map((subcat) => (
+                        <Badge
+                          key={subcat.name}
+                          className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${subcategory === subcat.name ? "bg-primary text-white" : "bg-muted hover:bg-muted/80 text-foreground"
+                            }`}
+                          onClick={() => handleFilterChange("subcategory", subcat.name)}
+                        >
+                          <Tag className="h-3 w-3" /> {subcat.name}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {subcategory && finalcategories.length > 0 &&(
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium mb-3">Szczegółowe kategorie dla {subcategory}</h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {finalcategories.map((subcat) => (
-                      <Badge
-                        key={subcat}
-                        className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${finalcategory === subcat ? "bg-primary text-white" : "bg-muted hover:bg-muted/80"
-                          }`}
-                        onClick={() => handleFilterChange("finalcategory", subcat)}
-                      >
-                        <TagsIcon className="h-3 w-3" /> {subcat}
-                      </Badge>
-                    ))}
+                {subcategory && finalcategories.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium mb-3">Szczegółowe kategorie dla {subcategory}</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {finalcategories.map((subcat) => (
+                        <Badge
+                          key={subcat}
+                          className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${finalcategory === subcat ? "bg-primary text-white" : "bg-muted hover:bg-muted/80 text-foreground"
+                            }`}
+                          onClick={() => handleFilterChange("finalcategory", subcat)}
+                        >
+                          <TagsIcon className="h-3 w-3" /> {subcat}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
               </div>
 
               <div>
@@ -760,7 +760,7 @@ export default function AdsPage() {
               </div>
             </div>
 
-            </div>
+          </div>
         )}
 
 
