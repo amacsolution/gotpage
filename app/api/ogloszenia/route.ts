@@ -257,6 +257,7 @@ export async function GET(request: Request) {
     // Parametry filtrowania
     const category = searchParams.get("category")
     const subcategory = searchParams.get("subcategory")
+    const finalcategory = searchParams.get("finalcategory")
     const location = searchParams.get("location")
     const minPrice = searchParams.get("minPrice")
     const maxPrice = searchParams.get("maxPrice")
@@ -274,6 +275,7 @@ export async function GET(request: Request) {
         a.location, 
         a.category, 
         a.subcategory, 
+        a.final_category as finalcategory,
         a.parameters,
         (SELECT image_url FROM ad_images WHERE ad_id = a.id ORDER BY id ASC LIMIT 1) as image, 
         a.created_at as createdAt, 
@@ -301,6 +303,11 @@ export async function GET(request: Request) {
 
     if (subcategory) {
       sql += " AND a.subcategory = ?"
+      params.push(subcategory)
+    }
+
+    if (subcategory) {
+      sql += " AND a.finalcategory = ?"
       params.push(subcategory)
     }
 

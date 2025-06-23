@@ -59,6 +59,67 @@ const adCategories = [
   { id: "Wycieczki/Podróże", name: "Wycieczki/Podróże", icon: "✈️", color: "bg-teal-100 text-teal-800" },
 ];
 
+const allLocations = [
+  "Warszawa, mazowieckie",
+  "Kraków, małopolskie",
+  "Łódź, łódzkie",
+  "Wrocław, dolnośląskie",
+  "Poznań, wielkopolskie",
+  "Gdańsk, pomorskie",
+  "Szczecin, zachodniopomorskie",
+  "Bydgoszcz, kujawsko-pomorskie",
+  "Lublin, lubelskie",
+  "Białystok, podlaskie",
+  "Katowice, śląskie",
+  "Gdynia, pomorskie",
+  "Częstochowa, śląskie",
+  "Radom, mazowieckie",
+  "Sosnowiec, śląskie",
+  "Toruń, kujawsko-pomorskie",
+  "Kielce, świętokrzyskie",
+  "Rzeszów, podkarpackie",
+  "Gliwice, śląskie",
+  "Zabrze, śląskie",
+  "Olsztyn, warmińsko-mazurskie",
+  "Bielsko-Biała, śląskie",
+  "Bytom, śląskie",
+  "Zielona Góra, lubuskie",
+  "Rybnik, śląskie",
+  "Ruda Śląska, śląskie",
+  "Tychy, śląskie",
+  "Opole, opolskie",
+  "Elbląg, warmińsko-mazurskie",
+  "Płock, mazowieckie",
+  "Wałbrzych, dolnośląskie",
+  "Włocławek, kujawsko-pomorskie",
+  "Tarnów, małopolskie",
+  "Chorzów, śląskie",
+  "Koszalin, zachodniopomorskie",
+  "Kalisz, wielkopolskie",
+  "Legnica, dolnośląskie",
+  "Grudziądz, kujawsko-pomorskie",
+  "Słupsk, pomorskie",
+  "Jaworzno, śląskie",
+  "Jelenia Góra, dolnośląskie",
+  "Nowy Sącz, małopolskie",
+  "Jastrzębie-Zdrój, śląskie",
+  "Siedlce, mazowieckie",
+  "Mysłowice, śląskie",
+  "Zamość, lubelskie",
+  "Piotrków Trybunalski, łódzkie",
+  "Konin, wielkopolskie",
+  "Inowrocław, kujawsko-pomorskie",
+  "Lubin, dolnośląskie",
+  "Ostrowiec Świętokrzyski, świętokrzyskie",
+  "Gorzów Wielkopolski, lubuskie",
+  "Suwałki, podlaskie",
+  "Pabianice, łódzkie",
+  "Przemyśl, podkarpackie",
+  "Łomża, podlaskie",
+  "Stalowa Wola, podkarpackie"
+];
+
+
 const finalCategories = [
   {
     name: "Motoryzacja",
@@ -310,15 +371,21 @@ export default function AdsPage() {
   const [activeFilters, setActiveFilters] = useState<string[]>([])
   const [showFilters, setShowFilters] = useState(false)
   const filtersRef = useRef<HTMLDivElement>(null)
+  const [category, setCategory] = useState<string>("")
+  const [subcategory, setSubcategory] = useState<string>("")
+  const [finalcategory, setFinalcategory] = useState<string>("")
+  const [city, setCity] = useState<string>("")
   const [finalcategories, setFinalCategories] = useState<string[]>([])
+  const [showsub , setShowsub] = useState(false)
+  const [showfin, setShowfin] = useState(false)
   const { toast } = useToast()
 
   // Get search parameters from URL
   const query = searchParams?.get("q") || ""
-  const category = searchParams?.get("category") || ""
-  const subcategory = searchParams?.get("subcategory") || ""
-  const finalcategory = searchParams?.get("finalcategory") || ""
-  const location = searchParams?.get("location") || ""
+  // const category = searchParams?.get("category") || ""
+  // const subcategory = searchParams?.get("subcategory") || ""
+  // const finalcategory = searchParams?.get("finalcategory") || ""
+  // const location = searchParams?.get("location") || ""
   const sortBy = searchParams?.get("sortBy") || "newest"
 
   // Fetch ads and locations
@@ -329,12 +396,7 @@ export default function AdsPage() {
       setPage(1)
 
       try {
-        // Fetch locations
-        const locResponse = await fetch("/api/locations")
-        if (locResponse.ok) {
-          const locData = await locResponse.json()
-          setLocations(locData.locations || [])
-        }
+        setLocations(allLocations)
 
         // Fetch featured ads
         const featuredResponse = await fetch("/api/ogloszenia?promoted=true&limit=3")
@@ -343,40 +405,6 @@ export default function AdsPage() {
           setFeaturedAds(featuredData.ads || [])
         }
 
-        // Fetch subcategories if category is selected
-        if (category) {
-          //   const subcatResponse = await fetch(`/api/categories/${category}/subcategories`)
-          //   if (subcatResponse.ok) {
-          //     const subcatData = await subcatResponse.json()
-          //     setSubcategories(subcatData.subcategories || [])
-          //   }
-          // } else {
-          const fcategory = finalCategories.find((c) => c.name === category)
-          if (fcategory) {
-            setSubcategories(fcategory.subcategories || [])
-          } else {
-            setSubcategories([])
-          }
-        }
-
-        // Set final-categories when subcategory is selected
-        if (subcategory) {
-          const fcategory = finalCategories.find((c) =>
-            (c.subcategories || []).some((sub) => sub.name === subcategory)
-          )
-          if (fcategory) {
-            // Find the selected subcategory
-            const fsubcategory = (fcategory.subcategories || []).find((sub) => sub.name === subcategory)
-            if (fsubcategory && "subsubcategories" in fsubcategory && Array.isArray(fsubcategory.subsubcategories)) {
-              // Do something with subcategory.subsubcategories, e.g. set state
-              setFinalCategories(fsubcategory.subsubcategories)
-            } else {
-              setFinalCategories([])
-            }
-          } else {
-            setFinalCategories([])
-          }
-        }
 
         // Build query URL
         const params = new URLSearchParams()
@@ -386,7 +414,7 @@ export default function AdsPage() {
 
         if (category) params.append("category", category)
         if (subcategory) params.append("subcategory", subcategory)
-        if (location) params.append("location", location)
+        if (location) params.append("location", city)
         if (query) params.append("q", query)
 
         // Fetch ads
@@ -419,9 +447,48 @@ export default function AdsPage() {
     const newActiveFilters = []
     if (category) newActiveFilters.push(category)
     if (subcategory) newActiveFilters.push(subcategory)
-    if (location) newActiveFilters.push(location)
+    if (city) newActiveFilters.push(city)
     setActiveFilters(newActiveFilters)
   }, [category, subcategory, location, query, sortBy, toast])
+
+  
+  function handleCategoryChange(cat : string) {
+    setCategory(cat)
+    const fcategory = finalCategories.find((c) => c.name === category)
+    setSubcategory("")
+    setShowsub(false)
+    setShowfin(false)
+    setFinalcategory("")
+    if (fcategory) {
+      setSubcategories(fcategory.subcategories || [])
+      setShowsub(true)
+    } else {
+      setSubcategories([])
+    }
+  }
+
+  // Set final-categories when subcategory is selected
+  function handleSubcategoryChange(sub : string) {
+    setSubcategory(sub)
+    setShowfin(false)
+    const fcategory = finalCategories.find((c) =>
+      (c.subcategories || []).some((sub) => sub.name === subcategory)
+    )
+    setFinalcategory('')
+    if (fcategory) {
+      // Find the selected subcategory
+      const fsubcategory = (fcategory.subcategories || []).find((sub) => sub.name === subcategory)
+      if (fsubcategory && "subsubcategories" in fsubcategory && Array.isArray(fsubcategory.subsubcategories)) {
+        // Do something with subcategory.subsubcategories, e.g. set state
+        setFinalCategories(fsubcategory.subsubcategories)
+        setShowfin(true)
+      } else {
+        setFinalCategories([])
+      }
+    } else {
+      setFinalCategories([])
+    }
+  }
 
   // Handle search
   const handleSearch = (searchQuery: string) => {
@@ -457,13 +524,25 @@ export default function AdsPage() {
     router.push(`/ogloszenia?${params.toString()}`)
   }
 
+  const handleSubmit = () => {
+    if(city && !category) {
+      router.push(`/ogloszenia/miasto/${city}`)
+    } else if (category && !city) {
+      subcategory ? 
+        finalcategory ? 
+        router.push(`/ogloszenia/szukaj/${category}/${subcategory}/${finalcategory}`)
+        : router.push(`/ogloszenia/szukaj/${category}/${subcategory}`)
+      : router.push(`/ogloszenia/szukaj/${category}`)
+    }
+  }
+
   // Remove filter
   const removeFilter = (filter: string) => {
     const params = new URLSearchParams(searchParams?.toString())
 
     if (category === filter) params.delete("category")
     if (subcategory === filter) params.delete("subcategory")
-    if (location === filter) params.delete("location")
+    if (city === filter) params.delete("location")
 
     setActiveFilters(activeFilters.filter((f) => f !== filter))
     router.push(`/ogloszenia?${params.toString()}`)
@@ -483,7 +562,7 @@ export default function AdsPage() {
 
       if (category) params.append("category", category)
       if (subcategory) params.append("subcategory", subcategory)
-      if (location) params.append("location", location)
+      if (location) params.append("location", city)
       if (query) params.append("q", query)
 
       const response = await fetch(`/api/ogloszenia?${params.toString()}`)
@@ -544,7 +623,7 @@ export default function AdsPage() {
                     key={cat.id}
                     className={`text-sm py-1.5 px-3 cursor-pointer hover:bg-white/20 ${category === cat.id ? "bg-white/30" : "bg-white/10"
                       }`}
-                    onClick={() => handleFilterChange("category", cat.id)}
+                    onClick={() => handleCategoryChange(cat.name)}
                   >
                     <span className="mr-1">{cat.icon}</span> {cat.name}
                   </Badge>
@@ -599,7 +678,7 @@ export default function AdsPage() {
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "grid" | "map")}>
                 <TabsList>
                   <TabsTrigger value="grid">
@@ -684,14 +763,14 @@ export default function AdsPage() {
                       key={cat.id}
                       className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${category === cat.id ? cat.color : "bg-muted hover:bg-muted/80"
                         }`}
-                      onClick={() => handleFilterChange("category", cat.id)}
+                      onClick={() => handleCategoryChange(cat.name)}
                     >
                       <span>{cat.icon}</span> {cat.name}
                     </Badge>
                   ))}
                 </div>
                 {/* Podkategorie - pokazuj tylko jeśli wybrano kategorię */}
-                {category && subcategories.length > 0 && (
+                {showsub && subcategories.length > 0 && (
                   <div className="mt-4">
                     <h4 className="text-sm font-medium mb-3">Podkategorie dla {category}</h4>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -700,7 +779,7 @@ export default function AdsPage() {
                           key={subcat.name}
                           className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${subcategory === subcat.name ? "bg-primary text-white" : "bg-muted hover:bg-muted/80 text-foreground"
                             }`}
-                          onClick={() => handleFilterChange("subcategory", subcat.name)}
+                          onClick={() => handleSubcategoryChange(subcat.name)}
                         >
                           <Tag className="h-3 w-3" /> {subcat.name}
                         </Badge>
@@ -709,7 +788,7 @@ export default function AdsPage() {
                   </div>
                 )}
 
-                {subcategory && finalcategories.length > 0 && (
+                {showfin && finalcategories.length > 0 && (
                   <div className="mt-4">
                     <h4 className="text-sm font-medium mb-3">Szczegółowe kategorie dla {subcategory}</h4>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -718,7 +797,7 @@ export default function AdsPage() {
                           key={subcat}
                           className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${finalcategory === subcat ? "bg-primary text-white" : "bg-muted hover:bg-muted/80 text-foreground"
                             }`}
-                          onClick={() => handleFilterChange("finalcategory", subcat)}
+                          onClick={() => setFinalcategory(subcat)}
                         >
                           <TagsIcon className="h-3 w-3" /> {subcat}
                         </Badge>
@@ -734,7 +813,7 @@ export default function AdsPage() {
                   {locations.slice(0, 10).map((loc) => (
                     <Badge
                       key={loc}
-                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${location === loc ? "bg-blue-100 text-blue-800" : "bg-muted hover:bg-muted/80"
+                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${city === loc ? "bg-blue-100 text-blue-800" : "bg-muted hover:bg-muted/80"
                         }`}
                       onClick={() => handleFilterChange("location", loc)}
                     >

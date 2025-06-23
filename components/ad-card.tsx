@@ -30,6 +30,7 @@ export interface AdCardProps {
     title: string
     content: string
     category: string
+    finalcategory: string
     subcategory?: string
     price: number | null
     currency?: string | null
@@ -193,6 +194,7 @@ export function AdCard({ ad, image }: AdCardProps) {
                     <div className="flex flex-wrap gap-2">
                       <Badge variant="secondary">{ad.category}</Badge>
                       {ad.subcategory && <Badge variant="outline">{ad.subcategory}</Badge>}
+                      {ad.subcategory && ad.finalcategory && <Badge variant="outline">{ad.finalcategory}</Badge>}
                     </div>
 
                     {/* Cena - wyróżniona jak w Amazonie */}
