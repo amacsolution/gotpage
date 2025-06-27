@@ -27,6 +27,7 @@ import {
 import dynamic from "next/dynamic"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
+import slugify from "slugify"
 
 // Dynamiczny import komponentu mapy (bez SSR)
 const AdsMap = dynamic(() => import("@/components/ads-map"), {
@@ -871,7 +872,7 @@ export default function AdsPage() {
                 </div>
               ) : ads.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {ads.slice(0, 6).map((ad) => (
+                  {ads.map((ad) => (
                     <Card key={ad.id} className="hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
                         <div className="flex items-center gap-3">
@@ -899,7 +900,7 @@ export default function AdsPage() {
                             </div>
                           </div>
                           <Button size="sm" variant="outline" asChild>
-                            <a href={`/ogloszenia/${ad.id}`}>Szczegóły</a>
+                            <a href={`/ogloszenia/${ad.id}-${slugify(ad.title, { lower: true, strict: true })}`}>Szczegóły</a>
                           </Button>
                         </div>
                       </CardContent>

@@ -1,54 +1,54 @@
-import CompaniesPageClient from "./CompaniesClientPage"
 import type { Metadata } from "next"
+import CompanyCityPageClient from "./CompanyCityClient"
 import { unstable_cache } from "next/cache"
 
 // Cache the metadata generation for 2 days
-const getCachedCompaniesMetadata = unstable_cache(
-  async (searchParams: { [key: string]: string | string[] | undefined }) => {
+const getCachedCompanyCityMetadata = unstable_cache(
+  async (params: { slug?: string[] }, searchParams: { [key: string]: string | string[] | undefined }) => {
+    const slug = params?.slug || []
     const query = (searchParams?.q as string) || ""
-    const sortBy = (searchParams?.sortBy as string) || "rating"
+
+    // Parse URL parameters
+    const city = slug[0] ? decodeURIComponent(slug[0]) : ""
+
+    if (!city) {
+      return {
+        title: "Firmy według miasta",
+        description: "Przeglądaj firmy według lokalizacji w całej Polsce.",
+      }
+    }
 
     // Build title
-    let title = "Katalog Firm - Znajdź zaufane firmy i usługodawców"
-    if (query) {
-      title = `"${query}" - Wyniki wyszukiwania firm`
-    }
-    title += " | Firmy"
+    const title = `Firmy w ${city} | Katalog firm lokalnych`
 
     // Build description
-    let description = "Największy katalog firm w Polsce. "
+    let description = `Znajdź najlepsze firmy w ${city}. `
     if (query) {
-      description += `Znajdź "${query}" wśród tysięcy zaufanych firm. `
+      description += `Szukaj "${query}" w ${city}. `
     }
-    description +=
-      "Przeglądaj kategorie: sklepy, usługi, restauracje, finanse i wiele więcej. Sprawdź opinie i oceny klientów!"
+    description += `Przeglądaj tysiące lokalnych firm w ${city}. Sprawdź opinie, oceny i kontaktuj się z zaufanymi usługodawcami.`
 
     // Build keywords
     const keywords = [
-      "katalog firm",
+      `firmy ${city}`,
+      `katalog firm ${city}`,
+      `usługodawcy ${city}`,
+      `lokalne firmy ${city}`,
+      `opinie firm ${city}`,
+      `zaufane firmy ${city}`,
+      city,
       "firmy",
+      "katalog firm",
       "usługodawcy",
-      "sklepy",
-      "restauracje",
-      "usługi",
-      "opinie firm",
-      "oceny firm",
-      "zaufane firmy",
-      query,
-    ]
-      .filter(Boolean)
-      .join(", ")
+    ].join(", ")
 
     // Build URL
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://gotpage.pl"
-    let canonicalUrl = `${baseUrl}/firmy`
+    let canonicalUrl = `${baseUrl}/firmy/miasto/${encodeURIComponent(city)}`
 
-    const searchParamsObj = new URLSearchParams()
-    if (query) searchParamsObj.set("q", query)
-    if (sortBy !== "rating") searchParamsObj.set("sortBy", sortBy)
-
-    const queryString = searchParamsObj.toString()
-    if (queryString) canonicalUrl += `?${queryString}`
+    if (query) {
+      canonicalUrl += `?q=${encodeURIComponent(query)}`
+    }
 
     return {
       title,
@@ -83,7 +83,7 @@ const getCachedCompaniesMetadata = unstable_cache(
             url: `${baseUrl}/og-image-companies.jpg`,
             width: 1200,
             height: 630,
-            alt: "Katalog Firm - znajdź zaufane firmy",
+            alt: `Firmy w ${city}`,
           },
         ],
       },
@@ -95,30 +95,34 @@ const getCachedCompaniesMetadata = unstable_cache(
         creator: "@katalogfirm",
       },
       other: {
-        "og:image:alt": "Katalog Firm - znajdź zaufane firmy",
-        "twitter:image:alt": "Katalog Firm - znajdź zaufane firmy",
+        "og:image:alt": `Firmy w ${city}`,
+        "twitter:image:alt": `Firmy w ${city}`,
+        "geo.region": "PL",
+        "geo.placename": city,
       },
     }
   },
-  ["companies-metadata"],
+  ["company-city-metadata"],
   {
     revalidate: 172800, // 2 days
-    tags: ["metadata", "companies"],
+    tags: ["metadata", "company-city"],
   },
 )
 
 export async function generateMetadata(
   props: {
+    params: Promise<{ slug?: string[] }>
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
   }
 ): Promise<Metadata> {
   const searchParams = await props.searchParams;
-  return getCachedCompaniesMetadata(searchParams)
+  const params = await props.params;
+  return getCachedCompanyCityMetadata(params, searchParams)
 }
 
 // Enable static generation with revalidation
 export const revalidate = 172800 // 2 days
 
-export default function CompaniesPage() {
-  return <CompaniesPageClient />
+export default function CompanyCityPage() {
+  return <CompanyCityPageClient />
 }

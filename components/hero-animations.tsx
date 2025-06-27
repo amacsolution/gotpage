@@ -27,7 +27,14 @@ export function HeroAnimation() {
     // Parametry animacji
     const particlesArray: Particle[] = []
     const numberOfParticles = 50
-    const colors = ["#f0338c", "#f0338c33", "#f0338c22", '#333']
+    // Możesz dynamicznie ustawić kolory na podstawie motywu
+    // Przykład z Tailwind/Next.js: sprawdź preferencje użytkownika
+    const isDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches
+    const colors = isDark
+      ? ["#f0338c", "#f0338c33", "#f0338c22", "#fff"]
+      : ["#f0338c", "#f0338c33", "#f0338c22", "#333"]
+
+      console.log(isDark)
 
     // Klasa cząsteczki
     class Particle {

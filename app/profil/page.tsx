@@ -694,7 +694,7 @@ export default function ProfilePage() {
                               <FormItem>
                                 <FormLabel>Strona internetowa</FormLabel>
                                 <FormControl>
-                                  <Input {...field} disabled={isLoading} placeholder="np. https://example.com" />
+                                  <Input {...field} disabled={isLoading} placeholder="np. https://gotpage.pl" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

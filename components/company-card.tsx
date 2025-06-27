@@ -179,7 +179,7 @@ export function CompanyCard({ company, featured = false }: CompanyCardProps) {
       </CardContent>
 
       <CardFooter className="p-0">
-        <Link href={`/profil/${company.id}`} className="w-full">
+        <Link target="_blank" href={`/firma/${company.id}`} className="w-full">
           <Button variant="default" className="w-full rounded-none">
             Zobacz profil
           </Button>

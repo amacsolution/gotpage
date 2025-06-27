@@ -41,8 +41,6 @@ export  function UserReviews({ userId, showAddReview = true, firma}: UserReviews
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
   const user = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
-  console.log(user)
-
 
   useEffect(() => {
     fetchReviews(1)

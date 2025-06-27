@@ -241,6 +241,7 @@ export function UserProfiles() {
             </div>)}
           </div>
           <Link
+            target="_blank"
             href={`/profil/${user.id}`}
             className="block py-3 text-center text-sm font-medium hover:bg-muted border-t"
           >

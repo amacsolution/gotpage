@@ -24,6 +24,9 @@ import QrButton from "@/components/qr/qr-button"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@radix-ui/react-dialog"
 import { DialogFooter, DialogHeader } from "@/components/ui/dialog"
+import slugify from "slugify"
+// If you get an error like "slugify is not a function", use the following instead:
+// import * as slugify from "slugify";
 
 
 
@@ -39,6 +42,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
   const [sanitizedHtml, setSanitizedHtml] = useState("")
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [slug, setSlug] = useState<string>("")
   const { toast } = useToast()
   const router = useRouter();
 
@@ -86,17 +90,16 @@ export default function AdDetailsClient({ id }: { id: string }) {
     }
   }
 
-
   useEffect(() => {
     // Pobieranie danych ogłoszenia
     const fetchAd = async () => {
+      setIsLoading(true)
       const getUserData = async () => {
         const userData = localStorage.getItem("userData")
         const user = userData ? JSON.parse(userData) : false
         return user
       }
-      try {
-        setIsLoading(true)
+      try {      
         const response = await fetch(`/api/ogloszenia/${id}`)
         const data = await response.json()
         if (data.error) {
@@ -107,7 +110,9 @@ export default function AdDetailsClient({ id }: { id: string }) {
           setIsAuthor(user.id === data.author.id)
         }
         setSanitizedHtml(DOMPurify.sanitize(data.description || ""))
-        setAd(data)
+        
+        console.log(slug)
+        setAd(data)       
       } catch (error) {
         console.error("Błąd podczas pobierania ogłoszenia:", error)
         toast({
@@ -122,6 +127,8 @@ export default function AdDetailsClient({ id }: { id: string }) {
 
     fetchAd()
   }, [id, toast])
+
+  // Ustawianie sluga na podstawie ogłoszenia
 
   // Pobieranie podobnych ogłoszeń z niższym priorytetem
   useEffect(() => {
@@ -237,6 +244,8 @@ export default function AdDetailsClient({ id }: { id: string }) {
     }
   }
 
+
+
   // Skeleton loading dla całej strony
   if (isLoading) {
     return (
@@ -318,6 +327,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
       </PageLayout>
     )
   }
+
 
   return (
     <PageLayout>
@@ -504,8 +514,8 @@ export default function AdDetailsClient({ id }: { id: string }) {
               </Button>
 
             </div>
-            {ad?.id && (
-              <QrButton url={`https://gotpage.pl/ogloszenia/${ad.id}`} className="w-full mt-2" />
+            {slug && (
+              <QrButton url={`https://gotpage.pl/ogloszenia/${slug}`} className="w-full mt-2" />
             )}
           </div>
         </div>
@@ -520,7 +530,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
               Parametry
             </TabsTrigger>
             <TabsTrigger value="comments" className="flex-1">
-              Komentarze ({ad.comments.length})
+              Komentarze ({ad.comments ? ad.comments.length : 0})
             </TabsTrigger>
           </TabsList>
           <TabsContent value="description" className="mt-4">
@@ -689,7 +699,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
                   </div>
                 </form>
 
-                {ad.comments.length > 0 ? (
+                {ad.comments && ad.comments.length > 0 ? (
                   ad.comments.map((comment: any) => (
                     <div
                       key={comment.id}
@@ -774,6 +784,27 @@ export default function AdDetailsClient({ id }: { id: string }) {
           )}
         </div>
       </div>
+      {ad && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Product",
+              name: ad.title,
+              image: ad.images?.[0] || "/logo.png",
+              description: ad.description?.slice(0, 200),
+              category: ad.category,
+              offers: {
+                "@type": "Offer",
+                price: ad.price,
+                priceCurrency: "PLN",
+                availability: "https://schema.org/InStock",
+              },
+            }),
+          }}
+        />
+      )}
     </PageLayout>
   )
 }

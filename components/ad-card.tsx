@@ -23,6 +23,7 @@ import Image from "next/legacy/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
+import slugify from "slugify"
 
 export interface AdCardProps {
   ad: {
@@ -144,10 +145,12 @@ export function AdCard({ ad, image }: AdCardProps) {
   // Sprawdzenie, czy powinniśmy pokazać overlay
   const shouldShowOverlay = isAuthor || (isProfilePage && pathname?.includes(`/${ad.author.id}`))
 
+  const slug = `${ad.id}-${slugify(ad.title, { lower: true, strict: true })}`
+
   return (
     <>
       <div className="relative " onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-        <Link href={`/ogloszenia/${ad.id}`} className="block">
+        <Link target="_blank" href={`/ogloszenia/${slug}`} className="block">
           <Card ref={cardRef} className="hover:shadow-md overflow-hidden transition-all relative hover:scale-[1.01]">
             <CardContent className={`p-0 overflow-hidden ${ad.promoted ? "border-primary/40" : "border-muted"}`}>
               <div className="flex flex-col">

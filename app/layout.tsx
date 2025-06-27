@@ -7,7 +7,6 @@ import GoogleTagManager from "@/components/google-tag-manager" // Dodany import
 import "./globals.css"
 import { UserProvider } from "@/lib/user-context"
 import { initUploadsFolder } from "@/lib/init-upload"
-import { Providers } from "@/components/providers"
 
 
 // Dodaj wywołanie funkcji przed deklaracją komponentu RootLayout
@@ -88,11 +87,11 @@ export default function RootLayout({
           gtmId={process.env.NEXT_PUBLIC_GTM_ID || "default-gtm-id"} // Replace "default-gtm-id" with a valid fallback ID or handle missing value
           gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} // Zastąp swoim rzeczywistym ID GA4
         />
-        <Providers>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={true}>
           <UserProvider>{children}</UserProvider>
           <Toaster />
           <CookieConsent />
-        </Providers>
+      </ThemeProvider>
       </body>
     </html>
   )

@@ -12,10 +12,11 @@ import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
-import { ChevronLeft, Grid, Loader2, MapIcon, MapPin, PlusCircle, Search, Tag, TagsIcon, XIcon } from "lucide-react"
+import { Award, ChevronLeft, Grid, Loader2, MapIcon, MapPin, PlusCircle, Search, Star, Tag, TagsIcon, TrendingUp, XIcon } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useRouter, useSearchParams, useParams } from "next/navigation"
 import { useEffect, useState } from "react"
+import slugify from "slugify"
 
 
 
@@ -897,6 +898,24 @@ export default function SearchPageClient() {
                   </div>
                 )}
 
+                {tempCity && 
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Miasto</h4>
+                    <div className="space-y-2">
+                        <Button
+                          key={tempCity}
+                          variant="default"
+                          className="w-full justify-between text-left h-auto px-3 p-2"
+                          onClick={() => handleTempCityChange("")}
+                        >
+                          <Tag className="h-2 w-2 mr-1 flex-shrink-0" />
+                          <span className="truncate">{tempCity}</span>
+                          <XIcon />
+                        </Button>
+                    </div>
+                  </div>
+                }
+
                 <Separator />
 
                 {/* Location and Price filters section */}
@@ -1102,7 +1121,7 @@ export default function SearchPageClient() {
                               </div>
                             </div>
                             <Button size="sm" variant="outline" asChild>
-                              <a href={`/ogloszenia/${ad.id}`}>Szczegóły</a>
+                              <a href={`/ogloszenia/${ad.id}-${slugify(ad.title, { lower: true, strict: true })}`}>Szczegóły</a>
                             </Button>
                           </div>
                         </CardContent>
@@ -1112,6 +1131,66 @@ export default function SearchPageClient() {
                 )}
               </TabsContent>
             </Tabs>
+          </div>
+        </div>
+                {/* Sekcja statystyk */}
+        <div className="mt-16 py-12 px-6 bg-muted/20 rounded-lg">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold mb-2">Dlaczego warto dodać ogłoszenie?</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Dołącz do tysięcy użytkowników, którzy już korzystają z naszego serwisu i znajdź kupców na swoje produkty.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="hover:shadow-lg hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <TrendingUp className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium mb-2">Szeroki zasięg</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Docieraj do tysięcy potencjalnych kupujących poszukujących Twoich produktów w Twojej okolicy.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <Star className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium mb-2">Łatwa sprzedaż</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Prosty proces dodawania ogłoszeń i kontaktu z kupującymi sprawia, że sprzedaż jest szybka i wygodna.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <Award className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium mb-2">Wyróżnij się</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Skorzystaj z opcji promowania, aby wyróżnić swoje ogłoszenie na tle konkurencji.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center mt-8">
+            <Button size="lg" onClick={() => router.push("/dodaj-ogloszenie")}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Dodaj ogłoszenie
+            </Button>
           </div>
         </div>
       </div>

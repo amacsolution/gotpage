@@ -11,6 +11,7 @@ import { useDebounce } from "@/hooks/use-debounce"
 import { useClickOutside } from "@/hooks/use-click-outside"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import slugify from "slugify"
 
 interface SearchResult {
   id: string | number
@@ -70,7 +71,7 @@ export function GlobalSearch({ className = "" }: { className?: string }) {
               title: ad.title,
               subtitle: `${ad.price ? `${ad.price} zł • ` : ""}${ad.location || ""}`,
               image: ad.image_url || ad.image,
-              url: `/ogloszenia/${ad.id}`,
+              url: `/ogloszenia/${ad.id}-${slugify(ad.title, { lower: true, strict: true })}`,
               category: ad.category,
               subcategory: ad.subcategory,
             })),

@@ -1,6 +1,6 @@
 "use client"
 
-import { AdCard } from "@/components/ad-card"
+import { CompanyCard } from "@/components/company-card"
 import { PageLayout } from "@/components/page-layout"
 import { SearchAutocomplete } from "@/components/search-autocomplete"
 import { Badge } from "@/components/ui/badge"
@@ -10,14 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
-import { Award, ChevronLeft, Grid, Loader2, MapIcon, MapPin, PlusCircle, Star, Tag, TrendingUp } from "lucide-react"
+import { Award, Building, ChevronLeft, Grid, Loader2, MapIcon, MapPin, Star, TrendingUp } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useRouter, useSearchParams, useParams } from "next/navigation"
 import { useEffect, useState } from "react"
-import slugify from "slugify"
 
-// Dynamiczny import komponentu mapy (bez SSR)
-const AdsMap = dynamic(() => import("@/components/ads-map"), {
+// Dynamically import the map component with no SSR
+const CompanyMap = dynamic(() => import("@/components/company-map"), {
   ssr: false,
   loading: () => (
     <div className="h-[500px] w-full bg-muted/30 flex items-center justify-center">
@@ -26,13 +25,13 @@ const AdsMap = dynamic(() => import("@/components/ads-map"), {
   ),
 })
 
-export default function CityPage() {
+export default function CompanyCityPageClient() {
   const searchParams = useSearchParams()
   const params = useParams()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
-  const [ads, setAds] = useState<any[]>([])
-  const [totalAds, setTotalAds] = useState(0)
+  const [companies, setCompanies] = useState<any[]>([])
+  const [totalCompanies, setTotalCompanies] = useState(0)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid")
@@ -47,23 +46,21 @@ export default function CityPage() {
 
     setSearchQuery(query)
 
-    // Parse URL pattern: /miasto/[city]
+    // Parse URL pattern: /firmy/miasto/[city]
     if (slug.length > 0 && slug[0]) {
       setCity(decodeURIComponent(slug[0]))
     }
   }, [params, searchParams])
 
   // Get search parameters from URL
-  const sortBy = searchParams?.get("sortBy") || "newest"
+  const sortBy = searchParams?.get("sortBy") || "rating"
 
-  // Fetch ads
+  // Fetch companies
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true)
-      setAds([])
+      setCompanies([])
       setPage(1)
-
-      if (!city) return
 
       try {
         // Build query URL
@@ -75,22 +72,22 @@ export default function CityPage() {
         if (city) apiParams.append("location", city)
         if (searchQuery) apiParams.append("q", searchQuery)
 
-        // Fetch ads
-        const response = await fetch(`/api/ogloszenia?${apiParams.toString()}`, {
+        // Fetch companies
+        const response = await fetch(`/api/companies?${apiParams.toString()}`, {
           next: {
             revalidate: 172800, // 2 days
-            tags: ["ads", "city-results"],
+            tags: ["companies", "city-results"],
           },
         })
 
         if (!response.ok) {
-          throw new Error("Nie udało się pobrać ogłoszeń")
+          throw new Error("Nie udało się pobrać firm")
         }
 
         const data = await response.json()
 
-        setAds(data.ads || [])
-        setTotalAds(data.total || 0)
+        setCompanies(data.companies || [])
+        setTotalCompanies(data.total || 0)
         setHasMore(data.page < data.totalPages)
       } catch (error) {
         console.error("Błąd podczas pobierania danych:", error)
@@ -122,13 +119,13 @@ export default function CityPage() {
 
     const queryString = params.toString()
     const finalUrl = queryString
-      ? `/ogloszenia/miasto/${encodeURIComponent(city)}?${queryString}`
-      : `/ogloszenia/miasto/${encodeURIComponent(city)}`
+      ? `/firmy/miasto/${encodeURIComponent(city)}?${queryString}`
+      : `/firmy/miasto/${encodeURIComponent(city)}`
 
     router.push(finalUrl)
   }
 
-  // Load more ads
+  // Load more companies
   const loadMore = async () => {
     const nextPage = page + 1
 
@@ -143,27 +140,27 @@ export default function CityPage() {
       if (city) apiParams.append("location", city)
       if (searchQuery) apiParams.append("q", searchQuery)
 
-      const response = await fetch(`/api/ogloszenia?${apiParams.toString()}`, {
+      const response = await fetch(`/api/companies?${apiParams.toString()}`, {
         next: {
           revalidate: 172800, // 2 days
-          tags: ["ads", "city-results"],
+          tags: ["companies", "city-results"],
         },
       })
 
       if (!response.ok) {
-        throw new Error("Nie udało się pobrać ogłoszeń")
+        throw new Error("Nie udało się pobrać firm")
       }
 
       const data = await response.json()
 
-      setAds([...ads, ...(data.ads || [])])
+      setCompanies([...companies, ...(data.companies || [])])
       setHasMore(data.page < data.totalPages)
       setPage(nextPage)
     } catch (error) {
-      console.error("Błąd podczas pobierania ogłoszeń:", error)
+      console.error("Błąd podczas pobierania firm:", error)
       toast({
         title: "Błąd",
-        description: "Nie udało się pobrać więcej ogłoszeń. Spróbuj ponownie później.",
+        description: "Nie udało się pobrać więcej firm. Spróbuj ponownie później.",
         variant: "destructive",
       })
     } finally {
@@ -177,9 +174,9 @@ export default function CityPage() {
         <div className="container py-6">
           <div className="text-center py-12">
             <h1 className="text-2xl font-bold mb-4">Nie wybrano miasta</h1>
-            <Button onClick={() => router.push("/ogloszenia")}>
+            <Button onClick={() => router.push("/firmy")}>
               <ChevronLeft className="h-4 w-4 mr-2" />
-              Powrót do ogłoszeń
+              Powrót do firm
             </Button>
           </div>
         </div>
@@ -192,31 +189,31 @@ export default function CityPage() {
       <div className="container py-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-6">
-          <Button variant="ghost" size="sm" onClick={() => router.push("/ogloszenia")}>
+          <Button variant="ghost" size="sm" onClick={() => router.push("/firmy")}>
             <ChevronLeft className="h-4 w-4 mr-1" />
-            Powrót do ogłoszeń
+            Powrót do firm
           </Button>
           <span className="text-muted-foreground">/</span>
-          <span className="text-md text-muted-foreground">Miasto</span>
+          <span className="text-sm text-muted-foreground">Miasto</span>
           <span className="text-muted-foreground">/</span>
-          <span className="text-md font-medium">{city}</span>
+          <span className="text-sm font-medium">{city}</span>
         </div>
 
         {/* Header */}
-        <div className=" flex flex-col mx-auto mb-8">
+        <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <MapPin className="h-8 w-8 text-primary" />
+            <Building className="h-10 w-10 text-primary" />
             <div>
-              <h1 className="text-3xl font-bold">Ogłoszenia w {city}</h1>
-              <p className="text-muted-foreground">Znajdź najlepsze oferty w Twojej okolicy</p>
+              <h1 className="text-3xl font-bold">Firmy w mieście {city}</h1>
+              <p className="text-muted-foreground">Znajdź najlepsze firmy i usługodawców w Twojej okolicy</p>
             </div>
           </div>
 
           {/* Search bar */}
-          <div className="max-w-md">
+          <div className="max-w-md mt-5">
             <SearchAutocomplete
-              type="ads"
-              placeholder={`Szukaj ogłoszeń w ${city}...`}
+              type="companies"
+              placeholder={`Szukaj firm w ${city}...`}
               onSearch={handleSearch}
               className="w-full"
             />
@@ -226,10 +223,10 @@ export default function CityPage() {
         {/* Filters and sorting */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold">Ogłoszenia</h2>
-            {totalAds > 0 && (
+            <h2 className="text-xl font-bold">Firmy</h2>
+            {totalCompanies > 0 && (
               <Badge variant="outline" className="text-muted-foreground">
-                {totalAds} {totalAds === 1 ? "ogłoszenie" : totalAds < 5 ? "ogłoszenia" : "ogłoszeń"}
+                {totalCompanies} {totalCompanies === 1 ? "firma" : totalCompanies < 5 ? "firmy" : "firm"}
               </Badge>
             )}
           </div>
@@ -253,8 +250,8 @@ export default function CityPage() {
                 params.set("sortBy", value)
                 const queryString = params.toString()
                 const finalUrl = queryString
-                  ? `/ogloszenia/miasto/${encodeURIComponent(city)}?${queryString}`
-                  : `/ogloszenia/miasto/${encodeURIComponent(city)}`
+                  ? `/firmy/miasto/${encodeURIComponent(city)}?${queryString}`
+                  : `/firmy/miasto/${encodeURIComponent(city)}`
                 router.push(finalUrl)
               }}
             >
@@ -262,44 +259,49 @@ export default function CityPage() {
                 <SelectValue placeholder="Sortuj według" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="rating">Najwyżej oceniane</SelectItem>
                 <SelectItem value="newest">Najnowsze</SelectItem>
-                <SelectItem value="oldest">Najstarsze</SelectItem>
-                <SelectItem value="price_asc">Cena: rosnąco</SelectItem>
-                <SelectItem value="price_desc">Cena: malejąco</SelectItem>
                 <SelectItem value="popular">Najpopularniejsze</SelectItem>
+                <SelectItem value="name_asc">Nazwa: A-Z</SelectItem>
+                <SelectItem value="name_desc">Nazwa: Z-A</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        {/* Ads Content */}
+        {/* Companies Content */}
         <Tabs value={viewMode} className="mt-6">
           <TabsContent value="grid" className="mt-0">
-            {isLoading && ads.length === 0 ? (
+            {isLoading && companies.length === 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, index) => (
                   <Skeleton key={index} className="h-48 w-full rounded-lg" />
                 ))}
               </div>
-            ) : ads.length > 0 ? (
+            ) : companies.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {ads.map((ad) => (
-                    <AdCard key={ad.id} ad={ad} />
+                  {companies.map((company) => (
+                    <CompanyCard key={company.id} company={company} />
                   ))}
                 </div>
 
                 {/* Load more button */}
                 {hasMore && (
                   <div className="flex justify-center mt-8">
-                    <Button onClick={loadMore} variant="outline" className="min-w-[200px]" disabled={isLoading}>
+                    <Button
+                      onClick={loadMore}
+                      variant="outline"
+                      className="min-w-[200px] bg-transparent"
+                      disabled={isLoading}
+                    >
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Ładowanie...
                         </>
                       ) : (
-                        "Załaduj więcej ogłoszeń"
+                        "Załaduj więcej firm"
                       )}
                     </Button>
                   </div>
@@ -307,12 +309,11 @@ export default function CityPage() {
               </>
             ) : (
               <div className="text-center py-12 bg-muted/30 rounded-lg">
-                <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Brak ogłoszeń</h3>
-                <p className="text-muted-foreground">Nie znaleziono ogłoszeń w {city}.</p>
-                <Button className="mt-4" onClick={() => router.push("/dodaj-ogloszenie")}>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Dodaj ogłoszenie
+                <Building className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">Brak firm</h3>
+                <p className="text-muted-foreground">Nie znaleziono firm w {city}.</p>
+                <Button className="mt-4" onClick={() => router.push("/promowanie/firma")}>
+                  Promuj swoją firmę
                 </Button>
               </div>
             )}
@@ -320,41 +321,50 @@ export default function CityPage() {
 
           <TabsContent value="map" className="mt-0">
             <div className="h-[500px] rounded-lg overflow-hidden mb-6">
-              <AdsMap ads={ads} isLoading={isLoading} center={{ lat: 52.2297, lng: 21.0122 }} />
+              <CompanyMap companies={companies} isLoading={isLoading} center={{ lat: 52.2297, lng: 21.0122 }} />
             </div>
 
-            {ads.length > 0 && (
+            {companies.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {ads.map((ad) => (
-                  
-                  <Card key={ad.id} className="hover:shadow-md transition-shadow">
+                {companies.slice(0, 6).map((company) => (
+                  <Card key={company.id} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="flex-shrink-0">
-                          <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center overflow-hidden">
-                            {ad.images && ad.images.length > 0 ? (
+                          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                            {company.logo ? (
                               <img
-                                src={ad.images[0] || "/placeholder.svg"}
-                                alt={ad.title}
-                                className="w-12 h-12 object-cover"
+                                src={company.logo || "/placeholder.svg"}
+                                alt={company.name}
+                                className="w-12 h-12 rounded-full object-cover"
                               />
                             ) : (
-                              <Tag className="h-6 w-6 text-muted-foreground" />
+                              <Building className="h-6 w-6 text-muted-foreground" />
                             )}
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium truncate">{ad.title}</h4>
+                          <h4 className="font-medium truncate">{company.name}</h4>
                           <div className="flex items-center text-sm text-muted-foreground">
                             <MapPin className="h-3 w-3 mr-1" />
-                            <span className="truncate">{ad.location}</span>
+                            <span className="truncate">{company.location}</span>
                           </div>
-                          <div className="mt-1 font-medium text-sm">
-                            {ad.price ? `${ad.price} zł` : "Cena do negocjacji"}
+                          <div className="flex items-center mt-1">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className="h-3 w-3"
+                                fill={i < Math.floor(company.rating) ? "currentColor" : "none"}
+                                color={i < Math.floor(company.rating) ? "#FFB800" : "#D1D5DB"}
+                              />
+                            ))}
+                            <span className="text-xs ml-1">
+                              {Number(company.rating).toFixed(1)} ({company.reviewCount})
+                            </span>
                           </div>
                         </div>
                         <Button size="sm" variant="outline" asChild>
-                            <a href={`/ogloszenia/${ad.id}-${slugify(ad.title, { lower: true, strict: true })}`}>Szczegóły</a>
+                          <a href={`/profil/${company.id}`}>Szczegóły</a>
                         </Button>
                       </div>
                     </CardContent>
@@ -364,12 +374,12 @@ export default function CityPage() {
             )}
           </TabsContent>
         </Tabs>
-                {/* Sekcja statystyk */}
+                {/* Statistics section */}
         <div className="mt-16 py-12 px-6 bg-muted/20 rounded-lg">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold mb-2">Dlaczego warto dodać ogłoszenie?</h2>
+            <h2 className="text-2xl font-bold mb-2">Dlaczego warto dołączyć do katalogu?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Dołącz do tysięcy użytkowników, którzy już korzystają z naszego serwisu i znajdź kupców na swoje produkty.
+              Dołącz do tysięcy firm, które już korzystają z naszego katalogu i zwiększ swoją widoczność online.
             </p>
           </div>
 
@@ -380,9 +390,9 @@ export default function CityPage() {
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <TrendingUp className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="font-medium mb-2">Szeroki zasięg</h3>
+                  <h3 className="font-medium mb-2">Zwiększ widoczność</h3>
                   <p className="text-sm text-muted-foreground">
-                    Docieraj do tysięcy potencjalnych kupujących poszukujących Twoich produktów w Twojej okolicy.
+                    Docieraj do tysięcy potencjalnych klientów poszukujących Twoich usług w Twojej okolicy.
                   </p>
                 </div>
               </CardContent>
@@ -394,9 +404,9 @@ export default function CityPage() {
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <Star className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="font-medium mb-2">Łatwa sprzedaż</h3>
+                  <h3 className="font-medium mb-2">Buduj zaufanie</h3>
                   <p className="text-sm text-muted-foreground">
-                    Prosty proces dodawania ogłoszeń i kontaktu z kupującymi sprawia, że sprzedaż jest szybka i wygodna.
+                    Zbieraj opinie i oceny od zadowolonych klientów, budując wiarygodność swojej firmy.
                   </p>
                 </div>
               </CardContent>
@@ -410,7 +420,7 @@ export default function CityPage() {
                   </div>
                   <h3 className="font-medium mb-2">Wyróżnij się</h3>
                   <p className="text-sm text-muted-foreground">
-                    Skorzystaj z opcji promowania, aby wyróżnić swoje ogłoszenie na tle konkurencji.
+                    Skorzystaj z opcji promowania, aby wyróżnić swoją firmę na tle konkurencji.
                   </p>
                 </div>
               </CardContent>
@@ -418,9 +428,8 @@ export default function CityPage() {
           </div>
 
           <div className="text-center mt-8">
-            <Button size="lg" onClick={() => router.push("/dodaj-ogloszenie")}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Dodaj ogłoszenie
+            <Button size="lg" onClick={() => router.push("/promowanie/firma")}>
+              Promuj swoją firmę
             </Button>
           </div>
         </div>

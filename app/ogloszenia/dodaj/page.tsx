@@ -18,6 +18,7 @@ import { ImagePlus, X, Loader2, Filter } from "lucide-react"
 import { SimpleEditor } from "@/components/rich-editor"
 import { Badge } from "@/components/ui/badge"
 import { motion } from "framer-motion"
+import slugify from "slugify"
 
 // Kategorie i podkategorie
 const categories = [
@@ -808,7 +809,7 @@ export default function AddAdPage() {
       })
 
       // Przekierowanie na stronę ogłoszenia
-      router.push(`/ogloszenia/${data.adId}`)
+      router.push(`/ogloszenia/${data.id}-${slugify(data.title, { lower: true, strict: true })}`)
     } catch (error) {
 
       console.error("Błąd podczas dodawania ogłoszenia:", error)
