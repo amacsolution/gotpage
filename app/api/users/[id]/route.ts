@@ -116,7 +116,7 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
 }
 
 export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
-  const params = props.params
+  const params = (await props.params)
   try {
     const { id: userId } = await params
     if (!userId) {

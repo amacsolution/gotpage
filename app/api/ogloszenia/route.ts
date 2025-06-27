@@ -307,8 +307,8 @@ export async function GET(request: Request) {
     }
 
     if (subcategory) {
-      sql += " AND a.finalcategory = ?"
-      params.push(subcategory)
+      sql += " AND a.final_category = ?"
+      params.push(finalcategory)
     }
 
     if (location) {
@@ -371,32 +371,40 @@ export async function GET(request: Request) {
       WHERE 1=1
     `
 
-    const countParams = [...params]
-    countParams.pop() // Usunięcie limitu
-    countParams.pop() // Usunięcie offsetu
+    const countParams: any[] = []
 
     if (category) {
       countSql += " AND a.category = ?"
+      countParams.push(category)
     }
 
     if (subcategory) {
       countSql += " AND a.subcategory = ?"
+      countParams.push(subcategory)
+    }
+    if (finalcategory) {
+      countSql += " AND a.final_category = ?"
+      countParams.push(finalcategory)
     }
 
     if (location) {
       countSql += " AND a.location LIKE ?"
+      countParams.push(`%${location}%`)
     }
 
     if (minPrice) {
       countSql += " AND a.price >= ?"
+      countParams.push(minPrice)
     }
 
     if (maxPrice) {
       countSql += " AND a.price <= ?"
+      countParams.push(maxPrice)
     }
 
     if (searchQuery) {
       countSql += " AND (a.title LIKE ? OR a.description LIKE ?)"
+      countParams.push(`%${searchQuery}%`, `%${searchQuery}%`)
     }
 
     const totalResult = (await query(countSql, countParams)) as { count: string }[]

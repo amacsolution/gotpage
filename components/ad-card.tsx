@@ -30,7 +30,7 @@ export interface AdCardProps {
     title: string
     content: string
     category: string
-    finalcategory: string
+    finalcategory?: string
     subcategory?: string
     price: number | null
     currency?: string | null

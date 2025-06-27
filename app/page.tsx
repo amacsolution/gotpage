@@ -23,7 +23,10 @@ import { SiteConfig } from "@/config/site"
 
 // Dodajemy metadane dla SEO
 export const metadata: Metadata = {
-  title: `${SiteConfig.name} - Nowoczesna platforma ogłoszeniowa | Znajdź lub sprzedaj`,
+  title: {
+    default : `${SiteConfig.name} - Nowoczesna platforma ogłoszeniowa | Znajdź lub sprzedaj`,
+    template: "%s | Gotpage.pl"
+  },
   description:
     "Publikuj i przeglądaj ogłoszenia w nowoczesnym stylu. Znajdź to, czego szukasz lub sprzedaj to, co chcesz. Dołącz do społeczności Gotpage już dziś!",
   keywords: "ogłoszenia, sprzedaż, kupno, platforma ogłoszeniowa, gotpage, lokalne ogłoszenia, darmowe ogłoszenia",
@@ -35,7 +38,7 @@ export const metadata: Metadata = {
     url: SiteConfig.url,
     title: `${SiteConfig.name} - Nowoczesna platforma ogłoszeniowa`,
     description:
-      "Publikuj i przeglądaj ogłoszenia w nowoczesnym stylu. Znajdź to, czego szukasz lub sprzedaj to, co chcesz.",
+      "Publikuj i przeglądaj ogłoszenia w nowoczesnym stylu. Znajdź to, czego szukasz lub sprzedaj to, co chcesz. Dołącz do społeczności Gotpage już dziś!",
     siteName: SiteConfig.name,
     images: [
       {

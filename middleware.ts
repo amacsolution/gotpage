@@ -65,6 +65,11 @@ export function middleware(request: NextRequest) {
   if (isPublicPath) {
     return NextResponse.next()
   }
+  
+  const response = NextResponse.next()
+  if (request.nextUrl.pathname.startsWith("/ogloszenia") || request.nextUrl.pathname.startsWith("/miasto")) {
+    response.headers.set("Cache-Control", "public, s-maxage=172800, stale-while-revalidate=86400")
+  }
 
   // 4. Dla pozostałych ścieżek, kontynuuj (uwierzytelnianie użytkowników jest obsługiwane przez @/lib/auth)
   return NextResponse.next()

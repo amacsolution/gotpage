@@ -1,190 +1,124 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/legacy/image"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Slider } from "@/components/ui/slider"
-import { Search, MapPin, Tag, Filter, X, Grid, MapIcon, Heart, MessageSquare, Eye } from "lucide-react"
+import { AdCard } from "@/components/ad-card"
 import { PageLayout } from "@/components/page-layout"
+import { SearchAutocomplete } from "@/components/search-autocomplete"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useToast } from "@/hooks/use-toast"
+import {
+  Award,
+  ChevronRight,
+  Filter,
+  Grid,
+  Loader2,
+  MapIcon,
+  MapPin,
+  PlusCircle,
+  Star,
+  Tag,
+  TagsIcon,
+  TrendingUp,
+} from "lucide-react"
 import dynamic from "next/dynamic"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
 
-// Dynamiczne importowanie komponentu mapy (bez SSR)
+// Dynamiczny import komponentu mapy (bez SSR)
 const AdsMap = dynamic(() => import("@/components/ads-map"), {
   ssr: false,
   loading: () => (
     <div className="h-[500px] w-full bg-muted/30 flex items-center justify-center">
-      <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   ),
 })
 
-// Mock data dla ogłoszeń
-const mockAds = [
-  {
-    id: 1,
-    title: "Mieszkanie 3-pokojowe, 65m², Centrum",
-    description:
-      "Przestronne mieszkanie w centrum miasta. 3 pokoje, oddzielna kuchnia, łazienka z WC. Blisko komunikacji miejskiej, szkół i sklepów.",
-    category: "Nieruchomości",
-    subcategory: "Mieszkania",
-    price: 450000,
-    currency: "PLN",
-    location: "Warszawa, Mazowieckie",
-    coordinates: { lat: 52.2297, lng: 21.0122 },
-    images: ["/placeholder.svg?height=300&width=400&text=Mieszkanie"],
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    promoted: true,
-    author: {
-      id: 1,
-      name: "Jan Kowalski",
-      avatar: "/placeholder.svg?height=40&width=40&text=JK",
-      verified: true,
-    },
-    likes: 24,
-    views: 356,
-    comments: 5,
-  },
-  {
-    id: 2,
-    title: "Toyota Corolla 2018, 1.8 Hybrid, 72 000 km",
-    description:
-      "Sprzedam Toyotę Corollę z 2018 roku w bardzo dobrym stanie. Hybryda 1.8, przebieg 72 000 km. Pierwszy właściciel, serwisowana w ASO.",
-    category: "Motoryzacja",
-    subcategory: "Samochody osobowe",
-    price: 65000,
-    currency: "PLN",
-    location: "Kraków, Małopolskie",
-    coordinates: { lat: 50.0647, lng: 19.945 },
-    images: ["/placeholder.svg?height=300&width=400&text=Toyota+Corolla"],
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    promoted: false,
-    author: {
-      id: 2,
-      name: "Anna Nowak",
-      avatar: "/placeholder.svg?height=40&width=40&text=AN",
-      verified: false,
-    },
-    likes: 15,
-    views: 230,
-    comments: 3,
-  },
-  {
-    id: 3,
-    title: 'MacBook Pro 16" 2021, M1 Pro, 16GB RAM, 512GB SSD',
-    description:
-      "Sprzedam MacBooka Pro 16 cali z 2021 roku. Procesor M1 Pro, 16GB RAM, 512GB SSD. Stan idealny, na gwarancji do listopada 2023.",
-    category: "Elektronika",
-    subcategory: "Laptopy",
-    price: 8500,
-    currency: "PLN",
-    location: "Wrocław, Dolnośląskie",
-    coordinates: { lat: 51.1079, lng: 17.0385 },
-    images: ["/placeholder.svg?height=300&width=400&text=MacBook+Pro"],
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    promoted: true,
-    author: {
-      id: 3,
-      name: "Piotr Wiśniewski",
-      avatar: "/placeholder.svg?height=40&width=40&text=PW",
-      verified: true,
-    },
-    likes: 32,
-    views: 412,
-    comments: 7,
-  },
-  {
-    id: 4,
-    title: "Sofa narożna, rozkładana, szara",
-    description:
-      "Sprzedam sofę narożną w kolorze szarym. Rozkładana, z pojemnikiem na pościel. Wymiary: 250x200 cm. Stan bardzo dobry.",
-    category: "Dom i ogród",
-    subcategory: "Meble",
-    price: 1200,
-    currency: "PLN",
-    location: "Poznań, Wielkopolskie",
-    coordinates: { lat: 52.4064, lng: 16.9252 },
-    images: ["/placeholder.svg?height=300&width=400&text=Sofa"],
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    promoted: false,
-    author: {
-      id: 4,
-      name: "Katarzyna Lewandowska",
-      avatar: "/placeholder.svg?height=40&width=40&text=KL",
-      verified: false,
-    },
-    likes: 8,
-    views: 145,
-    comments: 2,
-  },
-  {
-    id: 5,
-    title: "iPhone 13 Pro, 128GB, grafitowy",
-    description:
-      "Sprzedam iPhone'a 13 Pro w kolorze grafitowym. Pamięć 128GB. Stan idealny, komplet: pudełko, ładowarka, słuchawki. Na gwarancji.",
-    category: "Elektronika",
-    subcategory: "Telefony",
-    price: 3800,
-    currency: "PLN",
-    location: "Gdańsk, Pomorskie",
-    coordinates: { lat: 54.352, lng: 18.6466 },
-    images: ["/placeholder.svg?height=300&width=400&text=iPhone"],
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    promoted: true,
-    author: {
-      id: 5,
-      name: "Michał Kowalczyk",
-      avatar: "/placeholder.svg?height=40&width=40&text=MK",
-      verified: true,
-    },
-    likes: 19,
-    views: 278,
-    comments: 4,
-  },
-  {
-    id: 6,
-    title: "Rower górski Kross Level 5.0, 29 cali",
-    description:
-      "Sprzedam rower górski Kross Level 5.0. Koła 29 cali, rama aluminiowa 19 cali, przerzutki Shimano Deore. Stan bardzo dobry.",
-    category: "Sport i hobby",
-    subcategory: "Rowery",
-    price: 2500,
-    currency: "PLN",
-    location: "Łódź, Łódzkie",
-    coordinates: { lat: 51.7592, lng: 19.456 },
-    images: ["/placeholder.svg?height=300&width=400&text=Rower"],
-    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    promoted: false,
-    author: {
-      id: 6,
-      name: "Tomasz Nowicki",
-      avatar: "/placeholder.svg?height=40&width=40&text=TN",
-      verified: false,
-    },
-    likes: 11,
-    views: 189,
-    comments: 1,
-  },
-]
+// Kategorie ogłoszeń z ikonami
+const adCategories = [
+  { id: "Motoryzacja", name: "Motoryzacja", icon: "🚗", color: "bg-red-100 text-red-800" },
+  { id: "RTV/AGD", name: "RTV/AGD", icon: "📺", color: "bg-indigo-100 text-indigo-800" },
+  { id: "Elektronika", name: "Elektronika", icon: "💻", color: "bg-purple-100 text-purple-800" },
+  { id: "Moda", name: "Moda", icon: "👗", color: "bg-pink-100 text-pink-800" },
+  { id: "Dom i ogród", name: "Dom i ogród", icon: "🏡", color: "bg-green-100 text-green-800" },
+  { id: "Nieruchomości", name: "Nieruchomości", icon: "🏠", color: "bg-blue-100 text-blue-800" },
+  { id: "Dla dzieci", name: "Dla dzieci", icon: "🧸", color: "bg-cyan-100 text-cyan-800" },
+  { id: "Zdrowie i Uroda", name: "Zdrowie i Uroda", icon: "💆‍♀️", color: "bg-rose-100 text-rose-800" },
+  { id: "Zwierzęta i Akcesoria", name: "Zwierzęta i Akcesoria", icon: "🐾", color: "bg-lime-100 text-lime-800" },
+  { id: "Praca", name: "Praca", icon: "💼", color: "bg-amber-100 text-amber-800" },
+  { id: "Sport/Turystyka", name: "Sport/Turystyka", icon: "🏕️", color: "bg-orange-100 text-orange-800" },
+  { id: "Bilety/e-Bilety", name: "Bilety/e-Bilety", icon: "🎫", color: "bg-yellow-100 text-yellow-800" },
+  { id: "Usługi", name: "Usługi", icon: "🔧", color: "bg-yellow-200 text-yellow-900" },
+  { id: "Przemysł", name: "Przemysł", icon: "🏭", color: "bg-stone-100 text-stone-800" },
+  { id: "Rozrywka", name: "Rozrywka", icon: "🎮", color: "bg-fuchsia-100 text-fuchsia-800" },
+  { id: "Antyki/Kolekcje/Sztuka", name: "Antyki/Kolekcje/Sztuka", icon: "🖼️", color: "bg-gray-100 text-gray-800" },
+  { id: "Wycieczki/Podróże", name: "Wycieczki/Podróże", icon: "✈️", color: "bg-teal-100 text-teal-800" },
+];
 
-// Kategorie
-const categories = [
-  "Wszystkie kategorie",
-  "Motoryzacja",
-  "Nieruchomości",
-  "Elektronika",
-  "Moda",
-  "Usługi",
-  "Dom i ogród",
-  "Sport i hobby",
-]
+const allLocations = [
+  "Warszawa, mazowieckie",
+  "Kraków, małopolskie",
+  "Łódź, łódzkie",
+  "Wrocław, dolnośląskie",
+  "Poznań, wielkopolskie",
+  "Gdańsk, pomorskie",
+  "Szczecin, zachodniopomorskie",
+  "Bydgoszcz, kujawsko-pomorskie",
+  "Lublin, lubelskie",
+  "Białystok, podlaskie",
+  "Katowice, śląskie",
+  "Gdynia, pomorskie",
+  "Częstochowa, śląskie",
+  "Radom, mazowieckie",
+  "Sosnowiec, śląskie",
+  "Toruń, kujawsko-pomorskie",
+  "Kielce, świętokrzyskie",
+  "Rzeszów, podkarpackie",
+  "Gliwice, śląskie",
+  "Zabrze, śląskie",
+  "Olsztyn, warmińsko-mazurskie",
+  "Bielsko-Biała, śląskie",
+  "Bytom, śląskie",
+  "Zielona Góra, lubuskie",
+  "Rybnik, śląskie",
+  "Ruda Śląska, śląskie",
+  "Tychy, śląskie",
+  "Opole, opolskie",
+  "Elbląg, warmińsko-mazurskie",
+  "Płock, mazowieckie",
+  "Wałbrzych, dolnośląskie",
+  "Włocławek, kujawsko-pomorskie",
+  "Tarnów, małopolskie",
+  "Chorzów, śląskie",
+  "Koszalin, zachodniopomorskie",
+  "Kalisz, wielkopolskie",
+  "Legnica, dolnośląskie",
+  "Grudziądz, kujawsko-pomorskie",
+  "Słupsk, pomorskie",
+  "Jaworzno, śląskie",
+  "Jelenia Góra, dolnośląskie",
+  "Nowy Sącz, małopolskie",
+  "Jastrzębie-Zdrój, śląskie",
+  "Siedlce, mazowieckie",
+  "Mysłowice, śląskie",
+  "Zamość, lubelskie",
+  "Piotrków Trybunalski, łódzkie",
+  "Konin, wielkopolskie",
+  "Inowrocław, kujawsko-pomorskie",
+  "Lubin, dolnośląskie",
+  "Ostrowiec Świętokrzyski, świętokrzyskie",
+  "Gorzów Wielkopolski, lubuskie",
+  "Suwałki, podlaskie",
+  "Pabianice, łódzkie",
+  "Przemyśl, podkarpackie",
+  "Łomża, podlaskie",
+  "Stalowa Wola, podkarpackie"
+];
+
 
 const finalCategories = [
   {
@@ -422,123 +356,113 @@ const finalCategories = [
 ];
 
 
-// Lokalizacje
-const locations = [
-  "Wszystkie lokalizacje",
-  "Warszawa, Mazowieckie",
-  "Kraków, Małopolskie",
-  "Wrocław, Dolnośląskie",
-  "Poznań, Wielkopolskie",
-  "Gdańsk, Pomorskie",
-  "Łódź, Łódzkie",
-]
-
-export default function AdsClientPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("Wszystkie kategorie")
-  const [selectedSubCategory, setSelectedSubCategory] = useState("")
-  const [subCategories, setSubcategories] = useState<{ name: string; subsubcategories?: string[] }[]>([])
-  const [finalCategoreis, setFinalCategories] = useState<string[]>([])
-  const [selectedLocation, setSelectedLocation] = useState("Wszystkie lokalizacje")
-  const [priceRange, setPriceRange] = useState([0, 1000000])
-  const [showFilters, setShowFilters] = useState(false)
-  const [ads, setAds] = useState(mockAds)
+export default function AdsPage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
+  const [ads, setAds] = useState<any[]>([])
+  const [featuredAds, setFeaturedAds] = useState<any[]>([])
+  const [totalAds, setTotalAds] = useState(0)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid")
-  const [sortBy, setSortBy] = useState("newest")
-  const [isLoading, setIsLoading] = useState(false)
+  const [locations, setLocations] = useState<string[]>([])
+  const [subcategories, setSubcategories] = useState<{ name: string; subsubcategories?: string[] }[]>([])
+  const [showFilters, setShowFilters] = useState(false)
+  const filtersRef = useRef<HTMLDivElement>(null)
+  const [category, setCategory] = useState<string>("")
+  const [subcategory, setSubcategory] = useState<string>("")
+  const [finalcategory, setFinalcategory] = useState<string>("")
+  const [city, setCity] = useState<string>("")
+  const [finalcategories, setFinalCategories] = useState<string[]>([])
+  const [showsub, setShowsub] = useState(false)
+  const [showfin, setShowfin] = useState(false)
+  const [searchQuery, setSearchQuery] = useState<string>("")
+  const { toast } = useToast()
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+  // Get search parameters from URL
+  const query = searchParams?.get("q") || ""
+  const sortBy = searchParams?.get("sortBy") || "newest"
 
+  // Fetch ads and locations
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true)
+      setAds([])
+      setPage(1)
 
-    // Filtrowanie ogłoszeń na podstawie kryteriów
-    let filteredAds = mockAds
+      try {
+        setLocations(allLocations)
 
-    if (searchQuery) {
-      filteredAds = filteredAds.filter(
-        (ad) =>
-          ad.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          ad.description.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
+        // Fetch featured ads
+        const featuredResponse = await fetch("/api/ogloszenia?promoted=true&limit=3")
+        if (featuredResponse.ok) {
+          const featuredData = await featuredResponse.json()
+          setFeaturedAds(featuredData.ads || [])
+        }
+
+        // Build query URL for general ads
+        const apiParams = new URLSearchParams()
+        apiParams.append("page", "1")
+        apiParams.append("limit", "12")
+        apiParams.append("sortBy", sortBy)
+
+        if (query) apiParams.append("q", query)
+
+        // Fetch ads
+        const response = await fetch(`/api/ogloszenia?${apiParams.toString()}`)
+
+        if (!response.ok) {
+          throw new Error("Nie udało się pobrać ogłoszeń")
+        }
+
+        const data = await response.json()
+
+        setAds(data.ads || [])
+        setTotalAds(data.total || 0)
+        setHasMore(data.page < data.totalPages)
+      } catch (error) {
+        console.error("Błąd podczas pobierania danych:", error)
+        toast({
+          title: "Błąd",
+          description: "Nie udało się pobrać danych. Spróbuj ponownie później.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false)
+      }
     }
 
-    if (selectedCategory !== "Wszystkie kategorie") {
-      filteredAds = filteredAds.filter((ad) => ad.category === selectedCategory)
-    }
+    fetchData()
+  }, [query, sortBy, toast])
 
-    if (selectedLocation !== "Wszystkie lokalizacje") {
-      filteredAds = filteredAds.filter((ad) => ad.location === selectedLocation)
-    }
-
-    filteredAds = filteredAds.filter((ad) => ad.price >= priceRange[0] && ad.price <= priceRange[1])
-
-    // Sortowanie
-    if (sortBy === "newest") {
-      filteredAds.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    } else if (sortBy === "price_asc") {
-      filteredAds.sort((a, b) => (a.price || 0) - (b.price || 0))
-    } else if (sortBy === "price_desc") {
-      filteredAds.sort((a, b) => (b.price || 0) - (a.price || 0))
-    } else if (sortBy === "popular") {
-      filteredAds.sort((a, b) => b.views - a.views)
-    }
-
-    setAds(filteredAds)
-    setIsLoading(false)
-  }
-
-  const handleReset = () => {
-    setSearchQuery("")
-    setSelectedCategory("Wszystkie kategorie")
-    setSelectedLocation("Wszystkie lokalizacje")
-    setPriceRange([0, 1000000])
-    setAds(mockAds)
-  }
-
-  // Format date to relative time (e.g. "2 days ago")
-  const formatRelativeTime = (date: Date) => {
-    const now = new Date()
-    const diffInMs = now.getTime() - date.getTime()
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
-
-    if (diffInDays > 0) {
-      return `${diffInDays} ${diffInDays === 1 ? "dzień" : "dni"} temu`
-    } else if (diffInHours > 0) {
-      return `${diffInHours} ${diffInHours === 1 ? "godzina" : diffInHours < 5 ? "godziny" : "godzin"} temu`
-    } else {
-      return `${diffInMinutes} ${diffInMinutes === 1 ? "minuta" : diffInMinutes < 5 ? "minuty" : "minut"} temu`
-    }
-  }
-
-  const handleCategoryChange = async (value: string) => {
-    setSelectedCategory(value)
-    setSelectedSubCategory("")
-
-    const category = finalCategories.find((c) => c.name === value)
-    if (category) {
-      setSubcategories(category.subcategories || [])
+  function handleCategoryChange(cat: string) {
+    setCategory(cat)
+    const fcategory = finalCategories.find((c) => c.name === cat)
+    setSubcategory("")
+    setShowsub(false)
+    setShowfin(false)
+    setFinalcategory("")
+    if (fcategory) {
+      setSubcategories(fcategory.subcategories || [])
+      setShowsub(true)
     } else {
       setSubcategories([])
     }
   }
 
-  const handleSubCategoryChange = async (value: string) => {
-    setSelectedSubCategory(value)
-    // setSelectedFinalCategory("") // Remove or define this if needed
-
-    // Find the selected category
-    const category = finalCategories.find((c) =>
-      (c.subcategories || []).some((sub) => sub.name === value)
-    )
-    if (category) {
+  // Set final-categories when subcategory is selected
+  function handleSubcategoryChange(sub: string) {
+    setSubcategory(sub)
+    setShowfin(false)
+    const fcategory = finalCategories.find((c) => (c.subcategories || []).some((subcat) => subcat.name === sub))
+    setFinalcategory("")
+    if (fcategory) {
       // Find the selected subcategory
-      const subcategory = (category.subcategories || []).find((sub) => sub.name === value)
-      if (subcategory && "subsubcategories" in subcategory && Array.isArray(subcategory.subsubcategories)) {
-        // Do something with subcategory.subsubcategories, e.g. set state
-        setFinalCategories(subcategory.subsubcategories)
+      const fsubcategory = (fcategory.subcategories || []).find((subcat) => subcat.name === sub)
+      if (fsubcategory && "subsubcategories" in fsubcategory && Array.isArray(fsubcategory.subsubcategories)) {
+        setFinalCategories(fsubcategory.subsubcategories)
+        setShowfin(true)
       } else {
         setFinalCategories([])
       }
@@ -547,294 +471,509 @@ export default function AdsClientPage() {
     }
   }
 
+  // Handle search
+  const handleSearch = (searchQuery: string) => {
+    setSearchQuery(searchQuery)
+    const params = new URLSearchParams(searchParams?.toString())
+
+    if (searchQuery) {
+      params.set("q", searchQuery)
+    } else {
+      params.delete("q")
+    }
+
+    router.push(`/ogloszenia?${params.toString()}`)
+  }
+
+  // Handle city selection
+  const handleCityChange = (selectedCity: string) => {
+    setCity(selectedCity)
+  }
+
+  // Handle form submission with routing logic
+  const handleSubmit = () => {
+    let url = ""
+    const params = new URLSearchParams()
+
+    if (searchQuery) {
+      params.set("q", searchQuery)
+    }
+
+    if (city && !category) {
+      // Only city selected: navigate to /miasto directory
+      url = `/miasto/${encodeURIComponent(city)}`
+    } else if (category) {
+      // Category selected: navigate to /ogloszenia/szukaj directory
+      const urlParts = ["/ogloszenia/szukaj", encodeURIComponent(category)]
+
+      if (subcategory) {
+        urlParts.push(encodeURIComponent(subcategory))
+
+        if (finalcategory) {
+          urlParts.push(encodeURIComponent(finalcategory))
+        }
+      }
+
+      if (city) {
+        params.set("city", city)
+      }
+
+      url = urlParts.join("/")
+    } else {
+      // Default to main ads page
+      url = "/ogloszenia"
+    }
+
+    const queryString = params.toString()
+    const finalUrl = queryString ? `${url}?${queryString}` : url
+
+    router.push(finalUrl)
+  }
+
+  // Load more ads
+  const loadMore = async () => {
+    const nextPage = page + 1
+
+    try {
+      setIsLoading(true)
+
+      const apiParams = new URLSearchParams()
+      apiParams.append("page", nextPage.toString())
+      apiParams.append("limit", "12")
+      apiParams.append("sortBy", sortBy)
+
+      if (query) apiParams.append("q", query)
+
+      const response = await fetch(`/api/ogloszenia?${apiParams.toString()}`)
+
+      if (!response.ok) {
+        throw new Error("Nie udało się pobrać ogłoszeń")
+      }
+
+      const data = await response.json()
+
+      setAds([...ads, ...(data.ads || [])])
+      setHasMore(data.page < data.totalPages)
+      setPage(nextPage)
+    } catch (error) {
+      console.error("Błąd podczas pobierania ogłoszeń:", error)
+      toast({
+        title: "Błąd",
+        description: "Nie udało się pobrać więcej ogłoszeń. Spróbuj ponownie później.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Scroll do filtrów
+  useEffect(() => {
+    if (showFilters && filtersRef.current) {
+      filtersRef.current.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [showFilters])
+
   return (
     <PageLayout>
       <div className="container py-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Ogłoszenia</h1>
-          <p className="text-muted-foreground">
-            Przeglądaj ogłoszenia lub użyj wyszukiwarki, aby znaleźć to, czego szukasz
-          </p>
-        </div>
+        {/* Hero section */}
+        <div className="relative mb-12 rounded-xl overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-600 to-purple-700 opacity-90"></div>
+          <div className="relative z-10 py-12 px-6 text-white">
+            <div className="max-w-3xl mx-auto text-center">
+              <h1 className="text-4xl font-bold mb-4">Ogłoszenia</h1>
+              <p className="text-xl mb-8 text-white/90">
+                Znajdź idealne ogłoszenie w Twojej okolicy. Przeglądaj, kontaktuj się i znajdź to, czego szukasz.
+              </p>
 
-        <div className="mb-6">
-          <form onSubmit={handleSearch} className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Szukaj ogłoszeń..."
-                className="pl-8"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+              <div className="max-w-xl mx-auto bg-white/10 backdrop-blur-sm p-1 rounded-lg">
+                <SearchAutocomplete
+                  type="ads"
+                  placeholder="Szukaj ogłoszeń, produktów, usług..."
+                  onSearch={handleSearch}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-2 mt-6">
+                {adCategories.slice(0, 6).map((cat) => (
+                  <Badge
+                    key={cat.id}
+                    className={`text-sm py-1.5 px-3 cursor-pointer hover:bg-white/20 ${
+                      category === cat.name ? "bg-white/30" : "bg-white/10"
+                    }`}
+                    onClick={() => handleCategoryChange(cat.name)}
+                  >
+                    <span className="mr-1">{cat.icon}</span> {cat.name}
+                  </Badge>
+                ))}
+                <Badge
+                  className="text-sm py-1.5 px-3 cursor-pointer hover:bg-white/20 bg-white/10"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <Filter className="h-3 w-3 mr-1" /> Więcej filtrów
+                </Badge>
+              </div>
             </div>
-            <Button type="submit">Szukaj</Button>
-            <Button type="button" variant="outline" onClick={() => setShowFilters(!showFilters)}>
-              <Filter className="h-4 w-4 mr-2" />
-              Filtry
-            </Button>
-            <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "grid" | "map")}>
-              <TabsList>
-                <TabsTrigger value="grid">
-                  <Grid className="h-4 w-4 mr-1" /> Lista
-                </TabsTrigger>
-                <TabsTrigger value="map">
-                  <MapIcon className="h-4 w-4 mr-1" /> Mapa
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </form>
+          </div>
         </div>
 
-        {showFilters && (
-          <div className="mb-6 p-4 border rounded-lg bg-card">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold">Filtry wyszukiwania</h2>
-              <Button variant="ghost" size="sm" onClick={() => setShowFilters(false)}>
-                <X className="h-4 w-4" />
+        {/* Wyróżnione ogłoszenia */}
+        {featuredAds.length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold flex items-center">
+                <Award className="h-5 w-5 mr-2 text-amber-500" /> Wyróżnione ogłoszenia
+              </h2>
+              <Button variant="link" className="text-primary" onClick={() => router.push("/dodaj")}>
+                Dodaj swoje ogłoszenie <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div>
-                <label className="text-sm font-medium mb-1 block">Kategoria</label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wybierz kategorię" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {finalCategories.map((category) => (
-                      <SelectItem key={category.name} value={category.name}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Lokalizacja</label>
-                <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wybierz lokalizację" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {locations.map((location) => (
-                      <SelectItem key={location} value={location}>
-                        {location}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Sortuj według</label>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sortuj według" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Najnowsze</SelectItem>
-                    <SelectItem value="price_asc">Cena: rosnąco</SelectItem>
-                    <SelectItem value="price_desc">Cena: malejąco</SelectItem>
-                    <SelectItem value="popular">Najpopularniejsze</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="md:col-span-3">
-                <label className="text-sm font-medium mb-1 block">
-                  Zakres cenowy: {priceRange[0]} - {priceRange[1]} PLN
-                </label>
-                <Slider
-                  value={priceRange}
-                  min={0}
-                  max={1000000}
-                  step={1000}
-                  onValueChange={setPriceRange}
-                  className="mt-2"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>0 PLN</span>
-                  <span>1 000 000 PLN</span>
-                </div>
-              </div>
-              <div className="md:col-span-3">
-                <Button variant="outline" className="w-full" onClick={handleReset}>
-                  Resetuj filtry
-                </Button>
-              </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, index) => (
+                    <Skeleton key={index} className="h-48 w-full rounded-lg" />
+                  ))
+                : featuredAds.map((ad) => (
+                    <div key={ad.id} className="relative">
+                      <AdCard ad={ad} />
+                    </div>
+                  ))}
             </div>
           </div>
         )}
 
+        {/* Rozszerzone filtry */}
+        {showFilters && (
+          <div ref={filtersRef} className="mb-8 p-6 bg-muted/20 rounded-lg">
+            <h3 className="font-medium mb-4">Wybierz kategorię i lokalizację</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="text-sm font-medium mb-3">Kategorie</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {adCategories.map((cat) => (
+                    <Badge
+                      key={cat.id}
+                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${
+                        category === cat.name ? cat.color : "bg-muted hover:bg-muted/80"
+                      }`}
+                      onClick={() => handleCategoryChange(cat.name)}
+                    >
+                      <span>{cat.icon}</span> {cat.name}
+                    </Badge>
+                  ))}
+                </div>
+
+                {/* Podkategorie - pokazuj tylko jeśli wybrano kategorię */}
+                {showsub && subcategories.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium mb-3">Podkategorie dla {category}</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {subcategories.map((subcat) => (
+                        <Badge
+                          key={subcat.name}
+                          className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${
+                            subcategory === subcat.name
+                              ? "bg-primary text-white"
+                              : "bg-muted hover:bg-muted/80 text-foreground"
+                          }`}
+                          onClick={() => handleSubcategoryChange(subcat.name)}
+                        >
+                          <Tag className="h-3 w-3" /> {subcat.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {showfin && finalcategories.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium mb-3">Szczegółowe kategorie dla {subcategory}</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {finalcategories.map((subcat) => (
+                        <Badge
+                          key={subcat}
+                          className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${
+                            finalcategory === subcat
+                              ? "bg-primary text-white"
+                              : "bg-muted hover:bg-muted/80 text-foreground"
+                          }`}
+                          onClick={() => setFinalcategory(subcat)}
+                        >
+                          <TagsIcon className="h-3 w-3" /> {subcat}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <h4 className="text-sm font-medium mb-3">Lokalizacja</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {locations.slice(0, 10).map((loc) => (
+                    <Badge
+                      key={loc}
+                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${
+                        city === loc ? "bg-blue-100 text-blue-800" : "bg-muted hover:bg-muted/80"
+                      }`}
+                      onClick={() => handleCityChange(loc)}
+                    >
+                      <MapPin className="h-3 w-3" /> {loc}
+                    </Badge>
+                  ))}
+                </div>
+
+                {locations.length > 10 && (
+                  <Select onValueChange={(value) => handleCityChange(value)}>
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="Więcej lokalizacji..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locations.slice(10).map((loc) => (
+                        <SelectItem key={loc} value={loc}>
+                          {loc}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            </div>
+
+            {/* Submit button for filters */}
+            <div className="mt-6 flex justify-center">
+              <Button onClick={handleSubmit} className="px-8">
+                Szukaj ogłoszeń
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Recent ads section */}
+        <div className="mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold">Najnowsze ogłoszenia</h2>
+              {totalAds > 0 && (
+                <Badge variant="outline" className="text-muted-foreground">
+                  {totalAds} {totalAds === 1 ? "ogłoszenie" : totalAds < 5 ? "ogłoszenia" : "ogłoszeń"}
+                </Badge>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "grid" | "map")}>
+                <TabsList>
+                  <TabsTrigger value="grid">
+                    <Grid className="h-4 w-4 mr-1" /> Lista
+                  </TabsTrigger>
+                  <TabsTrigger value="map">
+                    <MapIcon className="h-4 w-4 mr-1" /> Mapa
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2"
+              >
+                <Filter className="h-4 w-4" />
+                Filtry
+              </Button>
+
+              <Select
+                value={sortBy}
+                onValueChange={(value) => {
+                  const params = new URLSearchParams(searchParams?.toString())
+                  params.set("sortBy", value)
+                  router.push(`/ogloszenia?${params.toString()}`)
+                }}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sortuj według" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Najnowsze</SelectItem>
+                  <SelectItem value="oldest">Najstarsze</SelectItem>
+                  <SelectItem value="price_asc">Cena: rosnąco</SelectItem>
+                  <SelectItem value="price_desc">Cena: malejąco</SelectItem>
+                  <SelectItem value="popular">Najpopularniejsze</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        {/* Widok ogłoszeń */}
         <Tabs value={viewMode} className="mt-6">
           <TabsContent value="grid" className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {ads.length > 0 ? (
-                ads.map((ad) => (
-                  <Link href={`/ogloszenia/${ad.id}`} key={ad.id}>
-                    <Card
-                      className={`hover:shadow-md overflow-hidden transition-all ${ad.promoted ? "border-primary/40" : "border-muted"}`}
-                    >
-                      <CardContent className="p-0">
-                        <div className="flex flex-col">
-                          {/* Zdjęcie produktu */}
-                          <div className="relative w-full h-48 overflow-hidden bg-muted">
-                            <Image
-                              src={ad.images[0] || "/placeholder.svg"}
-                              alt={ad.title}
-                              layout="fill"
-                              objectFit="cover"
-                            />
-                            {ad.promoted && (
-                              <Badge className="absolute top-2 left-2 z-10 bg-primary text-primary-foreground">
-                                Promowane
-                              </Badge>
-                            )}
-                          </div>
+            {isLoading && ads.length === 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <Skeleton key={index} className="h-48 w-full rounded-lg" />
+                ))}
+              </div>
+            ) : ads.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {ads.map((ad) => (
+                    <AdCard key={ad.id} ad={ad} />
+                  ))}
+                </div>
 
-                          {/* Informacje o produkcie */}
-                          <div className="flex-1 p-4">
-                            <div className="space-y-2">
-                              {/* Tytuł produktu */}
-                              <h3 className="font-medium text-lg line-clamp-2 hover:text-primary transition-colors">
-                                {ad.title}
-                              </h3>
+                {/* Przyciski paginacji */}
+                {hasMore && (
+                  <div className="flex justify-center mt-8">
+                    <Button onClick={loadMore} variant="outline" className="min-w-[200px]" disabled={isLoading}>
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Ładowanie...
+                        </>
+                      ) : (
+                        "Załaduj więcej ogłoszeń"
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-12 bg-muted/30 rounded-lg">
+                <Tag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">Brak ogłoszeń</h3>
+                <p className="text-muted-foreground">Nie znaleziono ogłoszeń spełniających podane kryteria.</p>
+                <Button className="mt-4" onClick={() => router.push("/dodaj-ogloszenie")}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Dodaj ogłoszenie
+                </Button>
+              </div>
+            )}
+          </TabsContent>
 
-                              {/* Kategoria */}
-                              <div className="flex flex-wrap gap-2">
-                                <Badge variant="secondary">{ad.category}</Badge>
-                                {ad.subcategory && <Badge variant="outline">{ad.subcategory}</Badge>}
-                              </div>
+          <TabsContent value="map" className="mt-0">
+            <div className="h-[500px] rounded-lg overflow-hidden">
+              <AdsMap ads={ads} isLoading={isLoading} center={{ lat: 52.2297, lng: 21.0122 }} />
+            </div>
 
-                              {/* Cena */}
-                              {ad.price && (
-                                <div className="font-bold text-xl text-primary">
-                                  {ad.price.toLocaleString()} {ad.currency || "PLN"}
-                                </div>
+            <div className="mt-6">
+              <h3 className="font-medium mb-4">Ogłoszenia w wybranym obszarze</h3>
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <Skeleton key={index} className="h-24 w-full rounded-lg" />
+                  ))}
+                </div>
+              ) : ads.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {ads.slice(0, 6).map((ad) => (
+                    <Card key={ad.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-shrink-0">
+                            <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center overflow-hidden">
+                              {ad.images && ad.images.length > 0 ? (
+                                <img
+                                  src={ad.images[0] || "/placeholder.svg"}
+                                  alt={ad.title}
+                                  className="w-12 h-12 object-cover"
+                                />
+                              ) : (
+                                <Tag className="h-6 w-6 text-muted-foreground" />
                               )}
-
-                              {/* Krótki opis */}
-                              <p className="text-muted-foreground text-sm line-clamp-2">{ad.description}</p>
-
-                              {/* Lokalizacja */}
-                              <div className="flex items-center gap-1 text-muted-foreground">
-                                <MapPin className="h-3 w-3" />
-                                <span className="text-sm">{ad.location}</span>
-                              </div>
-
-                              {/* Informacje o sprzedawcy i interakcjach */}
-                              <div className="flex justify-between items-center pt-2 mt-2 border-t border-muted">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-6 h-6 rounded-full overflow-hidden">
-                                    <Image
-                                      src={ad.author.avatar || "/placeholder.svg"}
-                                      alt={ad.author.name}
-                                      width={24}
-                                      height={24}
-                                    />
-                                  </div>
-                                  <span className="text-xs text-muted-foreground">{ad.author.name}</span>
-                                </div>
-
-                                <div className="flex items-center gap-3">
-                                  <div className="text-xs text-muted-foreground">
-                                    {formatRelativeTime(ad.createdAt)}
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                      <Heart className="h-3 w-3" />
-                                      <span className="text-xs">{ad.likes}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                      <Eye className="h-3 w-3" />
-                                      <span className="text-xs">{ad.views}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                      <MessageSquare className="h-3 w-3" />
-                                      <span className="text-xs">{ad.comments}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
                             </div>
                           </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium truncate">{ad.title}</h4>
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <MapPin className="h-3 w-3 mr-1" />
+                              <span className="truncate">{ad.location}</span>
+                            </div>
+                            <div className="mt-1 font-medium text-sm">
+                              {ad.price ? `${ad.price} zł` : "Cena do negocjacji"}
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" asChild>
+                            <a href={`/ogloszenia/${ad.id}`}>Szczegóły</a>
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
-                  </Link>
-                ))
+                  ))}
+                </div>
               ) : (
-                <div className="col-span-full text-center py-12">
-                  <Tag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">Nie znaleziono ogłoszeń</h3>
-                  <p className="text-muted-foreground mb-4">Spróbuj zmienić kryteria wyszukiwania</p>
-                  <Button onClick={handleReset}>Resetuj filtry</Button>
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>Brak ogłoszeń w wybranym obszarze</p>
                 </div>
               )}
             </div>
           </TabsContent>
-
-          <TabsContent value="map" className="mt-0">
-            <div className="h-[500px] rounded-lg overflow-hidden mb-6">
-              <AdsMap isLoading={isLoading} ads={ads} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {ads.slice(0, 4).map((ad) => (
-                <Link href={`/ogloszenia/${ad.id}`} key={ad.id}>
-                  <Card className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex gap-4">
-                        <div className="relative w-20 h-20 rounded-md overflow-hidden flex-shrink-0">
-                          <Image
-                            src={ad.images[0] || "/placeholder.svg"}
-                            alt={ad.title}
-                            layout="fill"
-                            objectFit="cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-sm line-clamp-1">{ad.title}</h3>
-                          <div className="flex items-center gap-1 text-muted-foreground text-xs">
-                            <MapPin className="h-3 w-3" />
-                            <span>{ad.location}</span>
-                          </div>
-                          <div className="font-bold text-primary">
-                            {ad.price?.toLocaleString()} {ad.currency}
-                          </div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span>{formatRelativeTime(ad.createdAt)}</span>
-                            <div className="flex items-center">
-                              <Eye className="h-3 w-3 mr-1" />
-                              {ad.views}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-
-            {ads.length > 4 && (
-              <div className="text-center mt-4">
-                <Button variant="outline">Zobacz więcej ogłoszeń</Button>
-              </div>
-            )}
-          </TabsContent>
         </Tabs>
 
-        <div className="mt-12 text-center">
-          <h2 className="text-2xl font-bold mb-4">Nie znalazłeś tego, czego szukasz?</h2>
-          <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Dodaj własne ogłoszenie i znajdź kupców na swoje produkty lub usługi. To proste i szybkie!
-          </p>
-          <Link href="/ogloszenia/dodaj">
-            <Button size="lg" className="bg-primary hover:bg-primary/90">
+        {/* Sekcja statystyk */}
+        <div className="mt-16 py-12 px-6 bg-muted/20 rounded-lg">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold mb-2">Dlaczego warto dodać ogłoszenie?</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Dołącz do tysięcy użytkowników, którzy już korzystają z naszego serwisu i znajdź kupców na swoje produkty.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="hover:shadow-lg hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <TrendingUp className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium mb-2">Szeroki zasięg</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Docieraj do tysięcy potencjalnych kupujących poszukujących Twoich produktów w Twojej okolicy.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <Star className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium mb-2">Łatwa sprzedaż</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Prosty proces dodawania ogłoszeń i kontaktu z kupującymi sprawia, że sprzedaż jest szybka i wygodna.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <Award className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium mb-2">Wyróżnij się</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Skorzystaj z opcji promowania, aby wyróżnić swoje ogłoszenie na tle konkurencji.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center mt-8">
+            <Button size="lg" onClick={() => router.push("/dodaj-ogloszenie")}>
+              <PlusCircle className="mr-2 h-4 w-4" />
               Dodaj ogłoszenie
             </Button>
-          </Link>
+          </div>
         </div>
       </div>
     </PageLayout>

@@ -18,16 +18,16 @@ export default function GlobalError({
     console.error("Wystąpił błąd:", error)
     const notify = async () => {
         try {
-          await fetch("/api/notify", {
+            await fetch("/api/notify", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               message: error?.message || "Brak wiadomości",
               stack: error?.stack || "Brak stack trace",
               digest: error?.digest || null,
-              before: document.referrer || null
+              before: document.referrer || window.location.href || window.location.pathname || window.location.search || navigator.userAgent,
             }),
-          })
+            })
         } catch (err) {
           console.error("Błąd podczas wysyłania informacji o błędzie:", err)
         }

@@ -9,7 +9,6 @@
     "lint": "next lint",
     "test-db": "ts-node scripts/test-db-connection.ts",
     "seed-db": "ts-node scripts/seed-database.ts",
-    "postbuild": "next-sitemap",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

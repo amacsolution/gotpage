@@ -14,13 +14,13 @@ export async function generateMetadata({ params }: PropsStrony, rodzic: Resolvin
     const { id: idWpisu } = await params
 
     // Pobierz wpis z bazy danych
-    const odpowiedz = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/news/${idWpisu}`)
+    const odpowiedz = await fetch(`https://gotpage.pl/api/news/${idWpisu}`)
 
     if (!odpowiedz.ok) {
-      if (odpowiedz.status === 404) {
-        throw new Error("Nie znaleziono wpisu")
+      return {
+        title: "Aktualności",
+        description: "Przeczytaj najnowsze aktualności na naszej platformie ogłoszeniowej",
       }
-      throw new Error("Nie udało się pobrać wpisu")
     }
 
     const wpis: NewsPostProps[] = await odpowiedz.json()

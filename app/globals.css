@@ -77,20 +77,6 @@
   cursor: grab;
 }
 
-/* #qr-code svg {
-  width: 300px !important;
-  height: 300px !important;
-  display: block !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  opacity: 1 !important;
-  color: #000 !important;
-}
-#qr-code svg * {
-  fill: #000 !important;
-  stroke: #000 !important;
-  opacity: 1 !important;
-} */
 .cursor-move:active {
   cursor: grabbing;
 }

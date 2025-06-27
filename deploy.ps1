@@ -11,15 +11,15 @@ $remotePort = 222
 $remotePath = "domains/gotpage.pl/public_html"
 
 # Commit i push do Gita (opcjonalnie)
-Write-Host "Wypychanie zmian do repozytorium Git..." -ForegroundColor Cyan
-git add .
-git commit -m "Automatyczny commit przed wdrożeniem"
-git push
+# Write-Host "Wypychanie zmian do repozytorium Git..." -ForegroundColor Cyan
+# git add .
+# git commit -m "Automatyczny commit przed wdrożeniem"
+# git push
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Nie udalo sie wypchnac zmian do Git! Przerwanie wdrazania." -ForegroundColor Red
-    exit $LASTEXITCODE
-}
+# if ($LASTEXITCODE -ne 0) {
+#     Write-Host "Nie udalo sie wypchnac zmian do Git! Przerwanie wdrazania." -ForegroundColor Red
+#     exit $LASTEXITCODE
+# }
 
 # Budowanie Next.js
 Write-Host "Budowanie aplikacji Next.js..." -ForegroundColor Cyan
