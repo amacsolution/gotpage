@@ -24,6 +24,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import slugify from "slugify"
+import { User } from "@/lib/auth"
 
 export interface AdCardProps {
   ad: {
@@ -51,9 +52,10 @@ export interface AdCardProps {
     comments: number
   }
   image?: string
+  logged?: User
 }
 
-export function AdCard({ ad, image }: AdCardProps) {
+export function AdCard({ ad, image, logged }: AdCardProps) {
   const [isAuthor, setIsAuthor] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -71,21 +73,23 @@ export function AdCard({ ad, image }: AdCardProps) {
   const rating = randomRating()
   const plImage = "/placeholder.svg"
 
+  if (logged) setIsAuthor(logged.id === ad.author.id)
+
   // Sprawdzenie, czy zalogowany użytkownik jest autorem ogłoszenia
-  useEffect(() => {
-    const getUserData = async () => {
-      const userData = await fetch("/api/auth/me").then((res) => res.json())
-      return userData
-    }
-    const checkAuthor = async () => {
-      try {
-        const user = await getUserData()
-        setIsAuthor(user.id === ad.author.id)
-      } catch (error) {
-      }
-    }
-    checkAuthor()
-  }, [ad.author.id])
+  // useEffect(() => {
+  //   const getUserData = async () => {
+  //     const userData = await fetch("/api/auth/me").then((res) => res.json())
+  //     return userData
+  //   }
+  //   const checkAuthor = async () => {
+  //     try {
+  //       const user = await getUserData()
+  //       setIsAuthor(user.id === ad.author.id)
+  //     } catch (error) {
+  //     }
+  //   }
+  //   checkAuthor()
+  // }, [ad.author.id])
 
 
 
@@ -179,19 +183,19 @@ export function AdCard({ ad, image }: AdCardProps) {
                     </h3>
 
                     {/* Oceny w stylu Amazona */}
-                    { ad.comments_count > 0 && (
-                    <div className="flex items-center gap-1">
-                      <div className="flex text-yellow-500">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className="h-4 w-4"
-                            fill={star <= Math.floor(Number(rating)) ? "currentColor" : "none"}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-xs text-muted-foreground">{ad.comments_count}</span>
-                    </div>)}
+                    {ad.comments_count > 0 && (
+                      <div className="flex items-center gap-1">
+                        <div className="flex text-yellow-500">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className="h-4 w-4"
+                              fill={star <= Math.floor(Number(rating)) ? "currentColor" : "none"}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-muted-foreground">{ad.comments_count}</span>
+                      </div>)}
 
                     {/* Kategoria */}
                     <div className="flex flex-wrap gap-2">

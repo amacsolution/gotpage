@@ -16,7 +16,7 @@ const CompaniesFeedLimit = () => {
       setIsLoading(true)
 
       try {
-        
+
         // Fetch featured companies
         const res = await fetch("/api/companies?promoted=true&limit=4")
         if (res.ok) {
@@ -40,28 +40,9 @@ const CompaniesFeedLimit = () => {
     fetchData()
   }, [toast])
 
-  if(isLoading && companies.length === 0) {
+  if (isLoading && companies.length === 0) {
     // Loading state when no companies are available
-    return(
-      <div className="container py-8">
-    <div className="flex justify-between items-center mb-6">
-      <h2 className="text-2xl font-bold">Polecane firmy</h2>
-      <Link href="/firmy" className="text-primary hover:underline flex items-center">
-        Zobacz wszystkie <ArrowRight className="ml-1 h-4 w-4" />
-      </Link>
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {[1,2,3,4].map((company) => (
-        <div key={company} className="bg-muted h-25 w-35 animate-pulse rounded-lg" />
-      ))}
-    </div>
-  </div>
-    )
-  }
-    
-      
-
-  return (
+    return (
       <div className="container py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Polecane firmy</h2>
@@ -70,13 +51,32 @@ const CompaniesFeedLimit = () => {
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {companies.map((company) => (
-            <CompanyCard key={company.id} company={company} />
+          {[1, 2, 3, 4].map((company) => (
+            <div key={company} className="bg-muted h-25 w-35 animate-pulse rounded-lg" />
           ))}
         </div>
       </div>
     )
-//   )}
+  }
+
+
+
+  return (
+    <div className="container py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Polecane firmy</h2>
+        <Link href="/firmy" className="text-primary hover:underline flex items-center">
+          Zobacz wszystkie <ArrowRight className="ml-1 h-4 w-4" />
+        </Link>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {companies.map((company) => (
+          <CompanyCard key={company.id} company={company} />
+        ))}
+      </div>
+    </div>
+  )
+  //   )}
 }
 
 export default CompaniesFeedLimit

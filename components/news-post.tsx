@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { formatDistanceToNow } from "date-fns"
@@ -41,7 +41,7 @@ import {
 } from "@/components/ui/dialog"
 import { FollowButton } from "./follow-button"
 import { ImageGrid } from "./image-grid"
-import { cookies } from "next/headers"
+import { User } from "@/lib/auth"
 
 export interface NewsPostProps {
   post: {
@@ -70,6 +70,7 @@ export interface NewsPostProps {
       verified: boolean
     }
   }
+  logged?: User
   onVote?: (postId: string, optionId: string) => Promise<void>
   onLike?: (postId: string) => Promise<void>
   onComment?: (postId: string, content: string) => Promise<void>
@@ -114,7 +115,7 @@ export const formatTextWithBoldLinksAndHashtags = (text: string) => {
   })
 }
 
-export function NewsPost({ post }: NewsPostProps) {
+export function NewsPost({ post, logged }: NewsPostProps) {
   const [isLiked, setIsLiked] = useState(post?.isLiked || false)
   const [likesCount, setLikesCount] = useState(post.likes)
   const [isLoading, setIsLoading] = useState(false)
@@ -126,26 +127,21 @@ export function NewsPost({ post }: NewsPostProps) {
   const [isAuthor, setIsAuthor] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const router = useRouter()
-  const [loggedUser, setLogged] = useState(user)
+  const loggedUser = logged
+  const [isCompany, setIsCmpany] = useState(false)
+  const id = post.author.id
 
+  async function checkIsCompany(id: string) {
+    const res = await fetch(`/api/is/company/${id}`)
+    const data = await res.json()
+    setIsCmpany(data)
+    return
+  }
+
+  checkIsCompany(id)
   // Przygotuj tablicę zdjęć - jeśli jest imageUrls, użyj jej, w przeciwnym razie użyj pojedynczego imageUrl
   const images = post.imageUrls || (post.imageUrl ? [post.imageUrl] : [])
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await fetch("/api/auth/me")
-        if (!response.ok) {
-          return
-        }
-        const data = await response.json()
-        setLogged(data.user)
-      } catch (error) {
-        console.error("Error fetching user:", error)
-      }
-    }
-  fetchUser()
-  })
 
   const handleLike = async () => {
     try {
@@ -185,12 +181,12 @@ export function NewsPost({ post }: NewsPostProps) {
         await navigator.share({
           title: `Post od ${post.author.name} na Gotpage`,
           text: post.content.substring(0, 100) + (post.content.length > 100 ? "..." : ""),
-          url: `${window.location.origin}/aktualnosci/post/${post.id}`,
+          url: `https://gotpage.pl/aktualnosci/post/${post.id}`,
         })
-      } catch (error) {}
+      } catch (error) { }
     } else {
       // Fallback dla przeglądarek bez API Web Share
-      const url = `${window.location.origin}/aktualnosci/post/${post.id}`
+      const url = `https://gotpage.pl/aktualnosci/post/${post.id}`
       navigator.clipboard.writeText(url)
       toast({
         title: "Link skopiowany",
@@ -327,7 +323,7 @@ export function NewsPost({ post }: NewsPostProps) {
         <meta itemProp="datePublished" content={new Date(post.createdAt).toISOString()} />
         <CardContent className="pt-6">
           <div className="flex items-start gap-3 mb-3">
-            <Link href={`/profil/${post.author.id}`}>
+            <Link href={isCompany ? `/firma/${post.author.id}` : `/profil/${post.author.id}`}>
               <Avatar className="h-10 w-10">
                 <AvatarImage src={post.author.avatar || "/placeholder.svg"} alt={post.author.name} />
                 <AvatarFallback>{post.author.name.substring(0, 2).toUpperCase()}</AvatarFallback>
@@ -452,8 +448,8 @@ export function NewsPost({ post }: NewsPostProps) {
                 {pollData.totalVotes === 1
                   ? "głos"
                   : pollData.totalVotes % 10 >= 2 &&
-                      pollData.totalVotes % 10 <= 4 &&
-                      (pollData.totalVotes % 100 < 10 || pollData.totalVotes % 100 >= 20)
+                    pollData.totalVotes % 10 <= 4 &&
+                    (pollData.totalVotes % 100 < 10 || pollData.totalVotes % 100 >= 20)
                     ? "głosy"
                     : "głosów"}
               </div>
@@ -499,12 +495,12 @@ export function NewsPost({ post }: NewsPostProps) {
             user={
               user
                 ? {
-                    id: user.id,
-                    name: user.name,
-                    avatar:
-                      user.avatar ||
-                      `/placeholder.svg?height=40&width=40&text=${user.name.substring(0, 2).toUpperCase()}`,
-                  }
+                  id: user.id,
+                  name: user.name,
+                  avatar:
+                    user.avatar ||
+                    `/placeholder.svg?height=40&width=40&text=${user.name.substring(0, 2).toUpperCase()}`,
+                }
                 : null
             }
           />

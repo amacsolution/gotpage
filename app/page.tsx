@@ -4,7 +4,6 @@ import { AdFeed } from "@/components/ad-feed"
 import { PageLayout } from "@/components/page-layout"
 import { HeroAnimation } from "@/components/hero-animations"
 import {
-  MapPin,
   Building,
   Car,
   HomeIcon,
@@ -14,17 +13,37 @@ import {
   Scissors,
   ArrowRight,
   Rocket,
+  TreePine,
+  Gamepad2,
+  Baby,
+  HeartPulse,
+  PawPrint,
+  Ticket,
+  Factory,
+  Film,
+  Brush,
+  PlaneTakeoff,
+  Tv,
+  Shirt
 } from "lucide-react"
 import type { Metadata } from "next"
 import CompaniesFeedLimit from "@/components/companies-feed"
 import { UserProfiles } from "@/components/user-profiles"
 import { Suspense } from "react"
 import { SiteConfig } from "@/config/site"
+import {
+  motion,
+  AnimatePresence,
+  MotionConfig,
+  useAnimation,
+  useInView,
+} from "framer-motion";
+import CategoryGrid from "@/components/main/categories"
 
 // Dodajemy metadane dla SEO
 export const metadata: Metadata = {
   title: {
-    default : `${SiteConfig.name} - Nowoczesna platforma ogłoszeniowa | Znajdź lub sprzedaj`,
+    default: `${SiteConfig.name} - Nowoczesna platforma ogłoszeniowa | Znajdź lub sprzedaj`,
     template: "%s | Gotpage.pl"
   },
   description:
@@ -81,67 +100,142 @@ export const metadata: Metadata = {
   },
 }
 
-// Kategorie w stylu OLX
-const categories = [
+
+export const categories = [
   {
     name: "Motoryzacja",
     icon: <Car className="h-6 w-6" />,
-    href: "/ogloszenia?category=Motoryzacja",
+    href: "/ogloszenia/szukaj/Motoryzacja",
     color: "bg-blue-100 dark:bg-blue-900",
     textColor: "text-blue-500 dark:text-blue-300",
   },
   {
-    name: "Nieruchomości",
-    icon: <HomeIcon className="h-6 w-6" />,
-    href: "/ogloszenia?category=Nieruchomości",
-    color: "bg-green-100 dark:bg-green-900",
-    textColor: "text-green-500 dark:text-green-300",
+    name: "RTV/AGD",
+    icon: <Tv className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/RTV%2FAGD",
+    color: "bg-teal-100 dark:bg-teal-900",
+    textColor: "text-teal-500 dark:text-teal-300",
   },
   {
     name: "Elektronika",
     icon: <Smartphone className="h-6 w-6" />,
-    href: "/ogloszenia?category=Elektronika",
+    href: "/ogloszenia/szukaj/Elektronika",
     color: "bg-purple-100 dark:bg-purple-900",
     textColor: "text-purple-500 dark:text-purple-300",
   },
   {
-    name: "Praca",
-    icon: <Briefcase className="h-6 w-6" />,
-    href: "/ogloszenia?category=Praca",
-    color: "bg-yellow-100 dark:bg-yellow-900",
-    textColor: "text-yellow-500 dark:text-yellow-300",
-  },
-  {
     name: "Moda",
-    icon: <ShoppingBag className="h-6 w-6" />,
-    href: "/ogloszenia?category=Moda",
+    icon: <Shirt className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/Moda",
     color: "bg-pink-100 dark:bg-pink-900",
     textColor: "text-pink-500 dark:text-pink-300",
   },
   {
-    name: "Usługi",
-    icon: <Scissors className="h-6 w-6" />,
-    href: "/ogloszenia?category=Usługi",
+    name: "Dom i ogród",
+    icon: <TreePine className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/Dom%20i%20ogr%C3%B3d",
+    color: "bg-green-100 dark:bg-green-900",
+    textColor: "text-green-500 dark:text-green-300",
+  },
+  {
+    name: "Nieruchomości",
+    icon: <HomeIcon className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/Nieruchomo%C5%9Bci",
+    color: "bg-lime-100 dark:bg-lime-900",
+    textColor: "text-lime-500 dark:text-lime-300",
+  },
+  {
+    name: "Dla dzieci",
+    icon: <Baby className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/Dla%20dzieci",
+    color: "bg-yellow-100 dark:bg-yellow-900",
+    textColor: "text-yellow-500 dark:text-yellow-300",
+  },
+  {
+    name: "Zdrowie i Uroda",
+    icon: <HeartPulse className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/Zdrowie%20i%20Uroda",
+    color: "bg-rose-100 dark:bg-rose-900",
+    textColor: "text-rose-500 dark:text-rose-300",
+  },
+  {
+    name: "Zwierzęta i Akcesoria",
+    icon: <PawPrint className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/Zwierz%C4%99ta%20i%20Akcesoria",
     color: "bg-orange-100 dark:bg-orange-900",
     textColor: "text-orange-500 dark:text-orange-300",
   },
   {
-    name: "Firmy",
-    icon: <Building className="h-6 w-6" />,
-    href: "/firmy",
+    name: "Praca",
+    icon: <Briefcase className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/Praca",
     color: "bg-indigo-100 dark:bg-indigo-900",
     textColor: "text-indigo-500 dark:text-indigo-300",
   },
   {
-    name: "Lokalne",
-    icon: <MapPin className="h-6 w-6" />,
-    href: "/ogloszenia?local=true",
+    name: "Sport / Turystyka",
+    icon: <Gamepad2 className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/Sport%2FTurystyka",
+    color: "bg-cyan-100 dark:bg-cyan-900",
+    textColor: "text-cyan-500 dark:text-cyan-300",
+  },
+  {
+    name: "Bilety / e-Bilety",
+    icon: <Ticket className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/Bilety%2Fe-Bilety",
     color: "bg-red-100 dark:bg-red-900",
     textColor: "text-red-500 dark:text-red-300",
   },
-]
+  {
+    name: "Usługi",
+    icon: <Scissors className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/Us%C5%82ugi",
+    color: "bg-fuchsia-100 dark:bg-fuchsia-900",
+    textColor: "text-fuchsia-500 dark:text-fuchsia-300",
+  },
+  {
+    name: "Przemysł",
+    icon: <Factory className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/Przemys%C5%82",
+    color: "bg-slate-100 dark:bg-slate-900",
+    textColor: "text-slate-500 dark:text-slate-300",
+  },
+  {
+    name: "Rozrywka",
+    icon: <Film className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/Rozrywka",
+    color: "bg-violet-100 dark:bg-violet-900",
+    textColor: "text-violet-500 dark:text-violet-300",
+  },
+  {
+    name: "Antyki / Kolekcje / Sztuka",
+    icon: <Brush className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/Antyki%2FKolekcje%2FSztuka",
+    color: "bg-amber-100 dark:bg-amber-900",
+    textColor: "text-amber-500 dark:text-amber-300",
+  },
+  {
+    name: "Wycieczki / Podróże",
+    icon: <PlaneTakeoff className="h-6 w-6" />,
+    href: "/ogloszenia/szukaj/Wycieczki%2FPodr%C3%B3%C5%BCe",
+    color: "bg-sky-100 dark:bg-sky-900",
+    textColor: "text-sky-500 dark:text-sky-300",
+  }
+];
 
-export default function HomePage() {
+export default async function HomePage() {
+
+
+  const getUserData = async () => {
+    try {
+      const userData = await fetch("/api/auth/me").then((res) => res.json())
+      return userData
+    } catch (error) {
+      return null
+    }
+  }
+  const loggedUser = await getUserData()
+
   return (
     <PageLayout>
       {/* Hero Section z danymi strukturalnymi dla SEO */}
@@ -161,10 +255,10 @@ export default function HomePage() {
             </p>
           </div>
           <div className="flex gap-4 z-10 flex-wrap">
-            <Link href="/ogloszenia/dodaj" aria-label="Dodaj nowe ogłoszenie">
+            <Link className="hover:-translate-y-2" href="/ogloszenia/dodaj" aria-label="Dodaj nowe ogłoszenie">
               <Button size="lg">Dodaj ogłoszenie</Button>
             </Link>
-            <Link href="/ogloszenia" aria-label="Przeglądaj dostępne ogłoszenia">
+            <Link className="hover:-translate-y-2" href="/ogloszenia" aria-label="Przeglądaj dostępne ogłoszenia">
               <Button variant="outline" size="lg">
                 Przeglądaj ogłoszenia
               </Button>
@@ -174,29 +268,65 @@ export default function HomePage() {
       </section>
 
       {/* Kategorie z danymi strukturalnymi */}
-      <section className="container py-8" itemScope itemType="https://schema.org/ItemList">
-        <h2 className="mb-6 text-2xl font-bold" itemProp="name">
-          Kategorie
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
+      <h2 className="mt-6 text-4xl font-bold text-center " itemProp="name">
+        Kategorie
+      </h2>
+      <section
+        className="w-full overflow-x-auto py-8"
+        itemScope
+        itemType="https://schema.org/ItemList"
+      >
+        <CategoryGrid categories={categories} />
+        {/* <div
+          className="grid grid-cols-9 grid-rows-2 mx-auto align-top"
+          style={{ width: "1200px", minWidth: "1200px" }}
+        >
           {categories.map((category, index) => (
-            <Link
-              key={category.name}
-              href={category.href}
-              className="flex flex-col items-center justify-center p-4 rounded-lg transition-all hover:scale-105"
-              itemProp="itemListElement"
-              itemScope
-              itemType="https://schema.org/ListItem"
-            >
-              <meta itemProp="position" content={`${index + 1}`} />
-              <div className={`p-4 rounded-full ${category.color} ${category.textColor} mb-2`}>{category.icon}</div>
-              <span className="text-sm font-medium" itemProp="name">
-                {category.name}
-              </span>
-            </Link>
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut", delay: index * 0.2 }}
+              whileHover={{ scale: 1.2, animationDuration: 0.1 }}>
+              <Link
+                key={category.name}
+                href={category.href}
+                className="flex flex-col items-center p-4 rounded-lg transition-all hover:scale-105 hover:-translate-y-2 w-28"
+                itemProp="itemListElement"
+                itemScope
+                itemType="https://schema.org/ListItem"
+              >
+                <meta itemProp="position" content={`${index + 1}`} />
+                <div
+                  className={`p-4 rounded-full ${category.color} ${category.textColor} mb-2`}
+                >
+                  {category.icon}
+                </div>
+                <span className="text-sm font-medium text-center" itemProp="name">
+                  {category.name}
+                </span>
+              </Link>
+            </motion.div>
           ))}
-        </div>
+        </div> */}
+
       </section>
+
+
+      {/* Najnowsze ogłoszenia z danymi strukturalnymi */}
+      <section className="container py-8" itemScope itemType="https://schema.org/ItemList">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold" itemProp="name">
+            Najnowsze ogłoszenia
+          </h2>
+          <Link href="/ogloszenia" className="text-primary hover:underline flex items-center">
+            Zobacz wszystkie <ArrowRight className="ml-1 h-4 w-4" />
+          </Link>
+        </div>
+        <Suspense fallback={<div className="text-center py-10">Ładowanie ogłoszeń...</div>}>
+          <AdFeed logged={loggedUser} />
+        </Suspense>
+      </section>
+
 
       {/* Sekcja promocji */}
       <section className="container py-8 bg-muted/30 rounded-lg">
@@ -250,21 +380,6 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
-
-      {/* Najnowsze ogłoszenia z danymi strukturalnymi */}
-      <section className="container py-8" itemScope itemType="https://schema.org/ItemList">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold" itemProp="name">
-            Najnowsze ogłoszenia
-          </h2>
-          <Link href="/ogloszenia" className="text-primary hover:underline flex items-center">
-            Zobacz wszystkie <ArrowRight className="ml-1 h-4 w-4" />
-          </Link>
-        </div>
-        <Suspense fallback={<div className="text-center py-10">Ładowanie ogłoszeń...</div>}>
-          <AdFeed />
-        </Suspense>
       </section>
 
       {/* Sekcja firm */}

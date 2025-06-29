@@ -2,7 +2,7 @@ import nodemailer from "nodemailer"
 import { render } from "@react-email/render"
 import type { ReactElement } from "react"
 import { emailConfig } from "@/emails/config"
-import { db, query } from "@/lib/db"
+import { query } from "@/lib/db"
 
 interface SendEmailOptions {
   to: string | string[]
@@ -108,7 +108,7 @@ export class EmailService {
     try {
 
       // Zapisz log do bazy danych
-      const result = await query(
+      await query(
         "INSERT INTO email_logs (email_to, subject, template_type, status, error_message, created_at) VALUES (?, ?, ?, ?, ?, NOW())",
         [to, subject, templateType, status, errorMessage || null],
       ) as { rows?: { insertId: number } }

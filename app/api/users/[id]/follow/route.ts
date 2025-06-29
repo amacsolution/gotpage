@@ -1,6 +1,6 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { db, query } from "@/lib/db"
-import { auth, authOptions } from "@/lib/auth"
+import { type NextRequest, NextResponse } from "next/server";
+import { query } from "@/lib/db";
+import { auth } from "@/lib/auth";
 
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { params } = await context;
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       const alreadyFollowing = await query("SELECT * FROM user_follows WHERE follower_id = ? AND target_id = ?", [
         user.id,
         targetUserId,
-      ])  as { follower_id: string; target_id: string }[]
+      ]) as { follower_id: string; target_id: string }[]
 
       if (alreadyFollowing.length > 0) {
         return NextResponse.json({ message: "Już obserwujesz tego użytkownika" }, { status: 200 })

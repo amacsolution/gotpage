@@ -14,7 +14,7 @@ import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Share2, Flag, MapPin, Phone, Mail, Calendar, Clock, ArrowLeft, Eye, ShieldCheck, SlashIcon, Edit, Trash2 } from "lucide-react"
+import { Share2, Flag, MapPin, Phone, Mail, Calendar, Clock, Eye, ShieldCheck, Edit, Trash2 } from "lucide-react"
 import { PageLayout } from "@/components/page-layout"
 import { LikeButton } from "@/components/like-button"
 import { useToast } from "@/hooks/use-toast"
@@ -24,7 +24,6 @@ import QrButton from "@/components/qr/qr-button"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@radix-ui/react-dialog"
 import { DialogFooter, DialogHeader } from "@/components/ui/dialog"
-import slugify from "slugify"
 // If you get an error like "slugify is not a function", use the following instead:
 // import * as slugify from "slugify";
 
@@ -46,11 +45,12 @@ export default function AdDetailsClient({ id }: { id: string }) {
   const { toast } = useToast()
   const router = useRouter();
 
+  const currentUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
+
 
   const handleMessage = async (userId: number) => {
     try {
       // Check if user is logged in
-      const currentUser = localStorage.getItem("userData")
       if (!currentUser) {
         toast({
           title: "Wymagane logowanie",
@@ -95,11 +95,11 @@ export default function AdDetailsClient({ id }: { id: string }) {
     const fetchAd = async () => {
       setIsLoading(true)
       const getUserData = async () => {
-        const userData = localStorage.getItem("userData")
+        const userData = currentUser
         const user = userData ? JSON.parse(userData) : false
         return user
       }
-      try {      
+      try {
         const response = await fetch(`/api/ogloszenia/${id}`)
         const data = await response.json()
         if (data.error) {
@@ -110,9 +110,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
           setIsAuthor(user.id === data.author.id)
         }
         setSanitizedHtml(DOMPurify.sanitize(data.description || ""))
-        
-        console.log(slug)
-        setAd(data)       
+        setAd(data)
       } catch (error) {
         console.error("Błąd podczas pobierania ogłoszenia:", error)
         toast({

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { auth, authOptions } from "@/lib/auth"
+import { auth } from "@/lib/auth"
 import { query } from "@/lib/db"
 
 export async function GET(request: Request) {
@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const session = await auth()
 
     if (!session?.id) {
-        return NextResponse.json({ success: false }, { status: 401 })
+      return NextResponse.json({ success: false }, { status: 401 })
     }
 
     const userId = session.id
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     }
 
     // Search for users by name or email
-    const users  = await query(
+    const users = await query(
       `
       SELECT id, name, email, avatar
       FROM users

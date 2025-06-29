@@ -27,7 +27,6 @@ interface Notification {
 
 export function NotificationsPanel() {
   const [notifications, setNotifications] = useState<Notification[]>([])
-  const [counting, setCounting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false)
   const { toast } = useToast()
@@ -51,7 +50,7 @@ export function NotificationsPanel() {
     } catch (error) {
       toast({
         title: "Błąd",
-        description: "Nie udało się pobrać powiadomień",
+        description: "Nie udało się pobrać powiadomień" + error,
         variant: "destructive",
       })
     } finally {
@@ -189,9 +188,8 @@ export function NotificationsPanel() {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-3 rounded-lg hover:bg-muted transition-colors relative ${
-                  !notification.isRead ? "bg-muted/50" : ""
-                }`}
+                className={`p-3 rounded-lg hover:bg-muted transition-colors relative ${!notification.isRead ? "bg-muted/50" : ""
+                  }`}
               >
                 <div className="flex justify-between items-start">
                   <h4 className="text-sm font-medium">{notification.title}</h4>

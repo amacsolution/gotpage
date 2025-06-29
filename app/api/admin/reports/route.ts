@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { db, query } from "@/lib/db"
+import { query } from "@/lib/db"
 
 // Funkcja pomocnicza do sprawdzania uwierzytelnienia administratora
 async function isAdmin(request: NextRequest) {
@@ -59,11 +59,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Dodaj sortowanie i paginację
-    fquery += " ORDER BY r.created_at DESC LIMIT ? OFFSET ?", [limit, offset]  
+    fquery += " ORDER BY r.created_at DESC LIMIT ? OFFSET ?", [limit, offset]
     queryParams.push(limit, offset)
 
     // Wykonaj zapytanie
-    const [reports] = await query(fquery, queryParams)   as any[]
+    const [reports] = await query(fquery, queryParams) as any[]
 
     type Reports = {
       id: number,
@@ -78,7 +78,8 @@ export async function GET(request: NextRequest) {
     type User = {
       id: number,
       username: string,
-      email: string,}
+      email: string,
+    }
 
     type Ad = {
       id: number,
@@ -86,9 +87,9 @@ export async function GET(request: NextRequest) {
     }
 
     type Comment = {
-        id: number,
-        content: string,
-        title: string,
+      id: number,
+      content: string,
+      title: string,
     }
 
 
@@ -106,7 +107,7 @@ export async function GET(request: NextRequest) {
           const ad = await query("SELECT title FROM ads WHERE id = ?", [report.targetId]) as Ad[]
           targetTitle = ad[0].title || `Ogłoszenie #${report.targetId}`
 
-        } 
+        }
         else if (report.type === "ad_comment") {
           const comment = await query(
             `SELECT c.content, a.title FROM ad_comments c JOIN ads a ON c.ad_id = a.id WHERE c.id = ?`
@@ -114,14 +115,14 @@ export async function GET(request: NextRequest) {
           ) as Comment[]
           targetTitle = comment[0] ? `Komentarz do ogłoszenia "${comment[0].title}"` : `Komentarz #${report.targetId}`
 
-        } 
+        }
         else if (report.type === "news_comment") {
           const comment = await query(
             `SELECT c.content as news_comment_content, a.content as post_content FROM news_comments c JOIN news_posts a ON c.post_id = a.id WHERE c.id = ?`
-            [report.targetId] )  as Comment[]
-            targetTitle = comment[0] ? `Komentarz do wpisu "${comment[0].title}"` : `Wpis #${report.targetId}`
+            [report.targetId]) as Comment[]
+          targetTitle = comment[0] ? `Komentarz do wpisu "${comment[0].title}"` : `Wpis #${report.targetId}`
 
-        } 
+        }
         else if (report.type === "user") {
           const user = await query("SELECT name FROM users WHERE id = ?", [report.targetId]) as User[]
           targetTitle = user[0]?.username || `Użytkownik #${report.targetId}`
@@ -162,8 +163,8 @@ export async function PATCH(request: NextRequest) {
     const validStatuses = ["pending", "reviewed", "resolved", "rejected"]
 
     if (!validStatuses.includes(status)) {
-      return NextResponse.json({ error: "Nieprawidłowy status" + status }, { status: 400 }, )
-      
+      return NextResponse.json({ error: "Nieprawidłowy status" + status }, { status: 400 },)
+
     }
 
     // Aktualizuj status zgłoszenia

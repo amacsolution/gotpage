@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { db, query } from "@/lib/db"
+import { query } from "@/lib/db"
 import crypto from "crypto"
 import { sendPasswordResetEmail } from "@/lib/email-helpers"
 import { z } from "zod"
@@ -22,11 +22,11 @@ export async function POST(request: Request) {
     const { email } = result.data
 
     // Sprawdź, czy użytkownik istnieje
-    const userResult = await query("SELECT id, name FROM users WHERE email = ?", [email]) as { id: string,  name: string }[]
+    const userResult = await query("SELECT id, name FROM users WHERE email = ?", [email]) as { id: string, name: string }[]
 
     // Nawet jeśli użytkownik nie istnieje, nie informujemy o tym (ze względów bezpieczeństwa)
     // Zamiast tego, zawsze zwracamy sukces, aby zapobiec atakom polegającym na sprawdzaniu, czy email istnieje
-    if (!userResult|| userResult.length === 0) {
+    if (!userResult || userResult.length === 0) {
       // return NextResponse.json({
       //   message: "Jeśli podany adres email istnieje w naszej bazie, wyślemy na niego link do resetowania hasła.",
       // })

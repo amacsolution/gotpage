@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef, useCallback, use } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { v4 as uuidv4 } from "uuid"
 import { MessagesLayout, type Conversation, type Message } from "@/components/chat/messages-layout"
@@ -99,9 +99,8 @@ export default function MessagesPage() {
     // Funkcja do pobierania nowych wiadomości
     const pollNewMessages = async () => {
       try {
-        const url = `/api/messages/conversations/${activeConversation}${
-          lastMessageTimestampRef.current ? `?after=${encodeURIComponent(lastMessageTimestampRef.current)}` : ""
-        }`
+        const url = `/api/messages/conversations/${activeConversation}${lastMessageTimestampRef.current ? `?after=${encodeURIComponent(lastMessageTimestampRef.current)}` : ""
+          }`
 
         const response = await fetch(url)
         if (!response.ok) return
@@ -162,7 +161,7 @@ export default function MessagesPage() {
             console.error("Error marking as read:", error),
           )
         }
- 
+
         // Odśwież listę konwersacji
         fetchConversations()
       } else {
@@ -319,12 +318,12 @@ export default function MessagesPage() {
         body: JSON.stringify({ userId }),
       })
 
-if (response.ok) {
-  const data = await response.json()
-  setActiveConversation(data.conversationId)
-  setIsSearching(false)
-  fetchConversations()
-}
+      if (response.ok) {
+        const data = await response.json()
+        setActiveConversation(data.conversationId)
+        setIsSearching(false)
+        fetchConversations()
+      }
     } catch (error) {
       console.error("Error creating conversation:", error)
     }

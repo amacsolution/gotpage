@@ -39,6 +39,8 @@ export default function CompanyCityPageClient() {
   const [searchQuery, setSearchQuery] = useState<string>("")
   const { toast } = useToast()
 
+  const loggedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
+
   // Parse URL parameters
   useEffect(() => {
     const slug = (params?.slug as string[]) || []
@@ -282,7 +284,7 @@ export default function CompanyCityPageClient() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {companies.map((company) => (
-                    <CompanyCard key={company.id} company={company} />
+                    <CompanyCard key={company.id} company={company} logged={loggedUser} />
                   ))}
                 </div>
 
@@ -374,7 +376,7 @@ export default function CompanyCityPageClient() {
             )}
           </TabsContent>
         </Tabs>
-                {/* Statistics section */}
+        {/* Statistics section */}
         <div className="mt-16 py-12 px-6 bg-muted/20 rounded-lg">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold mb-2">Dlaczego warto dołączyć do katalogu?</h2>

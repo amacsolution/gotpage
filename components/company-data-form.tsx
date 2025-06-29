@@ -13,11 +13,11 @@ import { Loader2, Plus, Trash2 } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
 
 // Define a service schema
-const serviceSchema = z.object({
-  name: z.string().min(1, { message: "Nazwa usługi jest wymagana" }),
-  description: z.string().optional(),
-  price: z.string().optional(),
-})
+// const serviceSchema = z.object({
+//   name: z.string().min(1, { message: "Nazwa usługi jest wymagana" }),
+//   description: z.string().optional(),
+//   price: z.string().optional(),
+// })
 
 const companyFormSchema = z.object({
   nip: z

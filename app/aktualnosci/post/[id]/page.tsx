@@ -11,31 +11,34 @@ type PropsStrony = {
 export async function generateMetadata({ params }: PropsStrony, rodzic: ResolvingMetadata): Promise<Metadata> {
   // Pobierz dane wpisu
   try {
-    const { id: idWpisu } = await params
+    const { id } = await params
 
     // Pobierz wpis z bazy danych
-    const odpowiedz = await fetch(`https://gotpage.pl/api/news/${idWpisu}`)
+    if (!id) return {
+      title: "Aktualności",
+      description: "Przeczytaj najnowsze aktualności na naszej platformie ogłoszeniowej | Gotpage",
+    }
+    const res = await fetch(`https://gotpage.pl/api/news/${id}`)
 
-    if (!odpowiedz.ok) {
+    if (!res.ok) {
       return {
         title: "Aktualności",
-        description: "Przeczytaj najnowsze aktualności na naszej platformie ogłoszeniowej",
+        description: "Przeczytaj najnowsze aktualności na naszej platformie ogłoszeniowej | Gotpage",
       }
     }
-
-    const wpis: NewsPostProps[] = await odpowiedz.json()
-    const daneWpisu = wpis[0]
+    const wpis = await res.json()
+    const daneWpisu = wpis
 
     // Utwórz czysty fragment treści
-    const fragment = daneWpisu.post.content
-      ? daneWpisu.post.content.substring(0, 160).replace(/\n/g, " ") +
-      (daneWpisu.post.content.length > 160 ? "..." : "")
-      : "Przeczytaj najnowszy wpis na naszej platformie ogłoszeniowej"
+    const fragment = daneWpisu?.content
+      ? daneWpisu.content.substring(0, 160).replace(/\n/g, " ") +
+      (daneWpisu.content.length > 160 ? "..." : "")
+      : "Przeczytaj najnowszy wpis na naszej platformie ogłoszeniowej | Gotpage"
 
     // Pobierz obrazy z treści, jeśli są dostępne
     const obrazy = []
-    if (daneWpisu.post.imageUrl) {
-      obrazy.push(daneWpisu.post.imageUrl)
+    if (daneWpisu.imageUrl) {
+      obrazy.push(daneWpisu.imageUrl)
     }
 
     // Pobierz podstawowe metadane z rodzica
@@ -44,13 +47,13 @@ export async function generateMetadata({ params }: PropsStrony, rodzic: Resolvin
     return {
       title: `${fragment.substring(0, 60)}${fragment.length > 60 ? "..." : ""}`,
       description: fragment,
-      authors: [{ name: daneWpisu.post.author.name }],
+      authors: [{ name: daneWpisu.author.name }],
       openGraph: {
         title: `${fragment.substring(0, 60)}${fragment.length > 60 ? "..." : ""}`,
         description: fragment,
         type: "article",
-        publishedTime: daneWpisu.post.createdAt,
-        authors: [daneWpisu.post.author.name],
+        publishedTime: daneWpisu.createdAt,
+        authors: [daneWpisu.author.name],
         images: [...obrazy, ...poprzednieObrazy],
       },
       twitter: {
@@ -64,7 +67,7 @@ export async function generateMetadata({ params }: PropsStrony, rodzic: Resolvin
     console.error("Błąd podczas generowania metadanych:", blad)
     return {
       title: "Aktualności",
-      description: "Przeczytaj najnowsze aktualności na naszej platformie ogłoszeniowej",
+      description: "Przeczytaj najnowsze aktualności na naszej platformie ogłoszeniowej | Gotpage",
     }
   }
 }

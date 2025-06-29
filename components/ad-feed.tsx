@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Filter, Grid, List, Loader2 } from "lucide-react"
+import { Filter, Loader2 } from "lucide-react"
+import { User } from "@/lib/auth"
 
 interface AdFeedProps {
   isUserProfile?: boolean
@@ -15,9 +16,10 @@ interface AdFeedProps {
   subcategory?: string
   location?: string
   searchQuery?: string
+  logged?: User
 }
 
-export function AdFeed({ isUserProfile = false, userId, category, subcategory, location, searchQuery }: AdFeedProps) {
+export function AdFeed({ isUserProfile = false, userId, category, subcategory, location, searchQuery, logged }: AdFeedProps) {
   const [ads, setAds] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [page, setPage] = useState(1)
@@ -41,7 +43,7 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       setIsLoading(true)
 
       // Budowanie URL zapytania
-      
+
       let url;
       if (isUserProfile && userId) {
         url = `/api/users/${userId}/ogloszenia?page=${pageNum || 1}&limit=6&sortBy=${sort || 'desc'}`;
@@ -100,10 +102,6 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
     setSortBy(value)
   }
 
-  // const toggleViewMode = () => {
-  //   setViewMode(viewMode === "grid" ? "list" : "grid")
-  // }
-
   // Skeleton loading dla ogłoszeń
   if (isLoading && ads.length === 0) {
     return (
@@ -138,7 +136,7 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       </div>
     )
   }
-  
+
 
 
   return (
@@ -184,10 +182,10 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       {/* Siatka ogłoszeń */}
       <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
         {ads.map((ad) => (
-          <AdCard key={ad.id} ad={ad} image={ad.image}/>
+          <AdCard key={ad.id} ad={ad} image={ad.image} logged={logged} />
         ))}
       </div>
-      
+
 
       {/* Loader podczas ładowania kolejnych stron */}
       {isLoading && ads.length > 0 && (

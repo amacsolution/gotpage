@@ -27,14 +27,33 @@ export function HeroAnimation() {
     // Parametry animacji
     const particlesArray: Particle[] = []
     const numberOfParticles = 50
-    // Możesz dynamicznie ustawić kolory na podstawie motywu
-    // Przykład z Tailwind/Next.js: sprawdź preferencje użytkownika
-    const isDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches
-    const colors = isDark
-      ? ["#f0338c", "#f0338c33", "#f0338c22", "#fff"]
-      : ["#f0338c", "#f0338c33", "#f0338c22", "#333"]
+    // Ustaw kolory jako state, aby reagowały na zmianę motywu
+    let colors: string[] = ["#f0338c", "#f0338c33", "#f0338c22", "#333"]
 
-      console.log(isDark)
+    const getColors = () => {
+      const isDark =
+        document.documentElement.classList.contains("dark") ||
+        document.body.classList.contains("dark")
+      return isDark
+        ? ["#f0338c", "#f0338c33", "#f0338c", "#fff"]
+        : ["#f0338c", "#f0338c33", "#f0338c22", "#333"]
+    }
+
+    colors = getColors()
+
+    // Listen for theme changes and update colors
+    const themeObserver = new MutationObserver(() => {
+      colors = getColors()
+      // Optionally, re-color all particles
+      particlesArray.forEach(p => {
+        p.color = colors[Math.floor(Math.random() * colors.length)]
+      })
+    })
+
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] })
+
+    // Clean up observer on unmount
+    // (add this to your cleanup function at the end of useEffect)
 
     // Klasa cząsteczki
     class Particle {
@@ -82,6 +101,9 @@ export function HeroAnimation() {
 
     // Rysowanie linii między cząsteczkami
     function connect() {
+      const isDark =
+        document.documentElement.classList.contains("dark") ||
+        document.body.classList.contains("dark")
       if (!ctx) return
       let opacityValue = 1
       for (let a = 0; a < particlesArray.length; a++) {
@@ -92,7 +114,7 @@ export function HeroAnimation() {
 
           if (distance < 100) {
             opacityValue = 1 - distance / 100
-            ctx.strokeStyle = `rgba(255, 255, 255, ${opacityValue * 0.6})`
+            ctx.strokeStyle = isDark ? `rgba(255, 255, 255, ${opacityValue * 0.6}) ` : `rgba(0, 0, 0, ${opacityValue * 0.6}) `
             ctx.lineWidth = 1
             ctx.beginPath()
             ctx.moveTo(particlesArray[a].x, particlesArray[a].y)

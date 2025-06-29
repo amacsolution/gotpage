@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { sendMigrationInvitationEmail } from "@/lib/email-helpers"
 import { emailConfig } from "@/emails/config"
-import { db, query } from "@/lib/db"
+import { query } from "@/lib/db"
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       `INSERT INTO email_campaigns (name, type, total_emails, status, created_at) 
        VALUES (?, ?, ?, ?, NOW())`,
       [`Migracja z ${oldServiceName}`, "migration", users.length, "in_progress"],
-    ) as { insertId: number}
+    ) as { insertId: number }
 
     const migrationId = migration.insertId
 
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
         })
 
         await query(
-            `INSERT INTO emails_subscription (email)
+          `INSERT INTO emails_subscription (email)
             VALUES (?)`, [user.email]
         )
 

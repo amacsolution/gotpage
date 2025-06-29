@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { db, query } from "@/lib/db"
+import { query } from "@/lib/db"
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     // Pobierz logi
     const result = await query(fquery, queryParams) as any[]
     // Pobierz całkowitą liczbę logów
-    const countResult = await query(countQuery, search ? [params[0], params[1], params[2]] : []) as { rows?: { total: number }[] } 
+    const countResult = await query(countQuery, search ? [params[0], params[1], params[2]] : []) as { rows?: { total: number }[] }
     const total = countResult.rows && countResult.rows.length > 0 ? countResult.rows[0].total : 0
     const totalPages = Math.ceil(total / limit) || 1
 

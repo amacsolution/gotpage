@@ -7,9 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ArrowRight, Building, Tag } from "lucide-react"
+import CountUp from 'react-countup';
 
 export default function PromotionPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const users = 15329
+  const ads = 53973
+  const companies = 3895
 
   return (
     <PageLayout>
@@ -81,7 +85,7 @@ export default function PromotionPage() {
                       <Building className="h-8 w-8 text-blue-700" />
                     </div>
                   </div>
-                  <CardTitle className="text-2xl text-center">Promuj firmę</CardTitle>
+                  <CardTitle className="text-2xl text-white text-center">Promuj firmę</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center mt-5">
                   <p className="mb-6">
@@ -121,19 +125,19 @@ export default function PromotionPage() {
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className=" transition-all hover:shadow-lg hover:shadow-foreground/10 p-4 rounded-lg ">
                 <div className="text-3xl font-bold text-primary mb-2 counter" id="visitors-counter">
-                  12,458
+                  <CountUp end={users} delay={1} start={100} />
                 </div>
                 <p className="text-sm text-muted-foreground">Aktywnych użytkowników</p>
               </div>
               <div className="transition-all hover:shadow-lg hover:shadow-foreground/10  p-4 rounded-lg shadow-sm">
                 <div className="text-3xl font-bold text-blue-600 mb-2 counter" id="ads-counter">
-                  45,721
+                  <CountUp end={ads} delay={1} start={100} />
                 </div>
                 <p className="text-sm text-muted-foreground">Opublikowanych ogłoszeń</p>
               </div>
               <div className="transition-all hover:shadow-lg hover:shadow-foreground/10  p-4 rounded-lg shadow-sm">
                 <div className="text-3xl font-bold text-green-600 mb-2 counter" id="companies-counter">
-                  3,892
+                  <CountUp end={companies} delay={1} start={10} />
                 </div>
                 <p className="text-sm text-muted-foreground">Zweryfikowanych firm</p>
               </div>
@@ -196,33 +200,6 @@ export default function PromotionPage() {
         )}
       </div>
 
-      {/* Dodanie prostego skryptu do animacji liczników */}
-      {!isLoading && (
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-            document.addEventListener('DOMContentLoaded', () => {
-              const counters = document.querySelectorAll('.counter');
-              counters.forEach(counter => {
-                const target = parseInt(counter.innerText.replace(/,/g, ''));
-                const increment = target / 100;
-                let current = 0;
-                const updateCounter = () => {
-                  if (current < target) {
-                    current += increment;
-                    counter.innerText = Math.ceil(current).toLocaleString();
-                    setTimeout(updateCounter, 10);
-                  } else {
-                    counter.innerText = target.toLocaleString();
-                  }
-                };
-                updateCounter();
-              });
-            });
-          `,
-          }}
-        />
-      )}
     </PageLayout>
   )
 }

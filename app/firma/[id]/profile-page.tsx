@@ -116,7 +116,7 @@ function UserNotFound({ router }: { router: any }) {
   )
 }
 
-export default function UserProfilePage({id} : { id: string }) {
+export default function UserProfilePage({ id }: { id: string }) {
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -200,7 +200,7 @@ export default function UserProfilePage({id} : { id: string }) {
       if (!response.ok) {
         setLoadingMessages(false)
         throw new Error(`Error creating conversation: ${response.status}`)
-        
+
       }
 
       setLoadingMessages(false)
@@ -330,21 +330,21 @@ export default function UserProfilePage({id} : { id: string }) {
           <div className="absolute -bottom-12 left-6">
             <div className="relative">
               <Avatar className="h-24 w-24 border-4 border-background">
-                <AvatarImage src={user.avatar || "/placeholder.svg"} alt={`Firma ${user.name}`} />
+                <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
                 <AvatarFallback>{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
             </div>
           </div>
         </div>
-        </div>
-      
-        <div className="container pb-6">
+      </div>
+
+      <div className="container pb-6">
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-1 space-y-6">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-bold">Firma {user.name}</h1>
+                <h1 className="text-2xl font-bold">{user.name}</h1>
                 {user.verified ? (
                   <Badge variant="outline" className="text-primary border-primary/30">
                     Zweryfikowana Firma
@@ -373,6 +373,7 @@ export default function UserProfilePage({id} : { id: string }) {
                   <FollowButton
                     userId={user.id}
                     isFollowing={isFollowing}
+                    userData={loggedUser}
                     onFollowChange={(following) => {
                       setIsFollowing(following)
                       setUser((prevUser: any) => ({
@@ -394,7 +395,7 @@ export default function UserProfilePage({id} : { id: string }) {
                   following={user.stats.following || 0}
                 />
               </div>
-              <p className="text-muted-foreground">{user.bio}</p>
+              <p className="text-muted-foreground">{user.bio?.slice(0, 60)}{user.bio.length > 60 ? " ..." : " "}</p>
               {user.type === "business" && user.categories && user.categories.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {user.categories.map((category: string) => (
@@ -441,14 +442,14 @@ export default function UserProfilePage({id} : { id: string }) {
               {user.id && (
                 <>
                   <QrButton url={`https://gotpage.pl/profil/${user.id}`} className="w-full mt-2" />
-                  
-                  <Button className={`w-full flex items-center bg-primary ${LoadingMessages ? "opacity-50" : ""} text-primary-foreground hover:bg-primary/90`}variant="outline" onClick={() => handleMessage(user.id)}>
-                    {LoadingMessages ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" /> }
+
+                  <Button className={`w-full flex items-center bg-primary ${LoadingMessages ? "opacity-50" : ""} text-primary-foreground hover:bg-primary/90`} variant="outline" onClick={() => handleMessage(user.id)}>
+                    {LoadingMessages ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
                     Wyślij wiadomość
                   </Button>
                 </>
               )}
-              
+
             </div>
 
             <Card>
@@ -569,7 +570,7 @@ export default function UserProfilePage({id} : { id: string }) {
                   <div className="flex flex-col gap-3">
                     {similarUsers.map((similarUser) =>
                       similarUser.type === "business" ? (
-                        <CompanyCard key={similarUser.id} company={similarUser} />
+                        <CompanyCard key={similarUser.id} company={similarUser} logged={loggedUser} />
                       ) : (
                         <Link href={`/profil/${similarUser.id}`} key={similarUser.id}>
                           <Card className="hover:border-primary/50 transition-colors">
@@ -610,6 +611,7 @@ export default function UserProfilePage({id} : { id: string }) {
                                   userId={similarUser.id}
                                   isFollowing={similarUser.isFollowing || false}
                                   size="sm"
+                                  userData={loggedUser}
                                 />
                               </div>
                             </CardContent>
@@ -834,7 +836,7 @@ export default function UserProfilePage({id} : { id: string }) {
                 </div>
               </TabsContent>
               <TabsContent value="ads" className="mt-4">
-                <AdFeed isUserProfile={true} userId={user.id} />
+                <AdFeed isUserProfile={true} userId={user.id} logged={loggedUser} />
               </TabsContent>
               <TabsContent value="photos" className="mt-4">
                 <h2 className="text-xl font-semibold mb-4">Zdjęcia</h2>
@@ -858,10 +860,10 @@ export default function UserProfilePage({id} : { id: string }) {
                         <span className="font-bold">{Number(user.stats.rating)?.toFixed(1)}</span>
                         <span className="text-muted-foreground">({user.stats.reviews} opinii)</span>
                       </div>
-                      <UserReviews showAddReview userId={user.id} firma={user.name}/>
+                      <UserReviews showAddReview userId={user.id} firma={user.name} user={loggedUser} />
                     </>
-                  ): (
-                      <UserReviews showAddReview userId={user.id} firma={user.name}/>
+                  ) : (
+                    <UserReviews showAddReview userId={user.id} firma={user.name} user={loggedUser} />
                   )}
                 </TabsContent>
               )}
@@ -869,6 +871,46 @@ export default function UserProfilePage({id} : { id: string }) {
           </div>
         </div>
       </div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            name: user.fullname || user.name,
+            image: user.avatar || "/default-avatar.png",
+            description: `Profil firmy ${user.name} na Gotpage`,
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: user.adress || "",
+              addressLocality: user.location || "",
+              addressCountry: "PL",
+            },
+            telephone: user.phone || undefined,
+            email: user.email || undefined,
+            url: `https://gotpage.pl/firma/${user.id}`,
+            sameAs: user.social_media
+              ? user.social_media.split(",").map((link: string) => link.trim())
+              : [],
+            openingHours: user.opening_hours || undefined,
+            aggregateRating: user.rating_avg
+              ? {
+                "@type": "AggregateRating",
+                ratingValue: user.rating_avg.toFixed(1),
+                reviewCount: user.reviews_count || user.reviewCount || 0,
+              }
+              : undefined,
+            serviceType: user.services || undefined,
+            numberOfEmployees: user.company_size || undefined,
+            identifier: {
+              "@type": "PropertyValue",
+              propertyID: "NIP",
+              value: user.nip || user.businessData?.nip || "",
+            },
+          }),
+        }}
+      />
+
     </PageLayout>
   )
 }

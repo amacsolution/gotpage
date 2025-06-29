@@ -3,7 +3,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Globe, Award, TrendingUp, Heart, CheckCircle, Briefcase, MapPin, Mail, Phone, Shield, Zap, Lightbulb } from 'lucide-react'
+import { Users, TrendingUp, CheckCircle, MapPin, Shield, Zap, Lightbulb } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: "O serwisie | Gotpage",
@@ -15,17 +15,17 @@ export default function AboutPage() {
   const stats = [
     {
       title: "Użytkowników",
-      value: "500K+",
+      value: "15K+",
       icon: <Users className="h-8 w-8 text-primary" />,
     },
     {
       title: "Aktywnych ogłoszeń",
-      value: "1.2M+",
+      value: "50K+",
       icon: <TrendingUp className="h-8 w-8 text-primary" />,
     },
     {
       title: "Udanych transakcji",
-      value: "3.5M+",
+      value: "5K+",
       icon: <CheckCircle className="h-8 w-8 text-primary" />,
     },
     {
@@ -165,61 +165,61 @@ export default function AboutPage() {
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Nasze wartości</h2>
           <p className=
-        "text-lg text-muted-foreground max-w-3xl mx-auto">
-                    W Gotpage kierujemy się wartościami, które są fundamentem naszej działalności i relacji z użytkownikami.
-                  </p>
-                </div>
+            "text-lg text-muted-foreground max-w-3xl mx-auto">
+            W Gotpage kierujemy się wartościami, które są fundamentem naszej działalności i relacji z użytkownikami.
+          </p>
+        </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {values.map((value, index) => (
-                    <Card key={index} className="bg-background hover:shadow-md transition-shadow">
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-center mb-4">
-                          <div className="p-3 rounded-full bg-primary/10">
-                            {value.icon}
-                          </div>
-                        </div>
-                        <CardTitle className="text-center">{value.title}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <CardDescription className="text-center">{value.description}</CardDescription>
-                      </CardContent>
-                    </Card>
-                  ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {values.map((value, index) => (
+            <Card key={index} className="bg-background hover:shadow-md transition-shadow">
+              <CardHeader className="pb-2">
+                <div className="flex justify-center mb-4">
+                  <div className="p-3 rounded-full bg-primary/10">
+                    {value.icon}
+                  </div>
                 </div>
-              </div>
+                <CardTitle className="text-center">{value.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-center">{value.description}</CardDescription>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
 
-              {/* Nasz zespół */} 
-              <div className="mt-20">
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl font-bold mb-4">Poznaj nasz zespół</h2>
-                  <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                    Ludzie, którzy stoją za Gotpage, to doświadczeni profesjonaliści z pasją do tworzenia innowacyjnych rozwiązań.
-                  </p>
-                </div>
+      {/* Nasz zespół */}
+      <div className="mt-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold mb-4">Poznaj nasz zespół</h2>
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            Ludzie, którzy stoją za Gotpage, to doświadczeni profesjonaliści z pasją do tworzenia innowacyjnych rozwiązań.
+          </p>
+        </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                  {team.map((member, index) => (
-                    <Card key={index} className="bg-background hover:shadow-md transition-shadow">
-                      <CardHeader className="flex flex-col items-center">
-                        <Image
-                          src={member.avatar}
-                          alt={member.name}
-                          width={100}
-                          height={100}
-                          className="rounded-full mb-4"
-                          style={{ objectFit: "cover", aspectRatio: "1 / 1" }}
-                        />
-                        <CardTitle>{member.name}</CardTitle>
-                        <CardDescription>{member.role}</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground text-center">{member.bio}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </div>
-          );
-        }
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          {team.map((member, index) => (
+            <Card key={index} className="bg-background hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-col items-center">
+                <Image
+                  src={member.avatar}
+                  alt={member.name}
+                  width={100}
+                  height={100}
+                  className="rounded-full mb-4"
+                  style={{ objectFit: "cover", aspectRatio: "1 / 1" }}
+                />
+                <CardTitle>{member.name}</CardTitle>
+                <CardDescription>{member.role}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground text-center">{member.bio}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

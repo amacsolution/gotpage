@@ -46,6 +46,7 @@ export async function fetchOpenGraphData(url: string) {
       }
     } catch (e) {
       // If URL parsing fails, return even more basic data
+      console.error(e)
       return {
         url: url,
         title: url,

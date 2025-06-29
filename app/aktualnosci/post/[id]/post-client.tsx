@@ -5,7 +5,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PageLayout } from "@/components/page-layout"
-import { NewsPost, type NewsPostProps } from "@/components/news-post"
+import { NewsPost } from "@/components/news-post"
 import { useToast } from "@/hooks/use-toast"
 import Script from "next/script"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";

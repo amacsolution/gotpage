@@ -5,7 +5,6 @@ export async function GET(request: NextRequest) {
   try {
     // Debugowanie - sprawdź wszystkie ciasteczka
     const cookieStore = await cookies()
-    const allCookies = (await cookieStore).getAll()
 
     // Sprawdź token administratora
     const token = (await cookieStore).get("admin_token")

@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { emailService } from "@/lib/email-service"
 import { emailExamples } from "@/emails/examples"
-import { db, query } from "@/lib/db"
+import { query } from "@/lib/db"
 
 // Hasło administratora z zmiennych środowiskowych
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD

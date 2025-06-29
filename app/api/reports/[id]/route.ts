@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { auth, authOptions } from "@/lib/auth"
-import { db, query } from "@/lib/db"
+import { auth } from "@/lib/auth"
+import { query } from "@/lib/db"
 
 export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -33,7 +33,7 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
   try {
     const session = await auth()
 
-    if (!session ) {
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -67,4 +67,3 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
   }
 }
 
-    

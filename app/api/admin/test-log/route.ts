@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { db, query } from "@/lib/db"
+import { query } from "@/lib/db"
 
 // Hasło administratora z zmiennych środowiskowych
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const result = await query(
       "INSERT INTO email_logs (email_to, subject, template_type, status, created_at) VALUES (?, ?, ?, ?, NOW())",
       ["test@example.com", "Test zapisu do tabeli", "test", "sent"],
-    ) as {rows?: { insertId: number }}
+    ) as { rows?: { insertId: number } }
 
     return NextResponse.json({
       success: true,

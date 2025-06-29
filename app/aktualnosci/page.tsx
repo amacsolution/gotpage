@@ -14,57 +14,6 @@ import Link from "next/link"
 import { CompanyCard } from "@/components/company-card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-const featuredCompanies = [
-  {
-    id: 1,
-    name: "Auto Serwis Kowalski",
-    logo: "/placeholder.svg?height=100&width=100&text=Auto+Serwis",
-    description:
-      "Profesjonalny serwis samochodowy z wieloletnim doświadczeniem. Oferujemy naprawy mechaniczne, elektryczne, diagnostykę komputerową oraz wymianę opon.",
-    categories: ["Motoryzacja", "Usługi"],
-    location: "Warszawa",
-    rating: 4.8,
-    reviewCount: 124,
-    verified: true,
-  },
-  {
-    id: 2,
-    name: "Nieruchomości XYZ",
-    logo: "/placeholder.svg?height=100&width=100&text=XYZ",
-    description:
-      "Biuro nieruchomości specjalizujące się w sprzedaży i wynajmie mieszkań, domów oraz lokali użytkowych. Działamy na rynku od 15 lat.",
-    categories: ["Nieruchomości"],
-    location: "Kraków",
-    rating: 4.5,
-    reviewCount: 87,
-    verified: true,
-  },
-  {
-    id: 3,
-    name: "IT Solutions Sp. z o.o.",
-    logo: "/placeholder.svg?height=100&width=100&text=IT",
-    description:
-      "Firma informatyczna oferująca usługi programistyczne, tworzenie stron internetowych, aplikacji mobilnych oraz wsparcie IT dla firm.",
-    categories: ["Usługi", "Elektronika"],
-    location: "Poznań",
-    rating: 4.9,
-    reviewCount: 93,
-    verified: true,
-  },
-  {
-    id: 4,
-    name: "Salon Fryzjerski Elegancja",
-    logo: "/placeholder.svg?height=100&width=100&text=Fryzjer",
-    description:
-      "Profesjonalny salon fryzjerski oferujący strzyżenie, koloryzację, stylizację oraz zabiegi pielęgnacyjne dla włosów.",
-    categories: ["Usługi", "Moda"],
-    location: "Gdańsk",
-    rating: 4.7,
-    reviewCount: 142,
-    verified: true,
-  },
-]
-
 export default function NewsPage() {
   const [posts, setPosts] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -76,12 +25,14 @@ export default function NewsPage() {
 
   const [featuredCompanies, setFeaturedCompanies] = useState<any[]>([])
 
+  const loggedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true)
 
       try {
-        
+
         // Fetch featured companies
         const res = await fetch("/api/companies?promoted=true&limit=4")
         if (res.ok) {
@@ -150,12 +101,12 @@ export default function NewsPage() {
       const updatedPosts = posts.map((post) => {
         if (post.id === postId && post.isPoll) {
           // Create a copy of poll options with updated vote count
-          const updatedOptions = post.pollOptions.map((option : {id : string, votes : number}) =>
+          const updatedOptions = post.pollOptions.map((option: { id: string, votes: number }) =>
             option.id === optionId ? { ...option, votes: option.votes + 1 } : option,
           )
 
           // Calculate new total votes
-          const newTotalVotes = updatedOptions.reduce((sum : number, option : {votes : number}) => sum + option.votes, 0)
+          const newTotalVotes = updatedOptions.reduce((sum: number, option: { votes: number }) => sum + option.votes, 0)
 
           return {
             ...post,
@@ -548,6 +499,7 @@ export default function NewsPage() {
                     onEditPost={handleEditPost}
                     onFollow={handleFollow}
                     showFollowButton={true}
+                    logged={loggedUser}
                   />
                 ))}
 
@@ -632,7 +584,7 @@ export default function NewsPage() {
                 name: "Gotpage",
                 logo: {
                   "@type": "ImageObject",
-                  url: `${process.env.NEXT_PUBLIC_APP_URL || "https://gotpage.pl"}/logo.png`,
+                  url: `https://gotpage.pl/logo.png`,
                 },
               },
               mainEntity: {

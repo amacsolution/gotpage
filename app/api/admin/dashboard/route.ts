@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { db, query } from "@/lib/db"
+import { query } from "@/lib/db"
 
 // Define types for query results
 type UserStats = { total: number; today: number };
@@ -17,7 +17,8 @@ type RecentActivityItem = {
 };
 type usersStats = {
   total: number;
-  today: number;}
+  today: number;
+}
 
 // Funkcja pomocnicza do sprawdzania uwierzytelnienia administratora
 async function isAdmin(request: NextRequest) {
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
       FROM users
       ${period !== "all" ? dateCondition : ""}
     `
-    const [usersStats]= await query(usersQuery) as UserStats[]
+    const [usersStats] = await query(usersQuery) as UserStats[]
 
     // Pobierz statystyki ogłoszeń
     const adsQuery = `
@@ -175,12 +176,12 @@ LIMIT 10;
     const dashboardData = {
       stats: {
         users: {
-          total: usersStats.total ,
-          today: usersStats.today || 0 ,
+          total: usersStats.total,
+          today: usersStats.today || 0,
         },
         ads: {
-          total: adsStats.total ,
-          today: adsStats.today || 0 ,
+          total: adsStats.total,
+          today: adsStats.today || 0,
         },
         comments: {
           total: commentsStats.total,

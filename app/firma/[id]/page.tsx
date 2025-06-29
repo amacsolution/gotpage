@@ -33,7 +33,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   const bio = user?.bio || "Szczegóły profilu użytkownika";
   const avatar = user?.avatar || "/placeholder-user.jpg";
 
-  const title = `${name} jest na Gotpage - zobacz profil`;
+  const title = `Profil firmy ${name} na Gotpage`;
   const description = bio.length > 160 ? bio.substring(0, 157) + "..." : bio;
   const baseUrl = "https://gotpage.pl";
   const profileUrl = `${baseUrl}/firma/${id}`;

@@ -14,6 +14,8 @@ export async function POST(req: Request) {
     const before = json?.before || null
     const userEmail = JSON.stringify(user) || null
 
+    if (before?.includes('localhost:3000')) return new Response("Tryb developmnetu, email nie wysłąny", { status: 200 })
+
     await query(
       `INSERT INTO bugs (date, body, user, stack, digest, referrer)
        VALUES (NOW(), ?, ?, ?, ?, ?)`,

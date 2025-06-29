@@ -126,6 +126,8 @@ export default function CompaniesPageClient() {
   const [searchQuery, setSearchQuery] = useState<string>("")
   const { toast } = useToast()
 
+  const loggedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
+
   // Get search parameters from URL
   const query = searchParams?.get("q") || ""
   const sortBy = searchParams?.get("sortBy") || "rating"
@@ -318,9 +320,8 @@ export default function CompaniesPageClient() {
                 {businessCategories.slice(0, 6).map((cat) => (
                   <Badge
                     key={cat.id}
-                    className={`text-sm py-1.5 px-3 cursor-pointer hover:bg-white/20 ${
-                      category === cat.name ? "bg-white/30" : "bg-white/10"
-                    }`}
+                    className={`text-sm py-1.5 px-3 cursor-pointer hover:bg-white/20 ${category === cat.name ? "bg-white/30" : "bg-white/10"
+                      }`}
                     onClick={() => handleCategoryChange(cat.name)}
                   >
                     <span className="mr-1">{cat.icon}</span> {cat.name}
@@ -352,14 +353,14 @@ export default function CompaniesPageClient() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {isLoading
                 ? Array.from({ length: 3 }).map((_, index) => (
-                    <Skeleton key={index} className="h-48 w-full rounded-lg" />
-                  ))
+                  <Skeleton key={index} className="h-48 w-full rounded-lg" />
+                ))
                 : featuredCompanies.map((company) => (
-                    <div key={company.id} className="relative">
-                      <Badge className="absolute top-2 right-2 z-10 bg-amber-500">Wyróżniona</Badge>
-                      <CompanyCard company={company} featured={true} />
-                    </div>
-                  ))}
+                  <div key={company.id} className="relative">
+                    <Badge className="absolute top-2 right-2 z-10 bg-amber-500">Wyróżniona</Badge>
+                    <CompanyCard company={company} featured={true} logged={loggedUser} />
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -376,9 +377,8 @@ export default function CompaniesPageClient() {
                   {businessCategories.map((cat) => (
                     <Badge
                       key={cat.id}
-                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${
-                        category === cat.name ? cat.color : "bg-muted hover:bg-muted/80"
-                      }`}
+                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${category === cat.name ? cat.color : "bg-muted hover:bg-muted/80"
+                        }`}
                       onClick={() => handleCategoryChange(cat.name)}
                     >
                       <span>{cat.icon}</span> {cat.name}
@@ -393,9 +393,8 @@ export default function CompaniesPageClient() {
                   {allLocations.slice(0, 10).map((loc) => (
                     <Badge
                       key={loc}
-                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${
-                        city === loc ? "bg-blue-100 text-blue-800" : "bg-muted hover:bg-muted/80"
-                      }`}
+                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${city === loc ? "bg-blue-100 text-blue-800" : "bg-muted hover:bg-muted/80"
+                        }`}
                       onClick={() => handleCityChange(loc)}
                     >
                       <MapPin className="h-3 w-3" /> {loc}

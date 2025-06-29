@@ -1,7 +1,6 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { db, query } from "@/lib/db"
-import { auth } from "@/lib/auth"
-import { json } from "stream/consumers";
+import { type NextRequest, NextResponse } from "next/server";
+import { query } from "@/lib/db";
+import { auth } from "@/lib/auth";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {

@@ -385,6 +385,8 @@ export default function AdsPage() {
   const query = searchParams?.get("q") || ""
   const sortBy = searchParams?.get("sortBy") || "newest"
 
+  const loggedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
+
   // Fetch ads and locations
   useEffect(() => {
     const fetchData = async () => {
@@ -601,9 +603,8 @@ export default function AdsPage() {
                 {adCategories.slice(0, 6).map((cat) => (
                   <Badge
                     key={cat.id}
-                    className={`text-sm py-1.5 px-3 cursor-pointer hover:bg-white/20 ${
-                      category === cat.name ? "bg-white/30" : "bg-white/10"
-                    }`}
+                    className={`text-sm py-1.5 px-3 cursor-pointer hover:bg-white/20 ${category === cat.name ? "bg-white/30" : "bg-white/10"
+                      }`}
                     onClick={() => handleCategoryChange(cat.name)}
                   >
                     <span className="mr-1">{cat.icon}</span> {cat.name}
@@ -635,13 +636,13 @@ export default function AdsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {isLoading
                 ? Array.from({ length: 3 }).map((_, index) => (
-                    <Skeleton key={index} className="h-48 w-full rounded-lg" />
-                  ))
+                  <Skeleton key={index} className="h-48 w-full rounded-lg" />
+                ))
                 : featuredAds.map((ad) => (
-                    <div key={ad.id} className="relative">
-                      <AdCard ad={ad} />
-                    </div>
-                  ))}
+                  <div key={ad.id} className="relative">
+                    <AdCard ad={ad} logged={loggedUser} />
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -658,9 +659,8 @@ export default function AdsPage() {
                   {adCategories.map((cat) => (
                     <Badge
                       key={cat.id}
-                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${
-                        category === cat.name ? cat.color : "bg-muted hover:bg-muted/80"
-                      }`}
+                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${category === cat.name ? cat.color : "bg-muted hover:bg-muted/80"
+                        }`}
                       onClick={() => handleCategoryChange(cat.name)}
                     >
                       <span>{cat.icon}</span> {cat.name}
@@ -676,11 +676,10 @@ export default function AdsPage() {
                       {subcategories.map((subcat) => (
                         <Badge
                           key={subcat.name}
-                          className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${
-                            subcategory === subcat.name
-                              ? "bg-primary text-white"
-                              : "bg-muted hover:bg-muted/80 text-foreground"
-                          }`}
+                          className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${subcategory === subcat.name
+                            ? "bg-primary text-white"
+                            : "bg-muted hover:bg-muted/80 text-foreground"
+                            }`}
                           onClick={() => handleSubcategoryChange(subcat.name)}
                         >
                           <Tag className="h-3 w-3" /> {subcat.name}
@@ -697,11 +696,10 @@ export default function AdsPage() {
                       {finalcategories.map((subcat) => (
                         <Badge
                           key={subcat}
-                          className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${
-                            finalcategory === subcat
-                              ? "bg-primary text-white"
-                              : "bg-muted hover:bg-muted/80 text-foreground"
-                          }`}
+                          className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer ${finalcategory === subcat
+                            ? "bg-primary text-white"
+                            : "bg-muted hover:bg-muted/80 text-foreground"
+                            }`}
                           onClick={() => setFinalcategory(subcat)}
                         >
                           <TagsIcon className="h-3 w-3" /> {subcat}
@@ -718,9 +716,8 @@ export default function AdsPage() {
                   {locations.slice(0, 10).map((loc) => (
                     <Badge
                       key={loc}
-                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${
-                        city === loc ? "bg-blue-100 text-blue-800" : "bg-muted hover:bg-muted/80"
-                      }`}
+                      className={`flex items-center gap-1 py-1.5 px-3 cursor-pointer text-foreground ${city === loc ? "bg-blue-100 text-blue-800" : "bg-muted hover:bg-muted/80"
+                        }`}
                       onClick={() => handleCityChange(loc)}
                     >
                       <MapPin className="h-3 w-3" /> {loc}
@@ -824,7 +821,7 @@ export default function AdsPage() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {ads.map((ad) => (
-                    <AdCard key={ad.id} ad={ad} />
+                    <AdCard key={ad.id} ad={ad} logged={loggedUser} />
                   ))}
                 </div>
 

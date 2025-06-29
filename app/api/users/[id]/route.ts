@@ -2,9 +2,7 @@ import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { auth } from "@/lib/auth"
 import { z } from "zod"
-import type { BusinessData } from "./company/route"
 import type { Promotions, UserData } from "../../profile/route"
-import { profile } from "console"
 
 const profileDataSchema = z.object({
   name: z.string().min(2, {

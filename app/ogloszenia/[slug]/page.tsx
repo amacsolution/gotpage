@@ -5,10 +5,10 @@ import slugify from "slugify";
 export const dynamic = "force-dynamic";
 
 // Generowanie dynamicznych metadanych dla pojedynczego ogłoszenia
-export async function generateMetadata(props: { params: Promise<{ slug : string }> }, parent: ResolvingMetadata): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }, parent: ResolvingMetadata): Promise<Metadata> {
   const params = await props.params;
   let ad = null
-  const { slug} = params
+  const { slug } = params
   const id = slug.split("-")[0]
 
   try {
@@ -34,7 +34,7 @@ export async function generateMetadata(props: { params: Promise<{ slug : string 
 
   const title = `${ad.title} | Gotpage`
 
-  
+
   const slugy = `${ad.id}-${slugify(ad.title, { lower: true, strict: true })}`
   const data = {
     title,
@@ -55,15 +55,12 @@ export async function generateMetadata(props: { params: Promise<{ slug : string 
       type: "article",
     },
   }
-
-  console.log(data)
-
   return data
 }
 
 // Komponent serwerowy, który renderuje komponent kliencki
 export default async function AdDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const {slug} = await params
+  const { slug } = await params
   const id = slug.split("-")[0]
   return <AdDetailsClient id={id} />
 }

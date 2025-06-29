@@ -121,7 +121,7 @@ function MarkerClusterHandler({ ads }: { ads: any[] }) {
         // Utwórz nową grupę klastrów
         const clusterGroup = L.markerClusterGroup({
           maxClusterRadius: 60,
-          iconCreateFunction: (cluster : any) => {
+          iconCreateFunction: (cluster: any) => {
             const count = cluster.getChildCount()
             let size, className
 
@@ -172,11 +172,9 @@ function MarkerClusterHandler({ ads }: { ads: any[] }) {
             const popupContent = `
               <div class="popup-content p-2 min-w-[200px]">
                 <div class="mb-2 overflow-hidden rounded-md">
-                  ${
-                    
-                       `<img src="${ad.image || "/placeholder.svg"}" alt="${ad.title}" class="h-24 w-full object-cover" />`
-                      
-                  }
+                  ${`<img src="${ad.image || "/placeholder.svg"}" alt="${ad.title}" class="h-24 w-full object-cover" />`
+
+              }
                 </div>
                 <h3 class="font-medium text-sm text-foreground">${ad.title}</h3>
                 <div class="flex items-center text-xs text-muted-foreground mt-1">
@@ -296,10 +294,10 @@ export default function AdsMap({
             coordinates: location
               ? [location.lat, location.lng]
               : [
-                  // Jeśli nie można pobrać współrzędnych, wygeneruj losowe w pobliżu centrum
-                  center.lat + (Math.random() - 0.5) * 0.1,
-                  center.lng + (Math.random() - 0.5) * 0.1,
-                ],
+                // Jeśli nie można pobrać współrzędnych, wygeneruj losowe w pobliżu centrum
+                center.lat + (Math.random() - 0.5) * 0.1,
+                center.lng + (Math.random() - 0.5) * 0.1,
+              ],
           }
         }),
       )

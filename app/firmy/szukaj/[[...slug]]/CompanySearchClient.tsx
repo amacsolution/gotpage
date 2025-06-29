@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
-import { Award, Building, ChevronLeft, Grid, Loader2, MapIcon, MapPin, Search, Star, TrendingUp, X } from "lucide-react"
+import { Award, Building, ChevronLeft, Grid, Loader2, MapIcon, MapPin, Search, Star, TrendingUp } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useRouter, useSearchParams, useParams } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -129,6 +129,9 @@ export default function CompanySearchPageClient() {
   const [tempCity, setTempCity] = useState<string>("")
 
   const { toast } = useToast()
+
+
+  const loggedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
 
   // Parse URL parameters
   useEffect(() => {
@@ -359,78 +362,39 @@ export default function CompanySearchPageClient() {
                 <CardTitle className="text-lg">Filtry</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Active filters */}
-                {/* {(category || city) && (
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Aktywne filtry</h4>
-                    <div className="space-y-2">
-                      {category && (
-                        <Badge variant="secondary" className="flex items-center justify-between w-full">
-                          <span className="truncate">{category}</span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-4 w-4 ml-2 hover:bg-transparent"
-                            onClick={() => removeFilter("category")}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </Badge>
-                      )}
-                      {city && (
-                        <Badge variant="secondary" className="flex items-center justify-between w-full">
-                          <span className="truncate">{city}</span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-4 w-4 ml-2 hover:bg-transparent"
-                            onClick={() => removeFilter("city")}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </Badge>
-                      )}
-                    </div>
-                    <Separator className="my-4" />
-                  </div>
-                )} */}
-
                 {/* Category selection */}
-                {category ? 
-(                <Button
-                  key={category}
-                  variant="default"
-                  className="w-full justify-start text-left h-auto p-2"
-                  onClick={() => {
-                    router.push(`/firmy/szukaj${city? `?city=${city}` : ""}`)
-                  }}
-                >
-                  <Building className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">{category}</span>
-                </Button>)
-                : (<div>
-                  <h4 className="text-sm font-medium mb-3">Kategoria</h4>
-                  <div className="space-y-2">
-                    {businessCategories.map((cat) => (
-                      <Button
-                        key={cat}
-                        variant={category === cat ? "default" : "ghost"}
-                        className="w-full justify-start text-left h-auto p-2"
-                        onClick={() => {
-                          router.push(`/firmy/szukaj/${encodeURIComponent(cat)}${city? `?city=${city}` : ""}`)
-                        }}
-                      >
-                        <Building className="h-4 w-4 mr-2 flex-shrink-0" />
-                        <span className="truncate">{cat}</span>
-                      </Button>
-                    ))}
-                  </div>
-                </div>)
-              }
-                
-
+                {category ?
+                  (<Button
+                    key={category}
+                    variant="default"
+                    className="w-full justify-start text-left h-auto p-2"
+                    onClick={() => {
+                      router.push(`/firmy/szukaj${city ? `?city=${city}` : ""}`)
+                    }}
+                  >
+                    <Building className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{category}</span>
+                  </Button>)
+                  : (<div>
+                    <h4 className="text-sm font-medium mb-3">Kategoria</h4>
+                    <div className="space-y-2">
+                      {businessCategories.map((cat) => (
+                        <Button
+                          key={cat}
+                          variant={category === cat ? "default" : "ghost"}
+                          className="w-full justify-start text-left h-auto p-2"
+                          onClick={() => {
+                            router.push(`/firmy/szukaj/${encodeURIComponent(cat)}${city ? `?city=${city}` : ""}`)
+                          }}
+                        >
+                          <Building className="h-4 w-4 mr-2 flex-shrink-0" />
+                          <span className="truncate">{cat}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>)
+                }
                 <Separator />
-
                 {/* Location filters section */}
                 <div>
                   <h4 className="text-sm font-medium mb-3">Lokalizacja</h4>
@@ -450,7 +414,6 @@ export default function CompanySearchPageClient() {
                     </SelectContent>
                   </Select>
                 </div>
-
                 <Separator />
 
                 {/* Apply filters button */}
@@ -476,7 +439,7 @@ export default function CompanySearchPageClient() {
             {/* Header */}
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold">{category ? `${category} - Firmy ${city? `w mieście ${city}` : ""}` : `Szukaj firm ${city? `w mieście ${city}` : ""}`}</h1>
+                <h1 className="text-2xl font-bold">{category ? `${category} - Firmy ${city ? `w mieście ${city}` : ""}` : `Szukaj firm ${city ? `w mieście ${city}` : ""}`}</h1>
                 {totalCompanies > 0 && (
                   <Badge variant="outline" className="text-muted-foreground">
                     {totalCompanies} {totalCompanies === 1 ? "firma" : totalCompanies < 5 ? "firmy" : "firm"}
@@ -524,7 +487,7 @@ export default function CompanySearchPageClient() {
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                       {companies.map((company) => (
-                        <CompanyCard key={company.id} company={company} />
+                        <CompanyCard key={company.id} company={company} logged={loggedUser} />
                       ))}
                     </div>
 
@@ -608,65 +571,65 @@ export default function CompanySearchPageClient() {
             </Tabs>
           </div>
         </div>
-                {/* Statistics section */}
-                <div className="mt-16 py-12 px-6 bg-muted/20 rounded-lg">
-                  <div className="text-center mb-8">
-                    <h2 className="text-2xl font-bold mb-2">Dlaczego warto dołączyć do katalogu?</h2>
-                    <p className="text-muted-foreground max-w-2xl mx-auto">
-                      Dołącz do tysięcy firm, które już korzystają z naszego katalogu i zwiększ swoją widoczność online.
-                    </p>
+        {/* Statistics section */}
+        <div className="mt-16 py-12 px-6 bg-muted/20 rounded-lg">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold mb-2">Dlaczego warto dołączyć do katalogu?</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Dołącz do tysięcy firm, które już korzystają z naszego katalogu i zwiększ swoją widoczność online.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="hover:shadow-lg hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <TrendingUp className="h-6 w-6 text-primary" />
                   </div>
-        
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <Card className="hover:shadow-lg hover:-translate-y-2 hover:scale-105 transition-all duration-300">
-                      <CardContent className="pt-6">
-                        <div className="flex flex-col items-center text-center">
-                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                            <TrendingUp className="h-6 w-6 text-primary" />
-                          </div>
-                          <h3 className="font-medium mb-2">Zwiększ widoczność</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Docieraj do tysięcy potencjalnych klientów poszukujących Twoich usług w Twojej okolicy.
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-        
-                    <Card className="hover:shadow-lg hover:-translate-y-2 hover:scale-105 transition-all duration-300">
-                      <CardContent className="pt-6">
-                        <div className="flex flex-col items-center text-center">
-                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                            <Star className="h-6 w-6 text-primary" />
-                          </div>
-                          <h3 className="font-medium mb-2">Buduj zaufanie</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Zbieraj opinie i oceny od zadowolonych klientów, budując wiarygodność swojej firmy.
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-        
-                    <Card className="hover:shadow-lg hover:-translate-y-2 hover:scale-105 transition-all duration-300">
-                      <CardContent className="pt-6">
-                        <div className="flex flex-col items-center text-center">
-                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                            <Award className="h-6 w-6 text-primary" />
-                          </div>
-                          <h3 className="font-medium mb-2">Wyróżnij się</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Skorzystaj z opcji promowania, aby wyróżnić swoją firmę na tle konkurencji.
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-        
-                  <div className="text-center mt-8">
-                    <Button size="lg" onClick={() => router.push("/promowanie/firma")}>
-                      Promuj swoją firmę
-                    </Button>
-                  </div>
+                  <h3 className="font-medium mb-2">Zwiększ widoczność</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Docieraj do tysięcy potencjalnych klientów poszukujących Twoich usług w Twojej okolicy.
+                  </p>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <Star className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium mb-2">Buduj zaufanie</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Zbieraj opinie i oceny od zadowolonych klientów, budując wiarygodność swojej firmy.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <Award className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium mb-2">Wyróżnij się</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Skorzystaj z opcji promowania, aby wyróżnić swoją firmę na tle konkurencji.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center mt-8">
+            <Button size="lg" onClick={() => router.push("/promowanie/firma")}>
+              Promuj swoją firmę
+            </Button>
+          </div>
+        </div>
       </div>
     </PageLayout>
   )

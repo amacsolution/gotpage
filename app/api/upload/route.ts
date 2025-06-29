@@ -2,14 +2,13 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { uploadImage, deleteImage } from "@/lib/upload"
 import path from "path"
-import fs from "fs"
 import { mkdir, writeFile } from "fs/promises"
 import { existsSync } from "fs"
 import { v4 as uuidv4 } from "uuid"
 
 export async function POST(request: Request) {
   try {
-    
+
     // Sprawdzenie, czy użytkownik jest zalogowany
     const user = await auth(request)
     if (!user) {
@@ -44,13 +43,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ url })
     } catch (uploadError) {
       console.error("Error in uploadImage function:", uploadError)
-      
+
       // Próba bezpośredniego zapisu pliku jako fallback
       try {
-        
+
         // Określenie katalogu docelowego
         let uploadDir = ""
-        
+
         switch (type) {
           case "avatar":
             uploadDir = path.join(process.cwd(), "uploads", "avatars")
@@ -64,15 +63,15 @@ export async function POST(request: Request) {
           default:
             uploadDir = path.join(process.cwd(), "uploads", "general")
         }
-        
-        
+
+
         // Sprawdzenie, czy katalog istnieje, jeśli nie - utworzenie go
         if (!existsSync(uploadDir)) {
           try {
             await mkdir(uploadDir, { recursive: true })
           } catch (mkdirError) {
             console.error("Error creating directory:", mkdirError)
-            
+
             // Próba alternatywnych lokalizacji
             const altDirs = [
               path.join(process.cwd(), "public", "uploads", type),
@@ -80,7 +79,7 @@ export async function POST(request: Request) {
               path.join("/tmp", "uploads", type),
               path.join("/tmp", type)
             ]
-            
+
             for (const dir of altDirs) {
               try {
                 await mkdir(dir, { recursive: true })
@@ -92,29 +91,29 @@ export async function POST(request: Request) {
             }
           }
         }
-        
+
         // Generowanie unikalnej nazwy pliku
         const fileName = `${uuidv4()}${path.extname(file.name)}`
         const filePath = path.join(uploadDir, fileName)
-        
+
         // Konwersja File na Buffer
         const arrayBuffer = await file.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
-        
+
         // Zapisz plik bezpośrednio
         await writeFile(filePath, buffer)
-        
+
         // Zwróć URL do pliku
         const fileUrl = `/api/uploads/${type}/${fileName}`
-        
+
         return NextResponse.json({ url: fileUrl })
       } catch (directSaveError) {
         console.error("Direct file save failed:", directSaveError)
         return NextResponse.json(
-          { 
-            error: "Wystąpił błąd podczas przesyłania obrazu", 
-            details: directSaveError instanceof Error ? directSaveError.message : "Nieznany błąd" 
-          }, 
+          {
+            error: "Wystąpił błąd podczas przesyłania obrazu",
+            details: directSaveError instanceof Error ? directSaveError.message : "Nieznany błąd"
+          },
           { status: 500 }
         )
       }
@@ -122,11 +121,11 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Błąd podczas przesyłania pliku:", error)
     return NextResponse.json(
-      { 
-        error: "Wystąpił błąd podczas przesyłania pliku", 
+      {
+        error: "Wystąpił błąd podczas przesyłania pliku",
         details: error instanceof Error ? error.message : "Nieznany błąd",
         stack: error instanceof Error ? error.stack : undefined
-      }, 
+      },
       { status: 500 }
     )
   }

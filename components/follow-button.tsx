@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { UserPlus, UserCheck, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+import { User } from "@/lib/auth"
 
 interface FollowButtonProps {
   userId: string | number
@@ -12,6 +13,7 @@ interface FollowButtonProps {
   variant?: "default" | "outline" | "secondary" | "ghost"
   size?: "default" | "sm" | "lg" | "icon"
   className?: string
+  userData?: User
   onFollowChange?: (isFollowing: boolean) => void
 }
 
@@ -22,14 +24,26 @@ export function FollowButton({
   size = "sm",
   className = "",
   onFollowChange,
+  userData
 }: FollowButtonProps) {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing)
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const [user, setUser] = useState<User>()
   const router = useRouter()
 
-  const user = localStorage.getItem("userData")
-  const loggedUserId = user ? JSON.parse(user).id : null
+  // Sprawdzenie, czy zalogowany użytkownik jest autorem ogłoszenia
+  useEffect(() => {
+    if (userData) {
+      setUser(userData)
+      return
+    }
+    const getUserData = async () => {
+      const userData = await fetch("/api/auth/me").then((res) => res.json())
+      setUser(userData)
+    }
+    getUserData()
+  }, [userData])
 
   const checkIfFollowing = async () => {
     try {
@@ -46,7 +60,7 @@ export function FollowButton({
       }
 
       const data = await response.json()
-      setIsFollowing(data.isFollowing )
+      setIsFollowing(data.isFollowing)
     }
     catch (error) {
     } finally {
@@ -56,10 +70,10 @@ export function FollowButton({
 
   // Check if the user is already following the target user
   useEffect(() => {
-    if (loggedUserId) {
+    if (user?.id) {
       checkIfFollowing()
     }
-  }, [userId, loggedUserId])
+  }, [userId, user])
 
   const handleFollowToggle = async () => {
     try {

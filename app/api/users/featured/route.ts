@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { auth, authOptions } from "@/lib/auth"
+import { auth } from "@/lib/auth"
 import { query } from "@/lib/db"
 import { UserData } from "../../profile/route"
 
@@ -42,7 +42,7 @@ export async function GET() {
         ORDER BY RAND() DESC
         LIMIT 8
       ` //NOTE: adCount DESC, rating ,
-    featuredUsers = await query(featuredUsersQuery, [userId]) as UserData[]
+      featuredUsers = await query(featuredUsersQuery, [userId]) as UserData[]
     } else {
       featuredUsersQuery += `
         WHERE u.avatar != '/placeholder-profile.svg?height=100&width=100' AND u.type = "individual" AND u.verified_email = 1

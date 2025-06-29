@@ -28,7 +28,7 @@ export const metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://gotpage.pl"),
+  metadataBase: new URL("https://gotpage.pl"),
   alternates: {
     canonical: "/",
   },
@@ -87,11 +87,11 @@ export default function RootLayout({
           gtmId={process.env.NEXT_PUBLIC_GTM_ID || "default-gtm-id"} // Replace "default-gtm-id" with a valid fallback ID or handle missing value
           gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} // Zastąp swoim rzeczywistym ID GA4
         />
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={true}>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={true}>
           <UserProvider>{children}</UserProvider>
           <Toaster />
           <CookieConsent />
-      </ThemeProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

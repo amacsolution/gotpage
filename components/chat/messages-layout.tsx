@@ -7,7 +7,7 @@ import { Avatar } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ScrollArea, ScrollAreaMessages } from "@/components/ui/scroll-area"
+import { ScrollAreaMessages } from "@/components/ui/scroll-area"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   ArrowLeft,
@@ -232,17 +232,16 @@ export function MessagesLayout({
                       hour: "2-digit",
                       minute: "2-digit",
                     }) !==
-                      new Date(message.timestamp).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
+                    new Date(message.timestamp).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
 
                   return (
                     <div
                       key={message.id + (message.content || message.imageUrl || "")}
-                      className={`flex items-center ${message.isMine ? "justify-end" : "justify-start"} ${
-                        showTimestamp ? "mb-2" : "mb-[1px]"
-                      }`}
+                      className={`flex items-center ${message.isMine ? "justify-end" : "justify-start"} ${showTimestamp ? "mb-2" : "mb-[1px]"
+                        }`}
                     >
                       {showTimestamp && (
                         <div className="mr-2 text-xs text-muted-foreground opacity-70 min-w-[44px] text-right">
@@ -254,9 +253,8 @@ export function MessagesLayout({
                       )}
                       <div className="flex items-center max-w-[70%]">
                         <div
-                          className={`rounded-lg px-3 py-1 ${
-                            message.isMine ? "bg-primary text-primary-foreground" : "bg-muted"
-                          }`}
+                          className={`rounded-lg px-3 py-1 ${message.isMine ? "bg-primary text-primary-foreground" : "bg-muted"
+                            }`}
                         >
                           {message.imageUrl ? (
                             <div className="my-1">
@@ -446,13 +444,12 @@ export function MessagesLayout({
                     {conversations.map((conv) => (
                       <div
                         key={conv.id}
-                        className={`flex cursor-pointer items-center gap-2 rounded-md p-2 mb-1 hover:bg-accent ${
-                          conv.id === activeConversation
+                        className={`flex cursor-pointer items-center gap-2 rounded-md p-2 mb-1 hover:bg-accent ${conv.id === activeConversation
                             ? "bg-accent/80 ring-1 ring-accent-foreground/10"
                             : conv.unread > 0
                               ? "bg-accent/20 text-foreground"
                               : ""
-                        }`}
+                          }`}
                         onClick={() => onConversationSelect(conv.id)}
                       >
                         <Avatar className="h-10 w-10">
@@ -614,17 +611,16 @@ export function MessagesLayout({
                           hour: "2-digit",
                           minute: "2-digit",
                         }) !==
-                          new Date(message.timestamp).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
+                        new Date(message.timestamp).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
 
                       return (
                         <div
                           key={message.id}
-                          className={`flex items-center ${message.isMine ? "justify-end" : "justify-start"} ${
-                            showTimestamp ? "mb-2" : "mb-[1px]"
-                          }`}
+                          className={`flex items-center ${message.isMine ? "justify-end" : "justify-start"} ${showTimestamp ? "mb-2" : "mb-[1px]"
+                            }`}
                         >
                           {showTimestamp && (
                             <div className="mr-2 text-xs text-muted-foreground opacity-70 min-w-[44px] text-right">
@@ -636,9 +632,8 @@ export function MessagesLayout({
                           )}
                           <div className="flex items-center max-w-[70%]">
                             <div
-                              className={`rounded-lg px-3 py-1 ${
-                                message.isMine ? "bg-primary text-primary-foreground" : "bg-muted"
-                              }`}
+                              className={`rounded-lg px-3 py-1 ${message.isMine ? "bg-primary text-primary-foreground" : "bg-muted"
+                                }`}
                             >
                               {message.imageUrl ? (
                                 <div className="my-1">

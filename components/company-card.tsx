@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { toast } from "@/components/ui/use-toast"
+import { User } from "@/lib/auth"
 import { Building, Clock, ExternalLink, Mail, MapPin, Phone, ShieldCheck, Star } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -34,8 +35,9 @@ export interface CompanyCardProps {
     verified: boolean
   }
   featured?: boolean
+  logged?: User
 }
-export function CompanyCard({ company, featured = false }: CompanyCardProps) {
+export function CompanyCard({ company, featured = false, logged }: CompanyCardProps) {
   const categories = Array.isArray(company.categories) ? company.categories : [];
   const router = useRouter();
 
@@ -43,11 +45,12 @@ export function CompanyCard({ company, featured = false }: CompanyCardProps) {
     try {
       // Check if user is logged in
       const getUserData = async () => {
-        const userData = await fetch("/api/auth/me").then((res) => res.json()) 
+        const userData = await fetch("/api/auth/me").then((res) => res.json())
         return userData
       }
 
-      const currentUser = await getUserData()
+      const currentUser = logged ? logged : await getUserData()
+
       if (!currentUser) {
         toast({
           title: "Wymagane logowanie",
@@ -89,9 +92,8 @@ export function CompanyCard({ company, featured = false }: CompanyCardProps) {
 
   return (
     <Card
-      className={`overflow-hidden hover:shadow-md  transition-all flex flex-col justify-between hover:scale-[1.01] ${
-        featured ? "border-amber-300 hover:scale-105 shadow-amber-100" : ""
-      }`}
+      className={`overflow-hidden hover:shadow-md  transition-all flex flex-col justify-between hover:scale-[1.01] ${featured ? "border-amber-300 hover:scale-105 shadow-amber-100" : ""
+        }`}
     >
       <CardContent className="p-0 h-full">
         <div className="p-4 h-full flex justify-between flex-col">
@@ -124,20 +126,20 @@ export function CompanyCard({ company, featured = false }: CompanyCardProps) {
               <div className="flex items-center mt-1">
                 {company.rating > 0 ? (
                   <>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-4 w-4"
-                    fill={i < Math.floor(company.rating) ? "currentColor" : "none"}
-                    color={i < Math.floor(company.rating) ? "#FFB800" : "#D1D5DB"}
-                  />
-                ))}
-                <span className="text-sm ml-1">
-                  {Number(company.rating).toFixed(1)} ({company.reviewCount})
-                </span>
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className="h-4 w-4"
+                        fill={i < Math.floor(company.rating) ? "currentColor" : "none"}
+                        color={i < Math.floor(company.rating) ? "#FFB800" : "#D1D5DB"}
+                      />
+                    ))}
+                    <span className="text-sm ml-1">
+                      {Number(company.rating).toFixed(1)} ({company.reviewCount})
+                    </span>
                   </>
-                ) : "" }
-                
+                ) : ""}
+
               </div>
             </div>
           </div>
@@ -158,10 +160,10 @@ export function CompanyCard({ company, featured = false }: CompanyCardProps) {
                 <Phone className="h-3 w-3 mr-2" /> Zadzwoń
               </Button>
             </a>
-            
-              <Button variant="outline" size="sm" className="w-full" onClick={() => handleMessage(company.id)}>
-                <Mail className="h-3 w-3 mr-2" /> Napisz
-              </Button>
+
+            <Button variant="outline" size="sm" className="w-full" onClick={() => handleMessage(company.id)}>
+              <Mail className="h-3 w-3 mr-2" /> Napisz
+            </Button>
           </div>
         </div>
 

@@ -360,6 +360,8 @@ export default function SearchPageClient() {
   const [availablePriceRange, setAvailablePriceRange] = useState<{ min: number; max: number }>({ min: 0, max: 10000 })
   const { toast } = useToast()
 
+  const loggedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
+
   // Parse URL parameters
   useEffect(() => {
     const slug = (params?.slug as string[]) || []
@@ -401,7 +403,7 @@ export default function SearchPageClient() {
       setAds([])
       setPage(1)
 
-      if(!category) return
+      if (!category) return
 
       try {
         // Build query URL
@@ -788,66 +790,66 @@ export default function SearchPageClient() {
                 )} */}
 
                 {/* Category selection */}
-                { !tempCategory ?(
-                <div>
-                  <h4 className="text-sm font-medium mb-3">Kategoria</h4>
-                  <div className="space-y-2">
-                    {finalCategories.map((cat) => (
-                      <Button
-                        key={cat.name}
-                        variant={tempCategory === cat.name ? "default" : "ghost"}
-                        className="w-full justify-start text-left h-auto px-3 p-1"
-                        onClick={() => handleTempCategoryChange(cat.name)}
-                      >
-                        <Tag className="h-2 w-2 mr-1 flex-shrink-0" />
-                        <span className="truncate">{cat.name}</span>
-                      </Button>
-                    ))}
-                  </div>
-                </div>)
-                : (
+                {!tempCategory ? (
                   <div>
-                  <h4 className="text-sm font-medium mb-3">Kategoria</h4>
-                  <div className="space-y-2">
-                    
-                      <Button
-                        key={tempCategory}
-                        variant="default"
-                        className="w-full justify-between text-left h-auto px-3 p-2"
-                        onClick={() => handleTempCategoryChange("")}
-                      >
-                        <Tag className="h-2 w-2 mr-1 flex-shrink-0" />
-                        <span className="truncate">{tempCategory}</span>
-                        <XIcon />
-                      </Button>
-                  </div>
-                </div>
-                )
-                }
-
-                {/* Subcategory selection */}
-                {tempCategory && subcategories.length > 0 && 
-                  (!tempSubcategory ? (
-                  <div>
-                    <h4 className="text-sm font-medium mb-3">Podkategoria</h4>
+                    <h4 className="text-sm font-medium mb-3">Kategoria</h4>
                     <div className="space-y-2">
-                      {subcategories.map((subcat) => (
+                      {finalCategories.map((cat) => (
                         <Button
-                          key={subcat.name}
-                          variant={tempSubcategory === subcat.name ? "default" : "ghost"}
+                          key={cat.name}
+                          variant={tempCategory === cat.name ? "default" : "ghost"}
                           className="w-full justify-start text-left h-auto px-3 p-1"
-                          onClick={() => handleTempSubcategoryChange(subcat.name)}
+                          onClick={() => handleTempCategoryChange(cat.name)}
                         >
                           <Tag className="h-2 w-2 mr-1 flex-shrink-0" />
-                          <span className="truncate">{subcat.name}</span>
+                          <span className="truncate">{cat.name}</span>
                         </Button>
                       ))}
                     </div>
-                  </div>
-                  ) :( 
-                <div>
-                    <h4 className="text-sm font-medium mb-3">Podkategoria</h4>
-                    <div className="space-y-2">
+                  </div>)
+                  : (
+                    <div>
+                      <h4 className="text-sm font-medium mb-3">Kategoria</h4>
+                      <div className="space-y-2">
+
+                        <Button
+                          key={tempCategory}
+                          variant="default"
+                          className="w-full justify-between text-left h-auto px-3 p-2"
+                          onClick={() => handleTempCategoryChange("")}
+                        >
+                          <Tag className="h-2 w-2 mr-1 flex-shrink-0" />
+                          <span className="truncate">{tempCategory}</span>
+                          <XIcon />
+                        </Button>
+                      </div>
+                    </div>
+                  )
+                }
+
+                {/* Subcategory selection */}
+                {tempCategory && subcategories.length > 0 &&
+                  (!tempSubcategory ? (
+                    <div>
+                      <h4 className="text-sm font-medium mb-3">Podkategoria</h4>
+                      <div className="space-y-2">
+                        {subcategories.map((subcat) => (
+                          <Button
+                            key={subcat.name}
+                            variant={tempSubcategory === subcat.name ? "default" : "ghost"}
+                            className="w-full justify-start text-left h-auto px-3 p-1"
+                            onClick={() => handleTempSubcategoryChange(subcat.name)}
+                          >
+                            <Tag className="h-2 w-2 mr-1 flex-shrink-0" />
+                            <span className="truncate">{subcat.name}</span>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <h4 className="text-sm font-medium mb-3">Podkategoria</h4>
+                      <div className="space-y-2">
                         <Button
                           key={tempSubcategory}
                           variant="default"
@@ -858,32 +860,32 @@ export default function SearchPageClient() {
                           <span className="truncate">{tempSubcategory}</span>
                           <XIcon />
                         </Button>
-                    </div>
-                  </div>))
+                      </div>
+                    </div>))
                 }
 
                 {/* Final category selection */}
-                {tempSubcategory && finalcategories.length > 0 && 
-                  (!tempFinalcategory ?(
-                  <div>
-                    <h4 className="text-sm font-medium mb-3">Szczegółowa kategoria</h4>
-                    <div className="space-y-2">
-                      {finalcategories.map((finalcat) => (
-                        <Button
-                          key={finalcat}
-                          variant={tempFinalcategory === finalcat ? "default" : "ghost"}
-                          className="w-full justify-start text-left h-auto px-3 p-1"
-                          onClick={() => handleTempFinalCategoryChange(finalcat)}
-                        >
-                          <TagsIcon className="h-2 w-2 mr-1 flex-shrink-0" />
-                          <span className="truncate">{finalcat}</span>
-                        </Button>
-                      ))}
-                    </div>
-                  </div>) 
-                  : <div>
-                    <h4 className="text-sm font-medium mb-3">Szczegółowa kategoria</h4>
-                    <div className="space-y-2">
+                {tempSubcategory && finalcategories.length > 0 &&
+                  (!tempFinalcategory ? (
+                    <div>
+                      <h4 className="text-sm font-medium mb-3">Szczegółowa kategoria</h4>
+                      <div className="space-y-2">
+                        {finalcategories.map((finalcat) => (
+                          <Button
+                            key={finalcat}
+                            variant={tempFinalcategory === finalcat ? "default" : "ghost"}
+                            className="w-full justify-start text-left h-auto px-3 p-1"
+                            onClick={() => handleTempFinalCategoryChange(finalcat)}
+                          >
+                            <TagsIcon className="h-2 w-2 mr-1 flex-shrink-0" />
+                            <span className="truncate">{finalcat}</span>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>)
+                    : <div>
+                      <h4 className="text-sm font-medium mb-3">Szczegółowa kategoria</h4>
+                      <div className="space-y-2">
                         <Button
                           key={tempFinalcategory}
                           variant="default"
@@ -894,24 +896,24 @@ export default function SearchPageClient() {
                           <span className="truncate">{tempFinalcategory}</span>
                           <XIcon />
                         </Button>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {tempCity && 
+                {tempCity &&
                   <div>
                     <h4 className="text-sm font-medium mb-3">Miasto</h4>
                     <div className="space-y-2">
-                        <Button
-                          key={tempCity}
-                          variant="default"
-                          className="w-full justify-between text-left h-auto px-3 p-2"
-                          onClick={() => handleTempCityChange("")}
-                        >
-                          <Tag className="h-2 w-2 mr-1 flex-shrink-0" />
-                          <span className="truncate">{tempCity}</span>
-                          <XIcon />
-                        </Button>
+                      <Button
+                        key={tempCity}
+                        variant="default"
+                        className="w-full justify-between text-left h-auto px-3 p-2"
+                        onClick={() => handleTempCityChange("")}
+                      >
+                        <Tag className="h-2 w-2 mr-1 flex-shrink-0" />
+                        <span className="truncate">{tempCity}</span>
+                        <XIcon />
+                      </Button>
                     </div>
                   </div>
                 }
@@ -1051,7 +1053,7 @@ export default function SearchPageClient() {
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                       {ads.map((ad) => (
-                        <AdCard key={ad.id} ad={ad} />
+                        <AdCard key={ad.id} ad={ad} logged={loggedUser} />
                       ))}
                     </div>
 
@@ -1133,7 +1135,7 @@ export default function SearchPageClient() {
             </Tabs>
           </div>
         </div>
-                {/* Sekcja statystyk */}
+        {/* Sekcja statystyk */}
         <div className="mt-16 py-12 px-6 bg-muted/20 rounded-lg">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold mb-2">Dlaczego warto dodać ogłoszenie?</h2>

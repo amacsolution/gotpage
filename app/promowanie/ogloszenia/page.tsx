@@ -9,33 +9,32 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
 import { AdCard } from "@/components/ad-card"
-import { type AdCardProps } from "@/components/ad-card"
 import { Sparkles, TrendingUp, Eye, BarChart3, Zap, CheckCircle2, ChevronRight, Crown, ChevronDown } from "lucide-react"
 
 // Add a new type alias for promoted ads
 type PromotedAd = {
-    id: number
-    title: string
-    content: string
-    category: string
-    subcategory?: string
-    price: number | null
-    currency?: string | null
-    location?: string
-    image: string
-    createdAt: Date
-    promoted: number
-    comments_count: number
-    author: {
-      id: string
-      name: string
-      avatar: string
-      type: string
-      verified: boolean
-    }
-    likes: number
-    comments: number
+  id: number
+  title: string
+  content: string
+  category: string
+  subcategory?: string
+  price: number | null
+  currency?: string | null
+  location?: string
+  image: string
+  createdAt: Date
+  promoted: number
+  comments_count: number
+  author: {
+    id: string
+    name: string
+    avatar: string
+    type: string
+    verified: boolean
   }
+  likes: number
+  comments: number
+}
 
 export default function PromoteAdsPage() {
   const { toast } = useToast()
@@ -331,44 +330,44 @@ export default function PromoteAdsPage() {
 
         {/* Przykłady promowanych ogłoszeń */}
         {promotedAds &&
-        <div className="py-16 bg-primary/10 px-4 sm:px-6 lg:px-8">
-          <div className="container mx-auto max-w-6xl">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Przykłady promowanych ogłoszeń</h2>
-              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                Zobacz, jak wyglądają promowane ogłoszenia i jak wyróżniają się na tle innych.
-              </p>
-            </div>
-
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <Skeleton className="h-[350px] w-full rounded-lg" />
-                <Skeleton className="h-[350px] w-full rounded-lg" />
-                <Skeleton className="h-[350px] w-full rounded-lg" />
+          <div className="py-16 bg-primary/10 px-4 sm:px-6 lg:px-8">
+            <div className="container mx-auto max-w-6xl">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold mb-4">Przykłady promowanych ogłoszeń</h2>
+                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                  Zobacz, jak wyglądają promowane ogłoszenia i jak wyróżniają się na tle innych.
+                </p>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {promotedAds.length > 0 &&
-                  promotedAds.map((ad) => (
+
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <Skeleton className="h-[350px] w-full rounded-lg" />
+                  <Skeleton className="h-[350px] w-full rounded-lg" />
+                  <Skeleton className="h-[350px] w-full rounded-lg" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {promotedAds.length > 0 &&
+                    promotedAds.map((ad) => (
                       <div key={ad.id} className="transform hover:scale-105 transition-transform duration-300">
-                        <AdCard ad={ad}/>
+                        <AdCard ad={ad} />
                       </div>
                     ))
                   }
-              </div>
-            )}
+                </div>
+              )}
 
-            <div className="mt-12 text-center">
-              <Button
-                size="lg"
-                className="bg-primary"
-                onClick={() => document.getElementById("plans")?.scrollIntoView({ behavior: "smooth" })}
-              >
-                Promuj swoje ogłoszenie <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
+              <div className="mt-12 text-center">
+                <Button
+                  size="lg"
+                  className="bg-primary"
+                  onClick={() => document.getElementById("plans")?.scrollIntoView({ behavior: "smooth" })}
+                >
+                  Promuj swoje ogłoszenie <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
         }
 
         {/* Sekcja FAQ */}

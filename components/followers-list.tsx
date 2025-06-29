@@ -9,8 +9,6 @@ import { Badge } from "@/components/ui/badge"
 import { FollowButton } from "./follow-button"
 import { ShieldCheck } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { auth } from "@/lib/auth"
-import { se } from "date-fns/locale"
 
 interface User {
   id: string | number
@@ -44,7 +42,7 @@ export function FollowersList({ userId, type, limit }: FollowersListProps) {
     try {
       setIsLoading(true)
 
-      if(!user) {
+      if (!user) {
         setIsLoading(false)
         throw new Error(`Nie jesteś zalogowany`)
       }
@@ -56,7 +54,7 @@ export function FollowersList({ userId, type, limit }: FollowersListProps) {
 
       const data = await response.json()
       setUsers(data.users || [])
-    } catch (error : any) {
+    } catch (error: any) {
       toast({
         title: "Błąd",
         description: error.message || "Nie udało się pobrać danych",
@@ -127,14 +125,14 @@ export function FollowersList({ userId, type, limit }: FollowersListProps) {
                   </div>
                 </div>
                 {loggedUserId !== user.id && (
-                <div onClick={(e) => e.preventDefault()}>
-                  <FollowButton
-                    userId={user.id}
-                    isFollowing={user.isFollowing || false}
-                    size="sm"
-                    onFollowChange={(isFollowing) => handleFollowChange(user.id, isFollowing)}
-                  />
-                </div>)}
+                  <div onClick={(e) => e.preventDefault()}>
+                    <FollowButton
+                      userId={user.id}
+                      isFollowing={user.isFollowing || false}
+                      size="sm"
+                      onFollowChange={(isFollowing) => handleFollowChange(user.id, isFollowing)}
+                    />
+                  </div>)}
               </div>
             </CardContent>
           </Card>

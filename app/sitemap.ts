@@ -152,15 +152,15 @@ export default async function Sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
-  const firmCategoryUrl = businessCategories.map((category : {name : string}) => ({
+  const firmCategoryUrl = businessCategories.map((category: { name: string }) => ({
     url: `${baseUrl}/firmy/szukaj/${encodeURIComponent(category.name)}`,
     lastModified: new Date().toISOString(),
     changeFrequency: "weekly" as const,
     priority: 1,
   }))
 
-  const businessCityCategoryUrls = businessCategories.flatMap((category : {name : string}) =>
-    allLocations.map((city : string) => ({
+  const businessCityCategoryUrls = businessCategories.flatMap((category: { name: string }) =>
+    allLocations.map((city: string) => ({
       url: `${baseUrl}/firmy/szukaj/${encodeURIComponent(category.name)}?location=${encodeURIComponent(city)}`,
       lastModified: new Date().toISOString(),
       changeFrequency: "weekly" as const,
@@ -168,14 +168,14 @@ export default async function Sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   )
 
-  const businessCityUrls = allLocations.map((city : string) => ({
+  const businessCityUrls = allLocations.map((city: string) => ({
     url: `${baseUrl}/firmy/miasto/${encodeURIComponent(city)}`,
     lastModified: new Date().toISOString(),
     changeFrequency: "weekly" as const,
     priority: 1,
   }))
 
-  const cityUrls = allLocations.map((city : string) => ({
+  const cityUrls = allLocations.map((city: string) => ({
     url: `${baseUrl}/ogloszenia/miasto/${encodeURIComponent(city)}`,
     lastModified: new Date().toISOString(),
     changeFrequency: "weekly" as const,
@@ -184,7 +184,7 @@ export default async function Sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Generate URLs for main categories
   const categoryUrls = finalCategories.map(
-    (category : {name : string, subcategory? : {name:string , finalcategory? : string}}) => ({
+    (category: { name: string, subcategory?: { name: string, finalcategory?: string } }) => ({
       url: `${baseUrl}/ogloszenia/szukaj/${encodeURIComponent(category.name)}`,
       lastModified: new Date().toISOString(),
       changeFrequency: "weekly" as const,
@@ -205,7 +205,7 @@ export default async function Sitemap(): Promise<MetadataRoute.Sitemap> {
   )
 
   // Generate URLs for subsubcategories (final categories)
-  const finalCategoryUrls = finalCategories.flatMap((category : {name : string, subcategories? : {name:string , subsubcategories? : string[]}[]}) =>
+  const finalCategoryUrls = finalCategories.flatMap((category: { name: string, subcategories?: { name: string, subsubcategories?: string[] }[] }) =>
     (category.subcategories ?? []).flatMap((subcategory) => {
       if (subcategory.subsubcategories) {
         return subcategory.subsubcategories.map(
@@ -221,7 +221,7 @@ export default async function Sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   )
 
-  const cityCategoryUrls = finalCategories.flatMap((category : {name : string, subcategories? : {name:string , subsubcategories? : string[]}[]}) =>
+  const cityCategoryUrls = finalCategories.flatMap((category: { name: string, subcategories?: { name: string, subsubcategories?: string[] }[] }) =>
     allLocations.map(
       (city) => ({
         url: `${baseUrl}/ogloszenia/szukaj/${encodeURIComponent(category.name)}?location=${encodeURIComponent(city)}`,
@@ -233,7 +233,7 @@ export default async function Sitemap(): Promise<MetadataRoute.Sitemap> {
   )
 
   // Add city + subcategory combinations
-  const citySubcategoryUrls = finalCategories.flatMap((category : {name : string, subcategories? : {name:string , subsubcategories? : string[]}[]}) =>
+  const citySubcategoryUrls = finalCategories.flatMap((category: { name: string, subcategories?: { name: string, subsubcategories?: string[] }[] }) =>
     (category.subcategories ?? []).flatMap((subcategory) =>
       allLocations.map(
         (city) => ({
@@ -247,7 +247,7 @@ export default async function Sitemap(): Promise<MetadataRoute.Sitemap> {
   )
 
   // Add city + final category combinations
-  const cityFinalCategoryUrls = finalCategories.flatMap((category : {name : string, subcategories? : {name:string , subsubcategories? : string[]}[]}) =>
+  const cityFinalCategoryUrls = finalCategories.flatMap((category: { name: string, subcategories?: { name: string, subsubcategories?: string[] }[] }) =>
     (category.subcategories ?? []).flatMap((subcategory) => {
       if (subcategory.subsubcategories) {
         return subcategory.subsubcategories.flatMap((finalCat) =>
@@ -269,25 +269,6 @@ export default async function Sitemap(): Promise<MetadataRoute.Sitemap> {
   function escapeUrl(url: string) {
     return url.replace(/&/g, '&amp;');
   }
-
-  // Count all generated URLs
-  const countAll =
-    staticUrls.length +
-    (userUrls?.length || 0) +
-    categoryUrls.length +
-    subcategoryUrls.length +
-    finalCategoryUrls.length +
-    cityUrls.length +
-    cityCategoryUrls.length +
-    citySubcategoryUrls.length +
-    cityFinalCategoryUrls.length +
-    firmCategoryUrl.length +
-    businessCityCategoryUrls.length +
-    businessCityUrls.length +
-    newsUrls.length +
-    posts.length +
-    businesses.length;
-
 
   const sitemapItems = [
     ...staticUrls,

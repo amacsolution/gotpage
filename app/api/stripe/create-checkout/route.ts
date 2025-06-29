@@ -11,8 +11,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 // Mapa identyfikatorów cen dla różnych typów promocji i planów
 const PRICE_IDS = {
   company: {
-    business: process.env.STRIPE_COMPANY_PRICE_STANDARD || "" ,
-    professional: process.env.STRIPE_COMPANY_PRICE_PREMIUM || "" ,
+    business: process.env.STRIPE_COMPANY_PRICE_STANDARD || "",
+    professional: process.env.STRIPE_COMPANY_PRICE_PREMIUM || "",
     enterprise: process.env.STRIPE_COMPANY_PRICE_VIP || "",
   },
   ad: {
@@ -36,8 +36,8 @@ export async function GET(request: Request) {
     const type = searchParams.get("type") || "company"
     const itemId = searchParams.get("id")
 
-    if(type === "business"){
-          // Check if user has a valid subscription
+    if (type === "business") {
+      // Check if user has a valid subscription
       const userSubscription = await stripe.subscriptions.list({
         customer: user.stripeCustomerId,
         status: "active",
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
         [user.id]
       ) as { active: number }[]
 
-      if (userSubscription.data.length > 0 || userCheck[0].active == 1 ) {
+      if (userSubscription.data.length > 0 || userCheck[0].active == 1) {
         return NextResponse.json({ error: "Już masz aktywną subskrypcję" }, { status: 400 })
       }
     }
@@ -59,14 +59,14 @@ export async function GET(request: Request) {
     }
 
     //Validate ad id
-    if (type === "ad" ) {
-      if(!itemId) NextResponse.json({ error: "Brak wymaganego parametru: id" }, { status: 400 })
+    if (type === "ad") {
+      if (!itemId) NextResponse.json({ error: "Brak wymaganego parametru: id" }, { status: 400 })
       const promotionCheck = await query(
         `SELECT promoted FROM ads WHERE user_id = ? AND id = ?`,
         [user.id, itemId]
       ) as { promoted: number }[]
 
-      if (promotionCheck[0].promoted == 1 ) {
+      if (promotionCheck[0].promoted == 1) {
         return NextResponse.json({ error: "Ogłoszenie jest już promowane" }, { status: 400 })
       }
     }
@@ -158,8 +158,8 @@ export async function GET(request: Request) {
         },
       ],
       mode,
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?type=${type}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout?canceled=true&type=${type}`,
+      success_url: `https://gotpage.pl/checkout/success?type=${type}`,
+      cancel_url: `https://gotpage.pl/checkout?canceled=true&type=${type}`,
       metadata,
       customer_email: user.email,
     })

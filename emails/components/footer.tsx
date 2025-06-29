@@ -11,7 +11,7 @@ export const Footer: React.FC<FooterProps> = ({
   companyName = process.env.NEXT_PUBLIC_COMPANY_NAME || "Gotpage",
   companyAddress = process.env.NEXT_PUBLIC_COMPANY_ADDRESS || "ul. Łódzka 66, 99-200 Poddebice",
   unsubscribeUrl = "#",
-  appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://localhost:3000",
+  appUrl = "https://gotpage.pl",
 }) => {
   // Linki do stron prawnych i informacyjnych
   const legalLinks = [

@@ -11,11 +11,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Star, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useUser } from "@/lib/user-context"
+import { User } from "@/lib/auth"
 
 interface UserReviewsProps {
   userId: string
   showAddReview?: boolean
   firma?: string
+  user?: User
 }
 
 interface Review {
@@ -30,7 +32,7 @@ interface Review {
   }
 }
 
-export  function UserReviews({ userId, showAddReview = true, firma}: UserReviewsProps) {
+export function UserReviews({ userId, showAddReview = true, firma, user }: UserReviewsProps) {
   const [reviews, setReviews] = useState<Review[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [page, setPage] = useState(1)
@@ -40,7 +42,6 @@ export  function UserReviews({ userId, showAddReview = true, firma}: UserReviews
   const [content, setContent] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
-  const user = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
 
   useEffect(() => {
     fetchReviews(1)
@@ -148,9 +149,9 @@ export  function UserReviews({ userId, showAddReview = true, firma}: UserReviews
   return (
     <div className="space-y-6">
       {/* Formularz dodawania opinii */}
-      {showAddReview && userId !== user.id && user && (
+      {showAddReview && userId !== user?.id && user && (
         <div className="mb-6 p-4 border rounded-lg">
-          <h3 className="font-medium mb-4">Dodaj opinię {firma? `o firmie ${firma}` : "" }</h3>
+          <h3 className="font-medium mb-4">Dodaj opinię {firma ? `o firmie ${firma}` : ""}</h3>
           <form onSubmit={handleSubmitReview}>
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">Ocena</label>

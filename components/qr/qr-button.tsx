@@ -34,7 +34,6 @@ export default function QrButton({ url, className }: { url: string, className?: 
       data: url,
       margin: 10,
       qrOptions: {
-        typeNumber: 5,
         mode: "Byte",
         errorCorrectionLevel: "H"
       },
@@ -75,20 +74,20 @@ export default function QrButton({ url, className }: { url: string, className?: 
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <form>
         <DialogTrigger asChild>
-          <Button variant="outline" className={className}><QrCode className="mr-2"/>Udostępnij kod QR</Button>
+          <Button variant="outline" className={className}><QrCode className="mr-2" />Udostępnij kod QR</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Twój kod QR</DialogTitle>
             <DialogDescription>
-                Oto twój unikalny kod QR, który możesz pobrać lub wygenerować ponownie.
+              Oto twój unikalny kod QR, który możesz pobrać lub wygenerować ponownie.
             </DialogDescription>
           </DialogHeader>
           <div
             ref={qrRef}
             id="qr-code" className="flex items-center justify-center w-full h-80 rounded-lg shadow-md overflow-hidden"
           ></div>
-           <div className="flex items-center gap-2 bg-background border border-muted-foreground px-3 py-2 rounded-md w-full max-w-md">
+          <div className="flex items-center gap-2 bg-background border border-muted-foreground px-3 py-2 rounded-md w-full max-w-md">
             <input
               type="text"
               value={url}
@@ -100,27 +99,27 @@ export default function QrButton({ url, className }: { url: string, className?: 
               className="text-foreground hover:text-foreground/50 transition"
               title="Skopiuj link"
             >
-              {copied ? 
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{
-                  duration: 1,
-                  scale: { type: "spring", visualDuration: 1, bounce: 0.5 }
-                }}
-              >
-                <Check className="w-5 h-5 text-green-500" />
-              </motion.div>
-              : <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{
-                duration: 1,
-                scale: { type: "spring", visualDuration: 0.4, bounce: 0.5 },
-            }}
-              >
-                <Copy className="w-5 h-5 text-foreground transition hover:text-foreground/50" />
-              </motion.div> }
+              {copied ?
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{
+                    duration: 1,
+                    scale: { type: "spring", visualDuration: 1, bounce: 0.5 }
+                  }}
+                >
+                  <Check className="w-5 h-5 text-green-500" />
+                </motion.div>
+                : <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{
+                    duration: 1,
+                    scale: { type: "spring", visualDuration: 0.4, bounce: 0.5 },
+                  }}
+                >
+                  <Copy className="w-5 h-5 text-foreground transition hover:text-foreground/50" />
+                </motion.div>}
 
             </button>
           </div>
@@ -145,7 +144,6 @@ export default function QrButton({ url, className }: { url: string, className?: 
                   data: url,
                   margin: 10,
                   qrOptions: {
-                    typeNumber: 5,
                     mode: "Byte",
                     errorCorrectionLevel: "H"
                   },

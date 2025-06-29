@@ -64,6 +64,7 @@ export async function uploadFile(file: File, path: string): Promise<{ url: strin
 
     // Generuj unikalną nazwę pliku
     const fileName = `${path.split("/").pop() || uuidv4()}`
+    console.warn(fileName)
 
     // Konwertuj plik na Base64 (tylko dla celów demonstracyjnych)
     const reader = new FileReader()
@@ -75,11 +76,11 @@ export async function uploadFile(file: File, path: string): Promise<{ url: strin
         // W prawdziwej aplikacji byłby to URL do przesłanego pliku
 
         // Symulacja opóźnienia przesyłania
-          // Zwróć URL do "przesłanego" pliku
-          // W rzeczywistej aplikacji byłby to URL zwrócony przez serwer
-          resolve({
-            url: reader.result as string,
-          })
+        // Zwróć URL do "przesłanego" pliku
+        // W rzeczywistej aplikacji byłby to URL zwrócony przez serwer
+        resolve({
+          url: reader.result as string,
+        })
       }
 
       reader.onerror = () => {

@@ -40,7 +40,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { use, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
 // Komponent szkieletu ładowania
 function ProfileSkeleton() {
@@ -116,7 +116,7 @@ function UserNotFound({ router }: { router: any }) {
   )
 }
 
-export default function UserProfilePage({id} : { id: string }) {
+export default function UserProfilePage({ id }: { id: string }) {
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -200,7 +200,7 @@ export default function UserProfilePage({id} : { id: string }) {
       if (!response.ok) {
         setLoadingMessages(false)
         throw new Error(`Error creating conversation: ${response.status}`)
-        
+
       }
 
       setLoadingMessages(false)
@@ -336,9 +336,9 @@ export default function UserProfilePage({id} : { id: string }) {
             </div>
           </div>
         </div>
-        </div>
-      
-        <div className="container pb-6">
+      </div>
+
+      <div className="container pb-6">
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-1 space-y-6">
@@ -373,6 +373,7 @@ export default function UserProfilePage({id} : { id: string }) {
                   <FollowButton
                     userId={user.id}
                     isFollowing={isFollowing}
+                    userData={loggedUser}
                     onFollowChange={(following) => {
                       setIsFollowing(following)
                       setUser((prevUser: any) => ({
@@ -394,7 +395,7 @@ export default function UserProfilePage({id} : { id: string }) {
                   following={user.stats.following || 0}
                 />
               </div>
-              <p className="text-muted-foreground">{user.bio}</p>
+              <p className="text-muted-foreground">{user.bio?.slice(0, 60)}{user.bio.length > 60 ? " ..." : " "}</p>
               {user.type === "business" && user.categories && user.categories.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {user.categories.map((category: string) => (
@@ -441,14 +442,14 @@ export default function UserProfilePage({id} : { id: string }) {
               {user.id && (
                 <>
                   <QrButton url={`https://gotpage.pl/profil/${user.id}`} className="w-full mt-2" />
-                  
-                  <Button className={`w-full flex items-center bg-primary ${LoadingMessages ? "opacity-50" : ""} text-primary-foreground hover:bg-primary/90`}variant="outline" onClick={() => handleMessage(user.id)}>
-                    {LoadingMessages ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" /> }
+
+                  <Button className={`w-full flex items-center bg-primary ${LoadingMessages ? "opacity-50" : ""} text-primary-foreground hover:bg-primary/90`} variant="outline" onClick={() => handleMessage(user.id)}>
+                    {LoadingMessages ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
                     Wyślij wiadomość
                   </Button>
                 </>
               )}
-              
+
             </div>
 
             <Card>
@@ -610,6 +611,7 @@ export default function UserProfilePage({id} : { id: string }) {
                                   userId={similarUser.id}
                                   isFollowing={similarUser.isFollowing || false}
                                   size="sm"
+                                  userData={loggedUser}
                                 />
                               </div>
                             </CardContent>
@@ -807,7 +809,7 @@ export default function UserProfilePage({id} : { id: string }) {
                   ) : posts.length > 0 ? (
                     <>
                       {posts.map((post) => (
-                        <NewsPost key={post.id} post={post} />
+                        <NewsPost key={post.id} post={post} logged={loggedUser} />
                       ))}
 
                       {hasMore && (
@@ -834,7 +836,7 @@ export default function UserProfilePage({id} : { id: string }) {
                 </div>
               </TabsContent>
               <TabsContent value="ads" className="mt-4">
-                <AdFeed isUserProfile={true} userId={user.id} />
+                <AdFeed isUserProfile={true} userId={user.id} logged={loggedUser} />
               </TabsContent>
               <TabsContent value="photos" className="mt-4">
                 <h2 className="text-xl font-semibold mb-4">Zdjęcia</h2>
@@ -858,10 +860,10 @@ export default function UserProfilePage({id} : { id: string }) {
                         <span className="font-bold">{Number(user.stats.rating)?.toFixed(1)}</span>
                         <span className="text-muted-foreground">({user.stats.reviews} opinii)</span>
                       </div>
-                      <UserReviews showAddReview userId={user.id} firma={user.name}/>
+                      <UserReviews showAddReview userId={user.id} firma={user.name} user={loggedUser} />
                     </>
-                  ): (
-                      <UserReviews showAddReview userId={user.id} firma={user.name}/>
+                  ) : (
+                    <UserReviews showAddReview userId={user.id} firma={user.name} user={loggedUser} />
                   )}
                 </TabsContent>
               )}
@@ -869,6 +871,30 @@ export default function UserProfilePage({id} : { id: string }) {
           </div>
         </div>
       </div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Person",
+            name: user.fullname || user.name,
+            image: user.avatar,
+            description: `${user.name} jest na Gotpage`,
+            url: `https://gotpage.pl/profil/${user.id}`,
+            jobTitle: user.occupation || undefined,
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: user.location || undefined,
+              addressCountry: "PL",
+              streetAddress: user.adress || undefined,
+            },
+            sameAs: user.social_media
+              ? user.social_media.split(",").map((link: string) => link.trim())
+              : [],
+          }),
+        }}
+      />
+
     </PageLayout>
   )
 }

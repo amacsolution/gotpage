@@ -40,6 +40,8 @@ export default function CityPage() {
   const [searchQuery, setSearchQuery] = useState<string>("")
   const { toast } = useToast()
 
+  const loggedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
+
   // Parse URL parameters
   useEffect(() => {
     const slug = (params?.slug as string[]) || []
@@ -285,7 +287,7 @@ export default function CityPage() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {ads.map((ad) => (
-                    <AdCard key={ad.id} ad={ad} />
+                    <AdCard key={ad.id} ad={ad} logged={loggedUser} />
                   ))}
                 </div>
 
@@ -326,7 +328,7 @@ export default function CityPage() {
             {ads.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {ads.map((ad) => (
-                  
+
                   <Card key={ad.id} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
@@ -354,7 +356,7 @@ export default function CityPage() {
                           </div>
                         </div>
                         <Button size="sm" variant="outline" asChild>
-                            <a href={`/ogloszenia/${ad.id}-${slugify(ad.title, { lower: true, strict: true })}`}>Szczegóły</a>
+                          <a href={`/ogloszenia/${ad.id}-${slugify(ad.title, { lower: true, strict: true })}`}>Szczegóły</a>
                         </Button>
                       </div>
                     </CardContent>
@@ -364,7 +366,7 @@ export default function CityPage() {
             )}
           </TabsContent>
         </Tabs>
-                {/* Sekcja statystyk */}
+        {/* Sekcja statystyk */}
         <div className="mt-16 py-12 px-6 bg-muted/20 rounded-lg">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold mb-2">Dlaczego warto dodać ogłoszenie?</h2>
