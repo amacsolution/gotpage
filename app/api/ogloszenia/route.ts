@@ -13,6 +13,25 @@ const generateAdKey = (name: string): string => {
   return `${baseKey}-${uniqueSuffix}`
 }
 
+const getCoordinates = async (address: string) => {
+  const url = `https://nominatim.openstreetmap.org/search.php?format=jsonv2&q=${encodeURIComponent(address)}`
+
+  try {
+    const response = await fetch(url)
+    const data = await response.json()
+
+    if (data.length > 0) {
+      return { lat: data[0].lat, lng: data[0].lon }
+    } else {
+      //console.warn("Nie znaleziono współrzędnych dla adresu:", address)
+      return null
+    }
+  } catch (error) {
+    //console.error("Błąd podczas pobierania współrzędnych:", error)
+    return null
+  }
+}
+
 export async function POST(request: Request) {
   try {
     // Sprawdzenie, czy użytkownik jest zalogowany
@@ -38,8 +57,20 @@ export async function POST(request: Request) {
     const adKey = generateAdKey(title) // Generowanie unikalnego klucza ogłoszenia
 
     // Walidacja podstawowych pól
-    if (!title || !content || !category) {
+    if (!title || !content || !category || !location) {
       return NextResponse.json({ error: "Brakuje wymaganych pól" }, { status: 400 })
+    }
+
+    let coordinates = null
+
+    if (location && adres) {
+      const fullAddress = `${location}, ${adres}`
+      coordinates = await getCoordinates(fullAddress)
+      if(coordinates === null){
+        coordinates = await getCoordinates(location)
+      }
+    } else if (location) {
+      coordinates = await getCoordinates(location)
     }
 
     // Rozpoczęcie transakcji
@@ -78,14 +109,15 @@ export async function POST(request: Request) {
           final_category,
           price, 
           promoted, 
-          location, 
+          location,
+          coordinates,
           adress, 
           kod, 
           parameters,
           user_id, 
           created_at, 
           updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
       `
 
       const values = [
@@ -98,6 +130,7 @@ export async function POST(request: Request) {
         price,
         isPromoted ? 1 : 0,
         location,
+        coordinates ? JSON.stringify(coordinates) : null,
         adres,
         kod,
         JSON.stringify(parameters),
@@ -273,6 +306,7 @@ export async function GET(request: Request) {
         a.price, 
         a.currency, 
         a.location, 
+        a.coordinates,
         a.category, 
         a.subcategory, 
         a.final_category as finalcategory,

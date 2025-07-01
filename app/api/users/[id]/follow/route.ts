@@ -40,9 +40,10 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       const result = await query("INSERT INTO user_follows (follower_id, target_id, created_at) VALUES (?, ?, NOW())", [
         user.id,
         targetUserId,
-      ]) as { affectedRows: number }[]
+      ]) as { affectedRows: number }
 
-      if (result[0].affectedRows > 0) {
+      if (result?.affectedRows > 0) {
+        // Success, do nothing here
       } else {
         console.error("Nie udało się dodać obserwacji")
         return NextResponse.json({ error: "Nie udało się dodać obserwacji" }, { status: 500 })

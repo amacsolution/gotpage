@@ -94,18 +94,13 @@ export default function AdDetailsClient({ id }: { id: string }) {
     // Pobieranie danych ogłoszenia
     const fetchAd = async () => {
       setIsLoading(true)
-      const getUserData = async () => {
-        const userData = currentUser
-        const user = userData ? JSON.parse(userData) : false
-        return user
-      }
       try {
         const response = await fetch(`/api/ogloszenia/${id}`)
         const data = await response.json()
         if (data.error) {
           throw new Error(data.error)
         }
-        const user = await getUserData()
+        const user = currentUser
         if (data.author && user) {
           setIsAuthor(user.id === data.author.id)
         }

@@ -34,7 +34,7 @@ interface CompanyMapProps {
 export default function CompanyMap({
   companies,
   isLoading,
-  center = { lat: 52.2297, lng: 21.0122 }, // Warsaw as default center
+  center = { lat: 52.0693, lng: 19.4803 }, // Warsaw as default center
 }: CompanyMapProps) {
   const [mapCompanies, setMapCompanies] = useState<Company[]>([])
   const [mapKey, setMapKey] = useState(Date.now()) // Unique key for map reinitialization

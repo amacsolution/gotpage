@@ -31,13 +31,6 @@ import CompaniesFeedLimit from "@/components/companies-feed"
 import { UserProfiles } from "@/components/user-profiles"
 import { Suspense } from "react"
 import { SiteConfig } from "@/config/site"
-import {
-  motion,
-  AnimatePresence,
-  MotionConfig,
-  useAnimation,
-  useInView,
-} from "framer-motion";
 import CategoryGrid from "@/components/main/categories"
 
 // Dodajemy metadane dla SEO
@@ -101,7 +94,7 @@ export const metadata: Metadata = {
 }
 
 
-export const categories = [
+const categories = [
   {
     name: "Motoryzacja",
     icon: <Car className="h-6 w-6" />,

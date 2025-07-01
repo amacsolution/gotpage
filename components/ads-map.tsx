@@ -257,7 +257,7 @@ interface AdsMapProps {
 export default function AdsMap({
   ads = [],
   isLoading = false,
-  center = { lat: 52.2297, lng: 21.0122 }, // Warszawa jako domyślne centrum
+  center = { lat: 52.0693, lng: 19.4803 }, // Środek Polski jako domyślne centrum
 }: AdsMapProps) {
   const [mapAds, setMapAds] = useState<any[]>([])
   const leafletInitialized = useRef(false)
@@ -285,7 +285,9 @@ export default function AdsMap({
           // Jeśli ogłoszenie ma już współrzędne, użyj ich
           if (ad.coordinates) {
             return ad
-          }
+          } else {
+            await fetch('/api/update-coordinates')
+          } 
 
           // W przeciwnym razie pobierz współrzędne na podstawie lokalizacji
           const location = await getCoordinates(ad.location)

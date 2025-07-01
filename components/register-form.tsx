@@ -99,7 +99,7 @@ const baseFormSchema = z
     confirmPassword: z.string().min(1, { message: "Potwierdź hasło" }),
     accountType: z.enum(["individual", "business"]),
     // Individual fields
-    location: z.string().optional(),
+    location: z.string(),
     occupation: z.string().optional(),
     interests: z.string().optional(),
     relationshipStatus: z.string().optional(),
@@ -236,7 +236,7 @@ export function MultiStepRegisterForm() {
       if (accountType === "business") {
         isValid = await form.trigger(["location", "address", "categories", "termsAccepted"])
       } else {
-        isValid = await form.trigger(["termsAccepted"])
+        isValid = await form.trigger(["location","termsAccepted"])
       }
     }
 
@@ -485,6 +485,19 @@ export function MultiStepRegisterForm() {
           <div className="space-y-8">
             {accountType === "individual" ? (
               <>
+                <FormField
+                  control={form.control}
+                  name="location"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Lokalizacja *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Warszawa, Mazowieckie" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="occupation"

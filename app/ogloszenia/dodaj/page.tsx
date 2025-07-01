@@ -144,7 +144,7 @@ const categories = [
   {
     id: 3,
     name: "Elektronika",
-    subcategories: ["Telefony i Akcesoria", "Komputery i Akcesoria"],
+    subcategories: ["Telefony i Akcesoria", "Komputery i Akcesoria", "Zegarki i Smartwache"],
     subsubcategories: {
       "Telefony i Akcesoria": ["Smartfony", "Urządzenia Stacjonarne", "Akcesoria"],
       "Komputery i Akcesoria": ["Komputery Stacjonarne", "Laptopy/Netbooki", "Tablety/Palmtopy", "Monitory/Projektory", "Drukarki/Skanery", "Akcesoria", "Internet i Sieci", "Oprogramowanie",],
@@ -499,14 +499,14 @@ const createFormSchema = (selectedCategory: string, selectedSubcategory: string)
     location: z.string().min(2, {
       message: "Lokalizacja musi mieć co najmniej 2 znaki",
     }),
-    adres: z.string().min(2, {
-      message: "Adres musi mieć co najmniej 2 znaki",
-    }),
-    kod: z
-      .string()
-      .regex(/^\d{2}-\d{3}$/, {
-        message: "Kod pocztowy musi być w formacie XX-XXX",
-      }),
+    adres: z.string().optional(),
+kod: z
+  .string()
+  .regex(/^\d{2}-\d{3}$/, {
+    message: "Kod pocztowy musi być w formacie XX-XXX",
+  })
+  .optional()
+  .or(z.literal("")),
     isPromoted: z.boolean().default(false),
   })
 
@@ -809,7 +809,7 @@ export default function AddAdPage() {
       })
 
       // Przekierowanie na stronę ogłoszenia
-      router.push(`/ogloszenia/${data.id}-${slugify(data.title, { lower: true, strict: true })}`)
+      router.push(`/ogloszenia/${data.adId}-${slugify(String(values.title|| data.title || ""))}`)
     } catch (error) {
 
       console.error("Błąd podczas dodawania ogłoszenia:", error)
