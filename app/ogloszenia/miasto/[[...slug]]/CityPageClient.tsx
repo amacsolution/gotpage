@@ -229,11 +229,11 @@ export default function CityPage() {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold">Ogłoszenia</h2>
-            {totalAds > 0 && (
+            {/* {totalAds > 0 && (
               <Badge variant="outline" className="text-muted-foreground">
                 {totalAds} {totalAds === 1 ? "ogłoszenie" : totalAds < 5 ? "ogłoszenia" : "ogłoszeń"}
               </Badge>
-            )}
+            )} */}
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">

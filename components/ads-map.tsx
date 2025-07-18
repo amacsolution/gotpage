@@ -8,6 +8,7 @@ import "leaflet/dist/leaflet.css"
 import { formatDistanceToNow } from "date-fns"
 import { pl } from "date-fns/locale"
 import slugify from "slugify"
+import { AdData } from "@/app/api/ogloszenia/route"
 
 // Extend Leaflet types for markerClusterGroup
 declare global {
@@ -26,6 +27,18 @@ function MapUpdater({ center }: { center?: { lat: number; lng: number } }) {
     }
   }, [center, map])
 
+  return null
+}
+
+// Pomocniczy komponent, który usuwa mapę przy unmount
+function UnmountMapOnReload({ map }: { map: L.Map | null }) {
+  useEffect(() => {
+    return () => {
+      if (map) {
+        map.remove()
+      }
+    }
+  }, [map])
   return null
 }
 
@@ -199,7 +212,6 @@ function MarkerClusterHandler({ ads }: { ads: any[] }) {
                 </a>
               </div>
             `
-
             marker.bindPopup(popupContent)
             clusterGroup.addLayer(marker)
           }
@@ -249,7 +261,7 @@ const getCoordinates = async (address: string) => {
 
 // Główny komponent mapy
 interface AdsMapProps {
-  ads: any[]
+  ads: AdData[]
   isLoading: boolean
   center?: { lat: number; lng: number }
 }
@@ -261,6 +273,7 @@ export default function AdsMap({
 }: AdsMapProps) {
   const [mapAds, setMapAds] = useState<any[]>([])
   const leafletInitialized = useRef(false)
+  const [mapInstance, setMapInstance] = useState<L.Map | null>(null)
 
   // Inicjalizacja ikon Leaflet
   useEffect(() => {
@@ -283,20 +296,26 @@ export default function AdsMap({
       const processedAds = await Promise.all(
         ads.map(async (ad) => {
           // Jeśli ogłoszenie ma już współrzędne, użyj ich
+          let location
           if (ad.coordinates) {
-            return ad
+            if (typeof ad.coordinates === 'string') {
+              try {
+                location = JSON.parse(ad.coordinates)
+              } catch (err) {
+                console.error("Nieprawidłowy format coordinates", ad.coordinates)
+              }
+            } else {
+              location = ad.coordinates
+            }
           } else {
-            await fetch('/api/update-coordinates')
-          } 
+            location = await getCoordinates(ad.location)
+          }
 
-          // W przeciwnym razie pobierz współrzędne na podstawie lokalizacji
-          const location = await getCoordinates(ad.location)
           return {
             ...ad,
             coordinates: location
-              ? [location.lat, location.lng]
+              ? [parseFloat(location.lat), parseFloat(location.lng)]
               : [
-                // Jeśli nie można pobrać współrzędnych, wygeneruj losowe w pobliżu centrum
                 center.lat + (Math.random() - 0.5) * 0.1,
                 center.lng + (Math.random() - 0.5) * 0.1,
               ],
@@ -321,13 +340,13 @@ export default function AdsMap({
       </div>
     )
   }
-
   return (
     <MapContainer
       center={[center.lat, center.lng]}
-      zoom={12}
+      zoom={10}
       style={{ height: "100%", width: "100%" }}
       scrollWheelZoom={true}
+      whenReady={() => setMapInstance}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -335,10 +354,10 @@ export default function AdsMap({
       />
 
       <MapUpdater center={center} />
-
-      {/* Komponent obsługujący klastry markerów */}
       <MarkerClusterHandler ads={mapAds} />
+      <UnmountMapOnReload map={mapInstance} />
     </MapContainer>
+
   )
 }
 

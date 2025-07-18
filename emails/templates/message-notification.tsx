@@ -18,7 +18,7 @@ export const MessageNotification: React.FC<MessageNotificationProps> = ({
   conversationUrl = "https://twojadomena.pl/messages/123",
 }) => {
   return (
-    <Layout title="Nowa wiadomość" previewText={`Nowa wiadomość od ${senderName} dotycząca ogłoszenia "${adTitle}"`}>
+    <Layout userName={userName} title="Nowa wiadomość" previewText={`Nowa wiadomość od ${senderName} dotycząca ogłoszenia "${adTitle}"`}>
       <h1 style={{ color: "#333333", fontSize: "24px", fontWeight: "bold", margin: "0 0 24px 0" }}>
         Cześć, {userName}!
       </h1>

@@ -28,7 +28,7 @@ export const Footer: React.FC<FooterProps> = ({
   return (
     <table style={{ width: "100%", borderTop: "1px solid #E5E5E5", paddingTop: "16px", marginTop: "16px" }}>
       <tr>
-        <td style={{ textAlign: "center", color: "#706F6F", fontSize: "12px", fontFamily: "Arial, sans-serif" }}>
+        <td style={{ textAlign: "center", color: "#706F6F", fontSize: "12px", fontFamily: "Arial, sans-serif", paddingTop: "16px" }}>
           <p>
             © {new Date().getFullYear()} {companyName}. Wszelkie prawa zastrzeżone.
           </p>

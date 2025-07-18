@@ -759,7 +759,7 @@ export default function AddAdPage() {
       // Przygotowanie danych formularza
       const formData = new FormData()
 
-      // Dodanie podstawowych pól
+      // Dodanie podstawowych pól 
       formData.append("title", values.title)
       formData.append("content", values.content)
       formData.append("category", values.category)

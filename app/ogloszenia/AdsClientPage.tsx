@@ -61,65 +61,64 @@ const adCategories = [
 ];
 
 const allLocations = [
-  "Warszawa, mazowieckie",
-  "Kraków, małopolskie",
-  "Łódź, łódzkie",
-  "Wrocław, dolnośląskie",
-  "Poznań, wielkopolskie",
-  "Gdańsk, pomorskie",
-  "Szczecin, zachodniopomorskie",
-  "Bydgoszcz, kujawsko-pomorskie",
-  "Lublin, lubelskie",
-  "Białystok, podlaskie",
-  "Katowice, śląskie",
-  "Gdynia, pomorskie",
-  "Częstochowa, śląskie",
-  "Radom, mazowieckie",
-  "Sosnowiec, śląskie",
-  "Toruń, kujawsko-pomorskie",
-  "Kielce, świętokrzyskie",
-  "Rzeszów, podkarpackie",
-  "Gliwice, śląskie",
-  "Zabrze, śląskie",
-  "Olsztyn, warmińsko-mazurskie",
-  "Bielsko-Biała, śląskie",
-  "Bytom, śląskie",
-  "Zielona Góra, lubuskie",
-  "Rybnik, śląskie",
-  "Ruda Śląska, śląskie",
-  "Tychy, śląskie",
-  "Opole, opolskie",
-  "Elbląg, warmińsko-mazurskie",
-  "Płock, mazowieckie",
-  "Wałbrzych, dolnośląskie",
-  "Włocławek, kujawsko-pomorskie",
-  "Tarnów, małopolskie",
-  "Chorzów, śląskie",
-  "Koszalin, zachodniopomorskie",
-  "Kalisz, wielkopolskie",
-  "Legnica, dolnośląskie",
-  "Grudziądz, kujawsko-pomorskie",
-  "Słupsk, pomorskie",
-  "Jaworzno, śląskie",
-  "Jelenia Góra, dolnośląskie",
-  "Nowy Sącz, małopolskie",
-  "Jastrzębie-Zdrój, śląskie",
-  "Siedlce, mazowieckie",
-  "Mysłowice, śląskie",
-  "Zamość, lubelskie",
-  "Piotrków Trybunalski, łódzkie",
-  "Konin, wielkopolskie",
-  "Inowrocław, kujawsko-pomorskie",
-  "Lubin, dolnośląskie",
-  "Ostrowiec Świętokrzyski, świętokrzyskie",
-  "Gorzów Wielkopolski, lubuskie",
-  "Suwałki, podlaskie",
-  "Pabianice, łódzkie",
-  "Przemyśl, podkarpackie",
-  "Łomża, podlaskie",
-  "Stalowa Wola, podkarpackie"
+  "Warszawa",
+  "Kraków",
+  "Łódź",
+  "Wrocław",
+  "Poznań",
+  "Gdańsk",
+  "Szczecin",
+  "Bydgoszcz",
+  "Lublin",
+  "Białystok",
+  "Katowice",
+  "Gdynia",
+  "Częstochowa",
+  "Radom",
+  "Sosnowiec",
+  "Toruń",
+  "Kielce",
+  "Rzeszów",
+  "Gliwice",
+  "Zabrze",
+  "Olsztyn",
+  "Bielsko-Biała",
+  "Bytom",
+  "Zielona Góra",
+  "Rybnik",
+  "Ruda Śląska",
+  "Tychy",
+  "Opole",
+  "Elbląg",
+  "Płock",
+  "Wałbrzych",
+  "Włocławek",
+  "Tarnów",
+  "Chorzów",
+  "Koszalin",
+  "Kalisz",
+  "Legnica",
+  "Grudziądz",
+  "Słupsk",
+  "Jaworzno",
+  "Jelenia Góra",
+  "Nowy Sącz",
+  "Jastrzębie-Zdrój",
+  "Siedlce",
+  "Mysłowice",
+  "Zamość",
+  "Piotrków Trybunalski",
+  "Konin",
+  "Inowrocław",
+  "Lubin",
+  "Ostrowiec Świętokrzyski",
+  "Gorzów Wielkopolski",
+  "Suwałki",
+  "Pabianice",
+  "Przemyśl",
+  "Łomża",
+  "Stalowa Wola"
 ];
-
 
 const finalCategories = [
   {
@@ -504,7 +503,7 @@ export default function AdsPage() {
 
     if (city && !category) {
       // Only city selected: navigate to /miasto directory
-      url = `/miasto/${encodeURIComponent(city)}`
+      url = `ogloszenia/miasto/${encodeURIComponent(city)}`
     } else if (category) {
       // Category selected: navigate to /ogloszenia/szukaj directory
       const urlParts = ["/ogloszenia/szukaj", encodeURIComponent(category)]
@@ -756,11 +755,11 @@ export default function AdsPage() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-bold">Najnowsze ogłoszenia</h2>
-              {totalAds > 0 && (
+              {/* {totalAds > 0 && (
                 <Badge variant="outline" className="text-muted-foreground">
                   {totalAds} {totalAds === 1 ? "ogłoszenie" : totalAds < 5 ? "ogłoszenia" : "ogłoszeń"}
                 </Badge>
-              )}
+              )} */}
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">

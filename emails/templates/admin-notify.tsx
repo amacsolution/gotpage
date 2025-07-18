@@ -18,6 +18,7 @@ export const NotifyAdmin: React.FC<NoticeProps> = ({ body, user, stack, url }) =
                 logoUrl: "https://gotpage.pl/logo-emails.png?text=Gotpage",
                 logoAlt: "Logo gotpage",
             }}
+            userName="Błąd"
         >
             <div>
                 <h1>Błąd ma stronie : {url}</h1>

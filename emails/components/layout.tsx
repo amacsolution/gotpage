@@ -8,9 +8,10 @@ interface LayoutProps {
   previewText?: string
   headerProps?: React.ComponentProps<typeof Header>
   footerProps?: React.ComponentProps<typeof Footer>
+  userName: string | null
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children, title, previewText = "", headerProps, footerProps }) => {
+export const Layout: React.FC<LayoutProps> = ({ userName, children, title, previewText = "", headerProps, footerProps }) => {
   return (
     <html>
       <head>
@@ -59,7 +60,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, title, previewText = "
                 cellPadding="0"
                 cellSpacing="0"
                 style={{
-                  backgroundColor: "#FFFFFF",
+                  backgroundColor: "rgb(225, 222, 231)",
                   borderRadius: "8px",
                   overflow: "hidden",
                   boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
@@ -70,10 +71,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, title, previewText = "
                     <Header {...headerProps} />
                     {children}
                     <p style={{ color: "#4B5563", fontSize: "16px", lineHeight: "24px", margin: "24px 0 0 0" }}>
-                    Pozdrawiamy,
-                    <br />
-                    Zespół Gotpage
-                  </p>
+                      Pozdrawiamy,
+                      <br />
+                      Zespół Gotpage
+                    </p>
                     <Footer {...footerProps} />
                   </td>
                 </tr>

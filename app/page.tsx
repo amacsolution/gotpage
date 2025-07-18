@@ -270,38 +270,6 @@ export default async function HomePage() {
         itemType="https://schema.org/ItemList"
       >
         <CategoryGrid categories={categories} />
-        {/* <div
-          className="grid grid-cols-9 grid-rows-2 mx-auto align-top"
-          style={{ width: "1200px", minWidth: "1200px" }}
-        >
-          {categories.map((category, index) => (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut", delay: index * 0.2 }}
-              whileHover={{ scale: 1.2, animationDuration: 0.1 }}>
-              <Link
-                key={category.name}
-                href={category.href}
-                className="flex flex-col items-center p-4 rounded-lg transition-all hover:scale-105 hover:-translate-y-2 w-28"
-                itemProp="itemListElement"
-                itemScope
-                itemType="https://schema.org/ListItem"
-              >
-                <meta itemProp="position" content={`${index + 1}`} />
-                <div
-                  className={`p-4 rounded-full ${category.color} ${category.textColor} mb-2`}
-                >
-                  {category.icon}
-                </div>
-                <span className="text-sm font-medium text-center" itemProp="name">
-                  {category.name}
-                </span>
-              </Link>
-            </motion.div>
-          ))}
-        </div> */}
-
       </section>
 
 

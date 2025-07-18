@@ -66,7 +66,7 @@ export async function POST(request: Request) {
     if (location && adres) {
       const fullAddress = `${location}, ${adres}`
       coordinates = await getCoordinates(fullAddress)
-      if(coordinates === null){
+      if (coordinates === null) {
         coordinates = await getCoordinates(location)
       }
     } else if (location) {
@@ -276,6 +276,10 @@ export interface AdData {
   created_at: string
   updated_at: string
   slug: string | null
+  coordinates: {
+    lat: string
+    lng: string
+  }
 }
 
 export async function GET(request: Request) {

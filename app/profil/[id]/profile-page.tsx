@@ -175,8 +175,7 @@ export default function UserProfilePage({ id }: { id: string }) {
     try {
       setLoadingMessages(true)
       // Check if user is logged in
-      const currentUser = localStorage.getItem("userData")
-      if (!currentUser) {
+      if (!loggedUser) {
         toast({
           title: "Wymagane logowanie",
           description: "Musisz być zalogowany, aby wysyłać wiadomości",

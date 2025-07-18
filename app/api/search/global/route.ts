@@ -134,11 +134,11 @@ export async function GET(request: Request) {
           FROM users
           WHERE 
             type = 'individual' AND
-            (name LIKE ? OR bio LIKE ? OR location LIKE ?)
+            (name LIKE ? fullname LIKE ? OR bio LIKE ? OR location LIKE ?)
           ORDER BY name
           LIMIT ${type === "all" ? 3 : 10}
         `,
-          [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`],
+          [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`],
         )
 
         if (Array.isArray(userResults)) {

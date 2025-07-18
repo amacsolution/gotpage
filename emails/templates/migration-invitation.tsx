@@ -23,9 +23,10 @@ export const MigrationInvitation: React.FC<MigrationInvitationProps> = ({
         logoUrl: "https://gotpage.pl/logo-emails.png?text=Gotpage",
         logoAlt: "Logo gotpage",
       }}
+      userName={userName}
     >
       {/* Nagłówek z gradientem i elementami graficznymi */}
-      <div
+      {/* <div
         style={{
           background: "linear-gradient(135deg, #e5308a 0%, #7c2ae8 100%)",
           borderRadius: "8px",
@@ -37,7 +38,7 @@ export const MigrationInvitation: React.FC<MigrationInvitationProps> = ({
           overflow: "hidden",
         }}
       >
-        {/* Elementy dekoracyjne w tle */}
+        {/* Elementy dekoracyjne w tle 
         <div
           style={{
             position: "absolute",
@@ -89,7 +90,7 @@ export const MigrationInvitation: React.FC<MigrationInvitationProps> = ({
         <p style={{ fontSize: "18px", margin: "0", position: "relative", zIndex: "2" }}>
           Mamy dla Ciebie coś wyjątkowego!
         </p>
-      </div>
+      </div> */}
 
       <p style={{ color: "#4B5563", fontSize: "16px", lineHeight: "24px", margin: "0 0 24px 0" }}>
         Dziękujemy za korzystanie z serwisu <strong>{oldServiceName}</strong> przez te wszystkie lata. Doceniamy Twoje
@@ -369,7 +370,7 @@ export const MigrationInvitation: React.FC<MigrationInvitationProps> = ({
         }}
       >
         <p style={{ color: "#4B5563", fontSize: "14px", lineHeight: "20px", margin: "0" }}>
-          <strong>Uwaga:</strong> Po rejestracji w nowym serwisie przy użyciu tego samego adresu e-mail, Twoje dane z 
+          <strong>Uwaga:</strong> Po rejestracji w nowym serwisie przy użyciu tego samego adresu e-mail, Twoje dane z
           {oldServiceName} nie zostaną automatycznie przeniesione.
         </p>
       </div>

@@ -5,6 +5,7 @@ export * from "./templates/ad-expiration"
 export * from "./templates/message-notification"
 export * from "./templates/payment-confirmation"
 export * from "./templates/admin-notify"
+export * from "./templates/ad-confirmation"
 import { MigrationInvitation } from "./templates/migration-invitation"
 
 // Komponenty

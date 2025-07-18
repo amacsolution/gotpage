@@ -144,9 +144,9 @@ export function AdFeed({ isUserProfile = false, userId, category, subcategory, l
       {/* Pasek narzędzi w stylu Amazona */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
+          {/* <span className="text-sm text-muted-foreground">
             Znaleziono {totalAds} {totalAds === 1 ? "ogłoszenie" : totalAds < 5 ? "ogłoszenia" : "ogłoszeń"}
-          </span>
+          </span> */}
           {/* <Button
             variant="outline"
             size="icon"

@@ -1006,11 +1006,11 @@ export default function SearchPageClient() {
                     ? `${category}${subcategory ? ` - ${subcategory}` : ""}${finalcategory ? ` - ${finalcategory}` : ""}`
                     : "Szukaj ogłoszeń"}
                 </h1>
-                {totalAds > 0 && (
+                {/* {totalAds > 0 && (
                   <Badge variant="outline" className="text-muted-foreground">
                     {totalAds} {totalAds === 1 ? "ogłoszenie" : totalAds < 5 ? "ogłoszenia" : "ogłoszeń"}
                   </Badge>
-                )}
+                )} */}
               </div>
 
               <div className="flex items-center justify-between w-full gap-2 flex-wrap">

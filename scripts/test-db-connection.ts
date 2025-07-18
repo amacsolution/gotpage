@@ -2,7 +2,7 @@ import mysql from "mysql2/promise"
 import dotenv from "dotenv"
 
 // Załaduj zmienne środowiskowe z pliku .env
-dotenv.config()
+dotenv?.config()
 
 async function testConnection() {
 

@@ -73,25 +73,11 @@ export function AdCard({ ad, image, logged }: AdCardProps) {
   const rating = randomRating()
   const plImage = "/placeholder.svg"
 
-  if (logged) setIsAuthor(logged.id === ad.author.id)
-
-  // Sprawdzenie, czy zalogowany użytkownik jest autorem ogłoszenia
-  // useEffect(() => {
-  //   const getUserData = async () => {
-  //     const userData = await fetch("/api/auth/me").then((res) => res.json())
-  //     return userData
-  //   }
-  //   const checkAuthor = async () => {
-  //     try {
-  //       const user = await getUserData()
-  //       setIsAuthor(user.id === ad.author.id)
-  //     } catch (error) {
-  //     }
-  //   }
-  //   checkAuthor()
-  // }, [ad.author.id])
-
-
+  useEffect(() => {
+    if (logged) {
+      setIsAuthor(logged.id === ad.author.id);
+    }
+  }, [logged, ad]);
 
   // Funkcje obsługujące przyciski
   const handleEditClick = (e: React.MouseEvent) => {
