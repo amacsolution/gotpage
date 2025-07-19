@@ -355,7 +355,6 @@ const finalCategories = [
   }
 ];
 
-
 export default function AdsPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
