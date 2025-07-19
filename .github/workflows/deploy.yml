@@ -34,7 +34,7 @@ jobs:
         run: npm install --platform=linux --arch=x64 sharp
 
       - name: Build Next.js app
-        run: npm run build
+        run: npm run build 
         env:
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
