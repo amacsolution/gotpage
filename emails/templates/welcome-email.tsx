@@ -13,6 +13,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
 }) => {
   return (
     <Layout
+      userName={userName}
       title="Witamy w serwisie ogłoszeniowym"
       previewText="Dziękujemy za rejestrację w naszym serwisie ogłoszeniowym!"
     >

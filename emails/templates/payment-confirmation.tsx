@@ -31,6 +31,7 @@ export const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
     <Layout
       title="Dziękujemy za płatność"
       previewText={`Potwierdzenie płatności za pakiet ${packageName} - ${orderNumber}`}
+      userName={userName}
     >
       <h1 style={{ color: "#333333", fontSize: "24px", fontWeight: "bold", margin: "0 0 24px 0" }}>
         Dziękujemy za płatność, {userName}!
