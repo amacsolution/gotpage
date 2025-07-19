@@ -35,5 +35,5 @@ next-env.d.ts
 .env*.local
 
 .ssh
-.github*
+# .github*
 deploy.ps1
