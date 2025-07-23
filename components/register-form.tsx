@@ -236,7 +236,7 @@ export function MultiStepRegisterForm() {
       if (accountType === "business") {
         isValid = await form.trigger(["location", "address", "categories", "termsAccepted"])
       } else {
-        isValid = await form.trigger(["location","termsAccepted"])
+        isValid = await form.trigger(["location", "termsAccepted"])
       }
     }
 
@@ -265,17 +265,17 @@ export function MultiStepRegisterForm() {
     setIsLoading(true)
 
     if (values.nip) {
-      const nip = validateNIP(values.nip) 
-      if(nip) {
+      const nip = validateNIP(values.nip)
+      if (nip) {
         toast({
-        title: "Błąd walidacji",
-        description: "Podaj prawdziwy numer NIP",
-        variant: "destructive",
-      })
-      setIsLoading(false)
-      return
-    } 
-  }
+          title: "Błąd walidacji",
+          description: "Podaj prawdziwy numer NIP",
+          variant: "destructive",
+        })
+        setIsLoading(false)
+        return
+      }
+    }
 
     try {
       // Przygotowanie danych do wysłania
@@ -292,6 +292,7 @@ export function MultiStepRegisterForm() {
           interests: values.interests || "",
           relationshipStatus: values.relationshipStatus || "",
           education: values.education || "",
+          foundingYear: values.foundingYear || "",
           socialMedia: {
             facebook: values.facebookUrl || "",
             instagram: values.instagramUrl || "",
@@ -334,7 +335,7 @@ export function MultiStepRegisterForm() {
         toast({
           title: "Wystąpił błąd!",
           description: data.error,
-          })
+        })
         throw new Error(data.error || "Wystąpił błąd podczas rejestracji")
       }
 
@@ -493,6 +494,19 @@ export function MultiStepRegisterForm() {
                       <FormLabel>Lokalizacja *</FormLabel>
                       <FormControl>
                         <Input placeholder="Warszawa, Mazowieckie" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="foundingYear"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Data urodzin</FormLabel>
+                      <FormControl>
+                        <Input placeholder="25-02-2002" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

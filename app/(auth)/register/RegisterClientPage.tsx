@@ -7,24 +7,23 @@ import { MultiStepRegisterForm } from "@/components/register-form"
 import { useToast } from "@/hooks/use-toast"
 
 export default function RegisterClientPage() {
-  const [open, setOpen] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
     try {
       const userData = localStorage.getItem("userData")
-        if (userData) {
-          const user = JSON.parse(userData)
+      if (userData) {
+        const user = JSON.parse(userData)
 
-          toast({
-            title: "Jesteś zalogowany",
-            description: "Zalogowano jako " + user.email,
-            variant: "destructive",
-          })
-          window.history.back()
-        } else {
-          return
-        }
+        toast({
+          title: "Jesteś zalogowany",
+          description: "Zalogowano jako " + user.email,
+          variant: "destructive",
+        })
+        window.history.back()
+      } else {
+        return
+      }
     } catch (e) {
       console.error(e)
     }

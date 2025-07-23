@@ -197,7 +197,7 @@ export async function POST(request: Request) {
         ],
       )
 
-      await query('UPDATE users SET verification_token = ? WHERE id = ?', [verificationToken, id])
+      // await query('UPDATE users SET verification_token = ? WHERE id = ?', [verificationToken, id])
 
       // Jeśli to firma, dodaj dodatkowe informacje
       if (type === "business" && nip) {

@@ -487,9 +487,6 @@ const createFormSchema = (selectedCategory: string, selectedSubcategory: string)
       .string()
       .min(20, {
         message: "Opis musi mieć co najmniej 20 znaków",
-      })
-      .max(10000, {
-        message: "Opis nie może przekraczać 10000 znaków",
       }),
     category: z.string({
       required_error: "Wybierz kategorię",
@@ -500,13 +497,13 @@ const createFormSchema = (selectedCategory: string, selectedSubcategory: string)
       message: "Lokalizacja musi mieć co najmniej 2 znaki",
     }),
     adres: z.string().optional(),
-kod: z
-  .string()
-  .regex(/^\d{2}-\d{3}$/, {
-    message: "Kod pocztowy musi być w formacie XX-XXX",
-  })
-  .optional()
-  .or(z.literal("")),
+    kod: z
+      .string()
+      .regex(/^\d{2}-\d{3}$/, {
+        message: "Kod pocztowy musi być w formacie XX-XXX",
+      })
+      .optional()
+      .or(z.literal("")),
     isPromoted: z.boolean().default(false),
   })
 
@@ -652,10 +649,10 @@ export default function AddAdPage() {
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       // Sprawdzenie limitu zdjęć
-      if (selectedImages.length + e.target.files.length > 5) {
+      if (selectedImages.length + e.target.files.length > 15) {
         toast({
           title: "Limit zdjęć",
-          description: "Możesz dodać maksymalnie 5 zdjęć",
+          description: "Możesz dodać maksymalnie 15 zdjęć",
           variant: "destructive",
         })
         return
@@ -679,7 +676,7 @@ export default function AddAdPage() {
           }
 
           // Sprawdzenie rozmiaru pliku
-          if (file.size > 5 * 1024 * 1024) {
+          if (file.size > 10 * 1024 * 1024) {
             // 5MB
             toast({
               title: "Plik zbyt duży",
@@ -809,7 +806,7 @@ export default function AddAdPage() {
       })
 
       // Przekierowanie na stronę ogłoszenia
-      router.push(`/ogloszenia/${data.adId}-${slugify(String(values.title|| data.title || ""))}`)
+      router.push(`/ogloszenia/${data.adId}-${slugify(String(values.title || data.title || ""))}`)
     } catch (error) {
 
       console.error("Błąd podczas dodawania ogłoszenia:", error)
@@ -1070,6 +1067,7 @@ export default function AddAdPage() {
 
                     {categoryFields.map((field) => {
                       if (field.type === "text" || field.type === "number") {
+
                         return (
                           <FormField
                             key={field.name}
@@ -1243,7 +1241,7 @@ export default function AddAdPage() {
                         className="hidden"
                         onChange={handleImageChange}
                         multiple
-                        disabled={isUploadingImage || selectedImages.length >= 5}
+                        disabled={isUploadingImage || selectedImages.length >= 15}
                       />
                     </label>
                   </div>

@@ -48,7 +48,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       url: profileUrl,
       images: [
         {
-          url: avatar,
+          url: baseUrl + avatar,
           width: 1200,
           height: 630,
           alt: name,
@@ -60,7 +60,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       card: "summary_large_image",
       title,
       description,
-      images: [avatar],
+      images: [baseUrl + avatar],
     },
     alternates: {
       canonical: profileUrl,
