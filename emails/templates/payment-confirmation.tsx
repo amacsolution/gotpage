@@ -29,6 +29,7 @@ export const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
 }) => {
   return (
     <Layout
+      userName={userName}
       title="Dziękujemy za płatność"
       previewText={`Potwierdzenie płatności za pakiet ${packageName} - ${orderNumber}`}
     >

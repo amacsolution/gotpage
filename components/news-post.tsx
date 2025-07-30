@@ -1,36 +1,22 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { formatDistanceToNow } from "date-fns"
-import { pl } from "date-fns/locale"
+import React, { type JSX, useState } from "react"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import {
-  Heart,
-  MessageSquare,
-  Share2,
-  ChevronDown,
-  ChevronUp,
-  MoreVertical,
-  Edit,
-  Trash2,
-  Flag,
-  ShieldCheck,
-  ExternalLink,
-  Loader2,
-} from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import LinkPreview from "@/components/link-preview"
-import { NewsComments } from "@/components/news-comments"
-import { useUser } from "@/lib/user-context"
-import { Progress } from "@/components/ui/progress"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { MoreVertical, Heart, MessageSquare, Share2, Trash2, Edit } from "lucide-react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Progress } from "@/components/ui/progress"
 import { Label } from "@/components/ui/label"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useRouter } from "next/navigation"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
@@ -39,9 +25,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { FollowButton } from "./follow-button"
+import { useToast } from "@/components/ui/use-toast"
+import { Skeleton } from "@/components/ui/skeleton"
+import { cn } from "@/lib/utils"
+import { formatDistanceToNow } from "date-fns"
+import { pl } from "date-fns/locale"
+import { NewsComments } from "./news-comments"
 import { ImageGrid } from "./image-grid"
-import { User } from "@/lib/auth"
+import { useUser } from "@/lib/user-context"
+
+interface User {
+  id: string
+  name: string
+  avatar?: string
+  email?: string
+}
 
 export interface NewsPostProps {
   post: {
@@ -55,7 +53,7 @@ export interface NewsPostProps {
     isLiked: boolean
     type: "text" | "image" | "poll"
     imageUrl?: string
-    imageUrls?: string[] // Dodane pole dla wielu zdjęć
+    imageUrls?: string[]
     pollData?: {
       options: string[]
       votes: number[]
@@ -80,117 +78,129 @@ export interface NewsPostProps {
   showFollowButton?: boolean
 }
 
-// Funkcja do sprawdzania, czy tekst zawiera URL - taka sama jak w LinkPreview
-const hasUrl = (text: string): boolean => {
-  const urlRegex =
-    /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?(:\d+)?(\/[^\s]*)?)/gi
-  return urlRegex.test(text)
-}
-
-// Funkcja do formatowania tekstu z pogrubieniem linków - zaktualizowana
-export const formatTextWithBoldLinksAndHashtags = (text: string) => {
-  const urlRegex =
-    /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?(:\d+)?(\/[^\s]*)?)/gi
-  const hashtagRegex = /#(\w+)/g
-
-  // Zamień linki na <strong> i hashtagi na <span> w tekście
-  return text.split(/(\s+)/).map((part, i) => {
-    if (urlRegex.test(part)) {
-      return (
-        <strong key={`url-${i}`} className="text-primary">
-          <a href={part} target="_blank" rel="noopener noreferrer">
-            {part}
-            <ExternalLink className="h-4 w-4 inline-block ml-1" />
-          </a>
-        </strong>
-      )
-    } else if (hashtagRegex.test(part)) {
-      return (
-        <span key={`hashtag-${i}`} className="text-muted-foreground text-sm cursor-pointer">
-          {part}
-        </span>
-      )
-    }
-    return part
-  })
-}
-
-export function NewsPost({ post, logged }: NewsPostProps) {
-  const [isLiked, setIsLiked] = useState(post?.isLiked || false)
+export const NewsPost: React.FC<NewsPostProps> = ({
+  post,
+  logged,
+  onVote,
+  onLike,
+  onComment,
+  onDeletePost,
+  onEditPost,
+  onFollow,
+  showFollowButton,
+}) => {
+  const [isLiked, setIsLiked] = useState(post.isLiked)
   const [likesCount, setLikesCount] = useState(post.likes)
   const [isLoading, setIsLoading] = useState(false)
   const [showComments, setShowComments] = useState(false)
-  const [pollData, setPollData] = useState(post.pollData || { options: [], votes: [], totalVotes: 0 })
-  const [userVote, setUserVote] = useState<number | undefined>(post.pollData?.userVote)
+  const [pollData, setPollData] = useState(post.pollData)
+  const [userVote, setUserVote] = useState(post.pollData?.userVote)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [editedContent, setEditedContent] = useState(post.content)
   const { toast } = useToast()
   const { user } = useUser()
-  const [isAuthor, setIsAuthor] = useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const router = useRouter()
-  const loggedUser = logged
-  const [isCompany, setIsCmpany] = useState(false)
-  const id = post.author.id
 
-  async function checkIsCompany(id: string) {
-    const res = await fetch(`/api/is/company/${id}`)
-    const data = await res.json()
-    setIsCmpany(data)
-    return
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString)
+    const day = String(date.getDate()).padStart(2, "0")
+    const month = String(date.getMonth() + 1).padStart(2, "0") // Months are 0-indexed
+    const year = date.getFullYear()
+
+    return `${day}.${month}.${year}`
   }
 
-  checkIsCompany(id)
-  // Przygotuj tablicę zdjęć - jeśli jest imageUrls, użyj jej, w przeciwnym razie użyj pojedynczego imageUrl
-  const images = post.imageUrls || (post.imageUrl ? [post.imageUrl] : [])
+  const formatTextWithBoldLinksAndHashtags = (text: string): JSX.Element[] => {
+    const parts: JSX.Element[] = []
+    let index = 0
 
+    // Regular expression to match bold text, links, and hashtags
+    const regex = /(\*\*([^*]+)\*\*)|(https?:\/\/[^\s]+)|(#\w+)/g
 
-  const handleLike = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch("/api/news/like", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ postId: post.id }),
-      })
+    let match
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Wystąpił błąd podczas przetwarzania polubienia")
+    while ((match = regex.exec(text)) !== null) {
+      // Text before the match
+      if (match.index > index) {
+        parts.push(<React.Fragment key={`text-${index}`}>{text.substring(index, match.index)}</React.Fragment>)
       }
 
-      const data = await response.json()
+      if (match[2]) {
+        // Bold text
+        parts.push(<strong key={`bold-${index}`}>{match[2]}</strong>)
+      } else if (match[3]) {
+        // Link
+        parts.push(
+          <a
+            key={`link-${index}`}
+            href={match[3]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline"
+          >
+            {match[3]}
+          </a>,
+        )
+      } else if (match[4]) {
+        // Hashtag
+        parts.push(
+          <span key={`hashtag-${index}`} className="text-primary cursor-pointer hover:underline">
+            {match[4]}
+          </span>,
+        )
+      }
 
-      // Aktualizacja stanu z bazy danych
-      setIsLiked(data.liked)
-      setLikesCount((prev) => (data.liked ? prev + 1 : prev - 1))
+      index = regex.lastIndex
+    }
+
+    // Remaining text after the last match
+    if (index < text.length) {
+      parts.push(<React.Fragment key={`text-${index}`}>{text.substring(index)}</React.Fragment>)
+    }
+
+    return parts
+  }
+
+  const handleLike = async () => {
+    if (!logged) {
+      toast({
+        title: "Błąd",
+        description: "Musisz być zalogowany, aby polubić post.",
+      })
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      if (onLike) {
+        await onLike(post.id.toString())
+        setIsLiked(!isLiked)
+        setLikesCount(isLiked ? likesCount - 1 : likesCount + 1)
+      }
     } catch (error) {
       toast({
         title: "Błąd",
-        description: error instanceof Error ? error.message : "Wystąpił błąd podczas przetwarzania polubienia",
-        variant: "destructive",
+        description: "Wystąpił problem podczas polubienia posta.",
       })
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleShare = async () => {
+  const handleShare = () => {
     if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Post od ${post.author.name} na Gotpage`,
-          text: post.content.substring(0, 100) + (post.content.length > 100 ? "..." : ""),
-          url: `https://gotpage.pl/aktualnosci/post/${post.id}`,
+      navigator
+        .share({
+          title: post.content,
+          url: window.location.href,
         })
-      } catch (error) { }
+        .then(() => console.log("Successful share"))
+        .catch((error) => console.log("Error sharing", error))
     } else {
-      // Fallback dla przeglądarek bez API Web Share
-      const url = `https://gotpage.pl/aktualnosci/post/${post.id}`
-      navigator.clipboard.writeText(url)
+      navigator.clipboard.writeText(window.location.href)
       toast({
-        title: "Link skopiowany",
-        description: "Link do wpisu został skopiowany do schowka",
+        description: "Link skopiowany do schowka!",
       })
     }
   }
@@ -199,295 +209,264 @@ export function NewsPost({ post, logged }: NewsPostProps) {
     setShowComments(!showComments)
   }
 
-  const handleVote = async (optionIndex: number) => {
-    if (!user) {
-      toast({
-        title: "Wymagane logowanie",
-        description: "Musisz być zalogowany, aby głosować w ankietach",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (userVote !== undefined) {
-      toast({
-        title: "Już zagłosowałeś",
-        description: "Możesz oddać tylko jeden głos w ankiecie",
-      })
-      return
-    }
-
-    try {
-      setIsLoading(true)
-      const response = await fetch(`/api/news/${post.id}/vote`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ optionIndex }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Wystąpił błąd podczas głosowania")
-      }
-
-      const data = await response.json()
-      setPollData(data.pollData)
-      setUserVote(optionIndex)
-
-      toast({
-        title: "Głos oddany",
-        description: "Twój głos został zapisany",
-      })
-    } catch (error) {
+  const handleVote = async (optionId: string) => {
+    if (!logged) {
       toast({
         title: "Błąd",
-        description: error instanceof Error ? error.message : "Wystąpił błąd podczas głosowania",
-        variant: "destructive",
+        description: "Musisz być zalogowany, aby głosować.",
       })
-    } finally {
-      setIsLoading(false)
+      return
     }
-  }
 
-  useEffect(() => {
-    if (user) {
-      setIsAuthor(user.id === post.author.id)
-    } else {
-      setIsAuthor(false)
+    if (userVote) {
+      toast({
+        title: "Błąd",
+        description: "Możesz głosować tylko raz.",
+      })
+      return
     }
-  }, [user, post.author.id])
 
-  const handleDelete = async () => {
-    setShowDeleteDialog(true)
-  }
-
-  const confirmDelete = async () => {
     setIsLoading(true)
     try {
-      let response
-      try {
-        response = await fetch(`/api/news?postId=${post.id}`, {
-          method: "DELETE",
-        })
-      } catch (networkError) {
-        console.error("Network error:", networkError)
-        toast({
-          title: "Błąd sieci",
-          description: "Nie udało się połączyć z serwerem. Sprawdź swoje połączenie internetowe.",
-          variant: "destructive",
-        })
-        setIsLoading(false)
-        return
-      }
+      if (onVote) {
+        await onVote(post.id.toString(), optionId)
+        setUserVote(Number.parseInt(optionId))
 
-      if (!response.ok) {
-        let errorData
-        try {
-          errorData = await response.json()
-        } catch {
-          errorData = { error: "Nieznany błąd" }
-        }
-        throw new Error(errorData.error || "Wystąpił błąd podczas usuwania wpisu")
-      }
+        // Update poll data optimistically
+        setPollData((prevData) => {
+          if (!prevData) return prevData
 
-      toast({
-        title: "Wpis usunięty",
-        description: "Wpis został pomyślnie usunięty",
-      })
-      router.refresh()
+          const newVotes = [...prevData.votes]
+          newVotes[Number.parseInt(optionId)] = newVotes[Number.parseInt(optionId)] + 1
+
+          return {
+            ...prevData,
+            votes: newVotes,
+            totalVotes: prevData.totalVotes + 1,
+            userVote: Number.parseInt(optionId),
+          }
+        })
+      }
     } catch (error) {
       toast({
         title: "Błąd",
-        description: error instanceof Error ? error.message : "Wystąpił błąd podczas usuwania wpisu",
-        variant: "destructive",
+        description: "Wystąpił problem podczas głosowania.",
       })
     } finally {
       setIsLoading(false)
-      setShowDeleteDialog(false)
     }
   }
 
-  const handleEdit = () => {
-    // Implement edit logic here
-    toast({
-      title: "Edycja wpisu",
-      description: "Funkcja edycji wpisu jest w przygotowaniu",
-    })
+  const handleDelete = async () => {
+    setIsDeleteDialogOpen(false)
+    setIsLoading(true)
+
+    try {
+      if (onDeletePost) {
+        await onDeletePost(post.id.toString())
+        toast({
+          description: "Post został usunięty.",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Błąd",
+        description: "Wystąpił problem podczas usuwania posta.",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const confirmDelete = () => {
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleEdit = async () => {
+    setIsLoading(true)
+    try {
+      if (onEditPost) {
+        await onEditPost(post.id.toString(), editedContent)
+        toast({
+          description: "Post został zaktualizowany.",
+        })
+        setIsEditMode(false)
+      }
+    } catch (error) {
+      toast({
+        title: "Błąd",
+        description: "Wystąpił problem podczas edycji posta.",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const calculatePercentage = (votes: number, totalVotes: number): number => {
+    if (totalVotes === 0) return 0
+    return (votes / totalVotes) * 100
+  }
+
+  const renderContent = () => {
+    if (isEditMode) {
+      return (
+        <Textarea
+          value={editedContent}
+          onChange={(e) => setEditedContent(e.target.value)}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        />
+      )
+    }
+
+    const shouldTruncate = post.content.length > 150 && !isExpanded
+    const displayContent = shouldTruncate ? post.content.substring(0, 150) + "..." : post.content
+
+    return (
+      <>
+        {formatTextWithBoldLinksAndHashtags(displayContent)}
+        {post.content.length > 150 && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-primary hover:underline text-sm font-medium ml-2 transition-colors"
+          >
+            {isExpanded ? "Pokaż mniej" : "Czytaj więcej"}
+          </button>
+        )}
+      </>
+    )
+  }
+
+  let images: string[] = []
+  if ( post.type === "image" && post.imageUrl){
+    images.push(post.imageUrl)
   }
 
   return (
-    <div className="mb-6">
-      <Card className="mb-0" itemScope itemType="https://schema.org/SocialMediaPosting">
-        <meta itemProp="datePublished" content={new Date(post.createdAt).toISOString()} />
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-3 mb-3">
-            <Link href={isCompany ? `/firma/${post.author.id}` : `/profil/${post.author.id}`}>
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={post.author.avatar || "/placeholder.svg"} alt={post.author.name} />
-                <AvatarFallback>{post.author.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-              </Avatar>
-            </Link>
-            <div className="flex-1">
-              <div className="flex items-center gap-1">
-                <Link
-                  href={`/profil/${post.author.id}`}
-                  className="font-medium hover:underline"
-                  itemProp="author"
-                  itemScope
-                  itemType="https://schema.org/Person"
-                >
-                  <span itemProp="name">{post.author.name}</span>
-                </Link>
-                {post.author.verified && (
-                  <span className="text-primary text-xs" title="Zweryfikowany">
-                    <ShieldCheck className="h-4 w-4" />
-                  </span>
-                )}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(post.createdAt), {
-                  addSuffix: true,
-                  locale: pl,
-                })}
-              </div>
-            </div>
-            {post.author.id !== user?.id && loggedUser && (
-              <FollowButton
-                userId={post.author.id}
-                isFollowing={post.author.type === "following" ? true : false}
-                size="sm"
-              />
-            )}
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {isAuthor ? (
-                    <>
-                      <DropdownMenuItem onClick={handleEdit}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edytuj
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Usuń
-                      </DropdownMenuItem>
-                    </>
-                  ) : (
-                    <DropdownMenuItem>
-                      <Flag className="h-4 w-4 mr-2" />
-                      Zgłoś
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : null}
+    <Card className="w-full">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div className="flex flex-row items-center space-x-4">
+          <Avatar>
+            <AvatarImage src={post.author.avatar || "/placeholder.svg"} />
+            <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div>
+            <CardTitle className="text-sm font-medium">{post.author.name}</CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">
+              {formatDistanceToNow(new Date(post.createdAt), {
+                addSuffix: true,
+                locale: pl,
+              })}
+            </CardDescription>
           </div>
-
-          {/* Treść wpisu */}
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Otwórz menu</span>
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Akcje</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => setIsEditMode(true)}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edytuj
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={confirmDelete}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Usuń
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Zgłoś</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </CardHeader>
+      <CardContent>
+        {post.type === "text" && (
           <div className="whitespace-pre-wrap mb-3" itemProp="text">
-            {formatTextWithBoldLinksAndHashtags(post.content)}
+            {(() => {
+              const shouldTruncate = post.content.length > 150 && !isExpanded
+              const displayContent = shouldTruncate ? post.content.substring(0, 150) + "..." : post.content
+
+              return (
+                <>
+                  {formatTextWithBoldLinksAndHashtags(displayContent)}
+                  {post.content.length > 150 && (
+                    <button
+                      onClick={() => setIsExpanded(!isExpanded)}
+                      className="text-primary hover:underline text-sm font-medium ml-2 transition-colors"
+                    >
+                      {isExpanded ? "Pokaż mniej" : "Czytaj więcej"}
+                    </button>
+                  )}
+                </>
+              )
+            })()}
           </div>
-
-          {/* Zdjęcia - używamy nowego komponentu ImageGrid */}
-          {post.type === "image" && images.length > 0 && (
-            <div className="mt-3 mb-3">
-              <ImageGrid images={images} alt={`Post od ${post.author.name}`} />
-            </div>
-          )}
-
-          {/* Ankieta, jeśli post jest typu poll */}
-          {post.type === "poll" && pollData && (
-            <div className="mt-3 mb-3 p-3 bg-muted/30 rounded-md">
-              {/* Display poll image if available */}
-              {post.imageUrl && (
-                <div className="mb-4 rounded-md overflow-hidden">
-                  <Image
-                    src={post.imageUrl || "/placeholder.svg"}
-                    alt="Zdjęcie ankiety"
-                    width={600}
-                    height={400}
-                    className="w-full object-cover max-h-[300px]"
-                  />
-                </div>
-              )}
-
-              <RadioGroup className="space-y-3">
-                {pollData.options.map((option, index) => {
-                  const voteCount = pollData.votes[index] || 0
-                  const percentage = pollData.totalVotes > 0 ? Math.round((voteCount / pollData.totalVotes) * 100) : 0
-
-                  return (
-                    <div key={index} className="space-y-1">
-                      <div className="flex items-center">
-                        <RadioGroupItem
-                          value={index.toString()}
-                          id={`option-${post.id}-${index}`}
-                          disabled={userVote !== undefined || isLoading || !user}
-                          onClick={() => handleVote(index)}
-                          className={userVote === index ? "bg-primary" : ""}
-                        />
-                        <Label htmlFor={`option-${post.id}-${index}`} className="pl-2 flex-1 cursor-pointer">
-                          {option}
-                        </Label>
-                        <span className="text-sm text-muted-foreground">{percentage}%</span>
-                      </div>
-                      <Progress value={percentage} className="h-2" />
-                    </div>
-                  )
-                })}
-              </RadioGroup>
-              <div className="text-xs text-muted-foreground mt-2">
-                {pollData.totalVotes}{" "}
-                {pollData.totalVotes === 1
-                  ? "głos"
-                  : pollData.totalVotes % 10 >= 2 &&
-                    pollData.totalVotes % 10 <= 4 &&
-                    (pollData.totalVotes % 100 < 10 || pollData.totalVotes % 100 >= 20)
-                    ? "głosy"
-                    : "głosów"}
-              </div>
-            </div>
-          )}
-
-          {/* Sprawdź, czy post zawiera URL i wyświetl podgląd */}
-          {post.type === "text" && hasUrl(post.content) && <LinkPreview text={post.content} />}
-        </CardContent>
-
-        <CardFooter className="border-t pt-3 pb-3">
-          <div className="flex items-center gap-4 w-full">
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`flex items-center gap-1 ${isLiked ? "text-red-500" : ""}`}
-              onClick={handleLike}
-              disabled={isLoading}
+        )}
+        {post.type === "image" && images.length > 0 && (
+          <ImageGrid images={images} alt={post.id + new Date().toISOString()}/>
+        )}
+        {post.type === "image" && post.imageUrls && (
+            <ImageGrid images={post.imageUrls} alt={post.createdAt}/>
+        )}
+        {post.type === "poll" && pollData && (
+          <div>
+            <RadioGroup
+              defaultValue={userVote !== undefined ? userVote.toString() : undefined}
+              onValueChange={(value) => handleVote(value)}
+              disabled={userVote !== undefined || isLoading}
             >
-              <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
-              <span>{likesCount}</span>
-            </Button>
+              {pollData.options.map((option, index) => {
+                const voteCount = pollData.votes[index] || 0
+                const percentage = calculatePercentage(voteCount, pollData.totalVotes)
 
-            <Button variant="ghost" size="sm" className="flex items-center gap-1" onClick={toggleComments}>
-              <MessageSquare className="h-4 w-4" />
-              <span>{post.comments}</span>
-              {showComments ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
-            </Button>
-
-            <Button variant="ghost" size="sm" className="flex items-center gap-1 ml-auto" onClick={handleShare}>
-              <Share2 className="h-4 w-4" />
-              <span>Udostępnij</span>
-            </Button>
+                return (
+                  <div key={index} className="mb-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={`option-${index}`} className="mr-2">
+                        {option}
+                      </Label>
+                      <span className="text-xs text-muted-foreground">
+                        {voteCount} / {percentage.toFixed(0)}%
+                      </span>
+                    </div>
+                    <Progress value={percentage} className="mb-2" />
+                    <RadioGroupItem value={index.toString()} id={`option-${index}`} className="sr-only" />
+                  </div>
+                )
+              })}
+            </RadioGroup>
           </div>
-        </CardFooter>
-      </Card>
-
-      {/* Komentarze wyświetlane bezpośrednio pod postem */}
+        )}
+      </CardContent>
+      <CardFooter className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" size="icon" onClick={handleLike} disabled={isLoading}>
+            {isLoading ? (
+              <Skeleton  className="rounded-full w-20 h-20" />
+            ) : (
+              <Heart className={cn("h-5 w-5", isLiked && "text-red-500")} fill={isLiked ? "red" : "none"} />
+            )}
+            <span className="sr-only">Like</span>
+          </Button>
+          <span>{likesCount}</span>
+          <Button variant="ghost" size="icon" onClick={toggleComments}>
+            <MessageSquare className="h-5 w-5" />
+            <span className="sr-only">Comment</span>
+          </Button>
+          <span>{post.comments}</span>
+          <Button variant="ghost" size="icon" onClick={handleShare}>
+            <Share2 className="h-5 w-5" />
+            <span className="sr-only">Share</span>
+          </Button>
+        </div>
+        {logged && showFollowButton && logged.id !== post.author.id && (
+          <Button size="sm" onClick={() => onFollow && onFollow(post.author.id)}>
+            Obserwuj
+          </Button>
+        )}
+      </CardFooter>
       {showComments && (
         <div className="mt-1 pl-4 border-l-2 border-muted">
           <NewsComments
@@ -506,23 +485,47 @@ export function NewsPost({ post, logged }: NewsPostProps) {
           />
         </div>
       )}
-
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="sm:max-w-md">
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Usuń wpis</DialogTitle>
-            <DialogDescription>Czy na pewno chcesz usunąć ten wpis? Ta akcja jest nieodwracalna.</DialogDescription>
+            <DialogTitle>Jesteś pewny/a?</DialogTitle>
+            <DialogDescription>Czy na pewno chcesz usunąć ten post? Ta akcja jest nieodwracalna.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button type="button" variant="secondary" onClick={() => setShowDeleteDialog(false)}>
+            <Button type="button" variant="secondary" onClick={() => setIsDeleteDialogOpen(false)}>
               Anuluj
             </Button>
-            <Button type="button" variant="destructive" onClick={confirmDelete} disabled={isLoading}>
-              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Usuń"}
+            <Button type="submit" variant="destructive" onClick={handleDelete}>
+              Usuń
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+
+      <Dialog open={isEditMode} onOpenChange={() => setIsEditMode(false)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edytuj post</DialogTitle>
+            <DialogDescription>Zaktualizuj treść swojego posta.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="content" className="text-right">
+                Treść
+              </Label>
+              <div className="col-span-3">{renderContent()}</div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={() => setIsEditMode(false)}>
+              Anuluj
+            </Button>
+            <Button type="submit" onClick={handleEdit}>
+              Zapisz
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Card>
   )
 }

@@ -26,7 +26,7 @@ export const NewAdNotification: React.FC<NewAdNotificationProps> = ({
       <p style={{ color: "#4B5563", fontSize: "16px", lineHeight: "24px", margin: "0 0 24px 0" }}>
         W Twojej obserwowanej kategorii pojawiło się nowe ogłoszenie, które może Cię zainteresować:
       </p> */}
-      <div
+      {/* <div
         style={{
           background: "linear-gradient(135deg, #e5308a 0%, #7c2ae8 100%)",
           borderRadius: "8px",
@@ -38,7 +38,7 @@ export const NewAdNotification: React.FC<NewAdNotificationProps> = ({
           overflow: "hidden",
         }}
       >
-        {/* Elementy dekoracyjne w tle */}
+        {/* Elementy dekoracyjne w tle 
         <div
           style={{
             position: "absolute",
@@ -90,7 +90,7 @@ export const NewAdNotification: React.FC<NewAdNotificationProps> = ({
         <p style={{ fontSize: "18px", margin: "0", position: "relative", zIndex: "2" }}>
           W Twojej obserwowanej kategorii pojawiło się nowe ogłoszenie, które może Cię zainteresować:
         </p>
-      </div>
+      </div> */} 
 
       <div style={{ border: "1px solid #fff", borderRadius: "8px", padding: "16px", marginBottom: "24px", boxShadow: "0 0 4px 0px #ffffff" }}>
         <h2 style={{ color: "#333333", fontSize: "20px", fontWeight: "bold", margin: "0 0 16px 0" }}>{adTitle}</h2>

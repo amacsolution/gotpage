@@ -1,12 +1,19 @@
 # *
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /wiadomosci/
+Disallow: /profil/*/edytuj
+Disallow: /ogloszenia/*/edytuj
 
-# *
-User-agent: *
-Disallow: /checkout
-Disallow: /checkout/success
-Disallow: /admin
+# facebookexternalhit
+User-agent: facebookexternalhit
+Allow: /
+Disallow: /admin/
+Disallow: /wiadomosci/
+Disallow: /profil/*/edytuj
+Disallow: /ogloszenia/*/edytuj
 
 # Host
 Host: https://gotpage.pl

@@ -22,7 +22,6 @@ export default function NewsPage() {
   const { toast } = useToast()
   const { user } = useUser()
   const [activeTab, setActiveTab] = useState<"all" | "followed">("all")
-
   const [featuredCompanies, setFeaturedCompanies] = useState<any[]>([])
 
   const loggedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
@@ -30,9 +29,7 @@ export default function NewsPage() {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true)
-
       try {
-
         // Fetch featured companies
         const res = await fetch("/api/companies?promoted=true&limit=4")
         if (res.ok) {
@@ -41,7 +38,6 @@ export default function NewsPage() {
         } else {
           throw new Error("Nie udało się pobrać firm")
         }
-
       } catch (error) {
         toast({
           title: "Błąd",
@@ -52,19 +48,17 @@ export default function NewsPage() {
         setIsLoading(false)
       }
     }
-
     fetchData()
   }, [toast])
+
   const fetchPosts = async (pageNum: number, followedOnly = false) => {
     try {
       setIsLoading(true)
       const url = `/api/news?page=${pageNum}&limit=10&includeComments=true${followedOnly ? "&followedOnly=true" : ""}`
       const response = await fetch(url)
-
       if (!response.ok) {
         throw new Error("Nie udało się pobrać aktualności")
       }
-
       const data = await response.json()
 
       if (pageNum === 1) {
@@ -73,7 +67,8 @@ export default function NewsPage() {
         setPosts((prev) => [...prev, ...data.posts])
       }
 
-      setHasMore(pageNum < data.totalPages)
+      // Fixed hasMore logic: check both if we received fewer posts than requested AND if we haven't reached the last page
+      setHasMore(data.posts.length === 10 && pageNum < data.totalPages)
       setPage(pageNum)
     } catch (error) {
       console.error("Error fetching posts:", error)
@@ -88,6 +83,10 @@ export default function NewsPage() {
   }
 
   useEffect(() => {
+    // Reset posts and page when switching tabs
+    setPosts([])
+    setPage(1)
+    setHasMore(true)
     fetchPosts(1, activeTab === "followed")
   }, [activeTab])
 
@@ -101,13 +100,11 @@ export default function NewsPage() {
       const updatedPosts = posts.map((post) => {
         if (post.id === postId && post.isPoll) {
           // Create a copy of poll options with updated vote count
-          const updatedOptions = post.pollOptions.map((option: { id: string, votes: number }) =>
+          const updatedOptions = post.pollOptions.map((option: { id: string; votes: number }) =>
             option.id === optionId ? { ...option, votes: option.votes + 1 } : option,
           )
-
           // Calculate new total votes
           const newTotalVotes = updatedOptions.reduce((sum: number, option: { votes: number }) => sum + option.votes, 0)
-
           return {
             ...post,
             pollOptions: updatedOptions,
@@ -117,9 +114,7 @@ export default function NewsPage() {
         }
         return post
       })
-
       setPosts(updatedPosts)
-
       // Send vote to API
       const response = await fetch("/api/news/vote", {
         method: "POST",
@@ -131,11 +126,9 @@ export default function NewsPage() {
           optionId,
         }),
       })
-
       if (!response.ok) {
         throw new Error("Nie udało się zagłosować")
       }
-
       toast({
         title: "Sukces",
         description: "Twój głos został zapisany",
@@ -147,7 +140,6 @@ export default function NewsPage() {
         description: "Nie udało się zagłosować",
         variant: "destructive",
       })
-
       // Revert optimistic update by refreshing posts
       fetchPosts(1, activeTab === "followed")
     }
@@ -166,9 +158,7 @@ export default function NewsPage() {
         }
         return post
       })
-
       setPosts(updatedPosts)
-
       // Send like to API
       const response = await fetch("/api/news/like", {
         method: "POST",
@@ -179,7 +169,6 @@ export default function NewsPage() {
           postId,
         }),
       })
-
       if (!response.ok) {
         throw new Error("Nie udało się polubić postu")
       }
@@ -190,7 +179,6 @@ export default function NewsPage() {
         description: "Nie udało się polubić postu",
         variant: "destructive",
       })
-
       // Revert optimistic update by refreshing posts
       fetchPosts(1, activeTab === "followed")
     }
@@ -206,7 +194,6 @@ export default function NewsPage() {
         })
         return
       }
-
       // Optimistic update
       const updatedPosts = posts.map((post) => {
         if (post.author.id === userId) {
@@ -221,12 +208,9 @@ export default function NewsPage() {
         }
         return post
       })
-
       setPosts(updatedPosts)
-
       // Send follow/unfollow request to API
       const action = posts.find((post) => post.author.id === userId)?.isFollowed ? "unfollow" : "follow"
-
       const response = await fetch("/api/user/follow", {
         method: "POST",
         headers: {
@@ -237,11 +221,9 @@ export default function NewsPage() {
           action,
         }),
       })
-
       if (!response.ok) {
         throw new Error(`Nie udało się ${action === "follow" ? "obserwować" : "przestać obserwować"} użytkownika`)
       }
-
       toast({
         title: "Sukces",
         description: action === "follow" ? "Zacząłeś obserwować użytkownika" : "Przestałeś obserwować użytkownika",
@@ -253,7 +235,6 @@ export default function NewsPage() {
         description: "Nie udało się zmienić statusu obserwacji",
         variant: "destructive",
       })
-
       // Revert optimistic update by refreshing posts
       fetchPosts(1, activeTab === "followed")
     }
@@ -269,7 +250,6 @@ export default function NewsPage() {
         })
         return
       }
-
       // Optimistic update
       const newComment = {
         id: `temp-${Date.now()}`,
@@ -279,7 +259,6 @@ export default function NewsPage() {
         content,
         createdAt: new Date(),
       }
-
       const updatedPosts = posts.map((post) => {
         if (post.id === postId) {
           return {
@@ -290,9 +269,7 @@ export default function NewsPage() {
         }
         return post
       })
-
       setPosts(updatedPosts)
-
       // Send comment to API
       const response = await fetch("/api/news/comment", {
         method: "POST",
@@ -304,11 +281,9 @@ export default function NewsPage() {
           content,
         }),
       })
-
       if (!response.ok) {
         throw new Error("Nie udało się dodać komentarza")
       }
-
       toast({
         title: "Sukces",
         description: "Komentarz został dodany",
@@ -320,7 +295,6 @@ export default function NewsPage() {
         description: "Nie udało się dodać komentarza",
         variant: "destructive",
       })
-
       // Revert optimistic update by refreshing posts
       fetchPosts(1, activeTab === "followed")
     }
@@ -330,16 +304,13 @@ export default function NewsPage() {
     try {
       // Optimistic update
       setPosts(posts.filter((post) => post.id !== postId))
-
       // Send delete request to API
       const response = await fetch(`/api/news?postId=${postId}`, {
         method: "DELETE",
       })
-
       if (!response.ok) {
         throw new Error("Nie udało się usunąć postu")
       }
-
       toast({
         title: "Sukces",
         description: "Post został usunięty",
@@ -351,7 +322,6 @@ export default function NewsPage() {
         description: "Nie udało się usunąć postu",
         variant: "destructive",
       })
-
       // Revert optimistic update by refreshing posts
       fetchPosts(1, activeTab === "followed")
     }
@@ -369,9 +339,7 @@ export default function NewsPage() {
         }
         return post
       })
-
       setPosts(updatedPosts)
-
       // Send edit request to API
       const response = await fetch(`/api/news/${postId}`, {
         method: "PATCH",
@@ -382,11 +350,9 @@ export default function NewsPage() {
           content,
         }),
       })
-
       if (!response.ok) {
         throw new Error("Nie udało się edytować postu")
       }
-
       toast({
         title: "Sukces",
         description: "Post został zaktualizowany",
@@ -398,18 +364,17 @@ export default function NewsPage() {
         description: "Nie udało się edytować postu",
         variant: "destructive",
       })
-
       // Revert optimistic update by refreshing posts
       fetchPosts(1, activeTab === "followed")
     }
   }
 
   const loadMore = useCallback(() => {
-    if (!isLoading && hasMore) {
+    if (!isLoading && hasMore && posts.length > 0) {
       const nextPage = page + 1
       fetchPosts(nextPage, activeTab === "followed")
     }
-  }, [isLoading, hasMore, page, activeTab])
+  }, [isLoading, hasMore, page, activeTab, posts.length])
 
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
@@ -418,7 +383,7 @@ export default function NewsPage() {
     // Funkcja callback dla Intersection Observer
     const handleObserver = (entries: IntersectionObserverEntry[]) => {
       const [entry] = entries
-      if (entry.isIntersecting && hasMore && !isLoading) {
+      if (entry.isIntersecting && hasMore && !isLoading && posts.length > 0) {
         loadMore()
       }
     }
@@ -445,13 +410,12 @@ export default function NewsPage() {
         observerRef.current.disconnect()
       }
     }
-  }, [loadMore, hasMore, isLoading])
+  }, [loadMore, hasMore, isLoading, posts.length])
 
   return (
     <PageLayout>
       <div className="container py-6">
         <h1 className="text-3xl font-bold mb-6">Aktualności</h1>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
             {user && (
@@ -464,7 +428,6 @@ export default function NewsPage() {
                 onPostCreated={handlePostCreated}
               />
             )}
-
             <Tabs
               defaultValue="all"
               value={activeTab}
@@ -479,7 +442,6 @@ export default function NewsPage() {
                 </TabsTrigger>
               </TabsList>
             </Tabs>
-
             {isLoading && posts.length === 0 ? (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
@@ -487,7 +449,7 @@ export default function NewsPage() {
                 ))}
               </div>
             ) : posts.length > 0 ? (
-              <>
+              <div className="space-y-4">
                 {posts.map((post) => (
                   <NewsPost
                     key={post.id}
@@ -502,7 +464,6 @@ export default function NewsPage() {
                     logged={loggedUser}
                   />
                 ))}
-
                 {hasMore && (
                   <div ref={loadMoreRef} className="flex justify-center py-6">
                     {isLoading && (
@@ -513,7 +474,7 @@ export default function NewsPage() {
                     )}
                   </div>
                 )}
-              </>
+              </div>
             ) : (
               <div className="text-center py-12 bg-muted/30 rounded-lg">
                 <h3 className="text-lg font-medium mb-2">
@@ -525,14 +486,13 @@ export default function NewsPage() {
                     : "Bądź pierwszy i dodaj nowy wpis!"}
                 </p>
                 {activeTab === "followed" && (
-                  <Button variant="outline" className="mt-4" onClick={() => setActiveTab("all")}>
+                  <Button variant="outline" className="mt-4 bg-transparent" onClick={() => setActiveTab("all")}>
                     Pokaż wszystkie aktualności
                   </Button>
                 )}
               </div>
             )}
           </div>
-
           <div className="hidden md:block">
             <div className="sticky top-13 space-y-6">
               <div className="bg-muted/30 rounded-lg p-4">
@@ -551,7 +511,6 @@ export default function NewsPage() {
                   </div>
                 )}
               </div>
-
               {/* Tutaj można dodać więcej elementów, np. popularne hashtagi, polecane profile itp. */}
               <div className="container py-8">
                 <div className="flex justify-between items-center mb-6">
@@ -569,7 +528,6 @@ export default function NewsPage() {
             </div>
           </div>
         </div>
-
         <Script
           id="news-jsonld"
           type="application/ld+json"

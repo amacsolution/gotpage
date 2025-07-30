@@ -15,10 +15,8 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
     <Layout
       title="Witamy w serwisie ogłoszeniowym"
       previewText="Dziękujemy za rejestrację w naszym serwisie ogłoszeniowym!"
+      userName={userName}
     >
-      <h1 style={{ color: "#333333", fontSize: "24px", fontWeight: "bold", margin: "0 0 24px 0" }}>
-        Witaj, {userName}!
-      </h1>
 
       <p style={{ color: "#4B5563", fontSize: "16px", lineHeight: "24px", margin: "0 0 24px 0" }}>
         Dziękujemy za rejestrację w naszym serwisie ogłoszeniowym. Cieszymy się, że dołączyłeś/aś do naszej

@@ -13,6 +13,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     name?: string;
     bio?: string;
     avatar?: string;
+    categories?: string[]
   } | null = null;
 
   try {
@@ -33,7 +34,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   const bio = user?.bio || "Szczegóły profilu użytkownika";
   const avatar = user?.avatar || "/placeholder-user.jpg";
 
-  const title = `Profil firmy ${name} na Gotpage`;
+  const title = `Profil firmy ${name} na Gotpage. Wejdź i zobacz profile firm i innych użytkowników`;
   const description = bio.length > 160 ? bio.substring(0, 157) + "..." : bio;
   const baseUrl = "https://gotpage.pl";
   const profileUrl = `${baseUrl}/firma/${id}`;
@@ -41,7 +42,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   return {
     title,
     description,
-    keywords: `${name}, prywatny profil, gotpage`,
+    keywords: `${name}, prywatny profil, gotpage${user?.categories ? user.categories.map(key => {`, ${key}`}): ""}`,
     openGraph: {
       title,
       description,

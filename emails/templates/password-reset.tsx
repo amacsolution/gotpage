@@ -14,7 +14,7 @@ export const PasswordReset: React.FC<PasswordResetProps> = ({
   expirationTime = "1 godzinę",
 }) => {
   return (
-    <Layout title="Resetowanie hasła" previewText="Instrukcje resetowania hasła do Twojego konta">
+    <Layout title="Resetowanie hasła" previewText="Instrukcje resetowania hasła do Twojego konta" userName={userName}>
       <h1 style={{ color: "#333333", fontSize: "24px", fontWeight: "bold", margin: "0 0 24px 0" }}>
         Cześć, {userName}!
       </h1>

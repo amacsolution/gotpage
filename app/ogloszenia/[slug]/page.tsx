@@ -38,8 +38,8 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   const slugy = `${ad.id}-${slugify(ad.title, { lower: true, strict: true })}`
   const data = {
     title,
-    description: `Zobacz szczegóły ogłoszenia ${ad.title} na Gotpage`,
-    keywords: `${ad.title}, ${ad.category}, ogłoszenie, gotpage`,
+    description: `Zobacz szczegóły ogłoszenia ${ad.title} na Gotpage i poznaj inne interesujące ogłoszenia`,
+    keywords: `${ad.title}, ${ad.category}, ogłoszenie, gotpage ${ad.subcategory ? `,${ad.subcategory}` : ""}${ad.finalcategory ? `,${ad.finalcategory}` : ""}`,
     openGraph: {
       url: `https://gotpage.pl/ogloszenia/${slugy}`,
       title,

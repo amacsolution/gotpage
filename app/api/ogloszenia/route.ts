@@ -344,7 +344,7 @@ export async function GET(request: Request) {
       params.push(subcategory)
     }
 
-    if (subcategory) {
+    if (finalcategory) {
       sql += " AND a.final_category = ?"
       params.push(finalcategory)
     }

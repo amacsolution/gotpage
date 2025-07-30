@@ -19,9 +19,6 @@ export const MessageNotification: React.FC<MessageNotificationProps> = ({
 }) => {
   return (
     <Layout userName={userName} title="Nowa wiadomość" previewText={`Nowa wiadomość od ${senderName} dotycząca ogłoszenia "${adTitle}"`}>
-      <h1 style={{ color: "#333333", fontSize: "24px", fontWeight: "bold", margin: "0 0 24px 0" }}>
-        Cześć, {userName}!
-      </h1>
 
       <p style={{ color: "#4B5563", fontSize: "16px", lineHeight: "24px", margin: "0 0 24px 0" }}>
         Otrzymałeś/aś nową wiadomość od <strong>{senderName}</strong> dotyczącą Twojego ogłoszenia{" "}

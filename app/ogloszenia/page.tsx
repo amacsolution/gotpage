@@ -41,7 +41,7 @@ const getCachedAdsMetadata = unstable_cache(
       .join(", ")
 
     // Build URL
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://gotpage.pl"
+    const baseUrl = "https://gotpage.pl"
     let canonicalUrl = `${baseUrl}/ogloszenia`
 
     const searchParamsObj = new URLSearchParams()

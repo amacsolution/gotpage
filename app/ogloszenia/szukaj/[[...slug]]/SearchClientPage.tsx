@@ -30,6 +30,33 @@ const AdsMap = dynamic(() => import("@/components/ads-map"), {
   ),
 })
 
+function generateSeoDescription({
+  category,
+  subcategory,
+  finalcategory,
+  city,
+}: {
+  category?: string;
+  subcategory?: string;
+  finalcategory?: string;
+  city?: string;
+}): string {
+  const parts = [];
+
+  if (category) parts.push(category);
+  if (subcategory) parts.push(subcategory);
+  if (finalcategory) parts.push(finalcategory);
+
+  const categoriesStr = parts.join(", ");
+
+  if (city) {
+    return `Znajdź najlepsze ogłoszenia z kategorii ${categoriesStr} w mieście ${city}. Oferujemy szeroki wybór ofert dopasowanych do Twoich potrzeb. Nasza platforma umożliwia szybkie i wygodne wyszukiwanie ogłoszeń z różnych dziedzin, takich jak ${categoriesStr}, a także wiele innych. Jeśli szukasz najlepszych ofert w ${city}, to jesteś we właściwym miejscu! Sprawdź nasze aktualne propozycje i skontaktuj się z ogłoszeniodawcami już dziś.`;
+  } else {
+    return `Znajdź najlepsze ogłoszenia z kategorii ${categoriesStr}. Oferujemy szeroki wybór ofert dopasowanych do Twoich potrzeb. Nasza platforma umożliwia szybkie i wygodne wyszukiwanie ogłoszeń z różnych dziedzin, takich jak ${categoriesStr}, a także wiele innych. Sprawdź nasze aktualne propozycje i skontaktuj się z ogłoszeniodawcami już dziś.`;
+  }
+}
+
+
 
 
 const allLocations = [
@@ -567,58 +594,6 @@ export default function SearchPageClient() {
     setTempMaxPrice(value)
   }
 
-  // Remove filter
-  const removeFilter = (filterType: string) => {
-    switch (filterType) {
-      case "category":
-        setCategory("")
-        setSubcategory("")
-        setFinalcategory("")
-        router.push("/ogloszenia/szukaj")
-        break
-      case "subcategory":
-        setSubcategory("")
-        setFinalcategory("")
-        router.push(`/ogloszenia/szukaj/${encodeURIComponent(category)}`)
-        break
-      case "finalcategory":
-        setFinalcategory("")
-        router.push(`/ogloszenia/szukaj/${encodeURIComponent(category)}/${encodeURIComponent(subcategory)}`)
-        break
-      case "city":
-        setCity("")
-        setTempCity("")
-        const params = new URLSearchParams(searchParams?.toString())
-        params.delete("city")
-        const urlParts = ["/ogloszenia/szukaj"]
-        if (category) urlParts.push(encodeURIComponent(category))
-        if (subcategory) urlParts.push(encodeURIComponent(subcategory))
-        if (finalcategory) urlParts.push(encodeURIComponent(finalcategory))
-        const queryString = params.toString()
-        const finalUrl = queryString ? `${urlParts.join("/")}?${queryString}` : urlParts.join("/")
-        router.push(finalUrl)
-        break
-      case "price":
-        setMinPrice("")
-        setMaxPrice("")
-        setTempMinPrice("")
-        setTempMaxPrice("")
-        const priceParams = new URLSearchParams(searchParams?.toString())
-        priceParams.delete("min")
-        priceParams.delete("max")
-        const priceUrlParts = ["/ogloszenia/szukaj"]
-        if (category) priceUrlParts.push(encodeURIComponent(category))
-        if (subcategory) priceUrlParts.push(encodeURIComponent(subcategory))
-        if (finalcategory) priceUrlParts.push(encodeURIComponent(finalcategory))
-        const priceQueryString = priceParams.toString()
-        const priceFinalUrl = priceQueryString
-          ? `${priceUrlParts.join("/")}?${priceQueryString}`
-          : priceUrlParts.join("/")
-        router.push(priceFinalUrl)
-        break
-    }
-  }
-
   // Load more ads
   const loadMore = async () => {
     const nextPage = page + 1
@@ -665,6 +640,13 @@ export default function SearchPageClient() {
     }
   }
 
+  const seoDescription = generateSeoDescription({
+    category,
+    subcategory,
+    finalcategory,
+    city,
+  });
+
   return (
     <PageLayout>
       <div className="container py-6">
@@ -707,7 +689,7 @@ export default function SearchPageClient() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Sidebar - Filters */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-6">
+            <Card className="sticky top-10">
               <CardHeader>
                 <CardTitle className="text-lg">Filtry</CardTitle>
               </CardHeader>
@@ -1003,8 +985,8 @@ export default function SearchPageClient() {
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold">
                   {category
-                    ? `${category}${subcategory ? ` - ${subcategory}` : ""}${finalcategory ? ` - ${finalcategory}` : ""}`
-                    : "Szukaj ogłoszeń"}
+                    ? `Ogłoszenia z kategorii ${category}${subcategory ? ` - ${subcategory}` : ""}${finalcategory ? `- ${finalcategory}` : ""}`
+                    : "Szukaj ogłoszeń"}{city ? `w ${city}` : ""}
                 </h1>
                 {/* {totalAds > 0 && (
                   <Badge variant="outline" className="text-muted-foreground">
@@ -1133,8 +1115,18 @@ export default function SearchPageClient() {
                 )}
               </TabsContent>
             </Tabs>
+                    <div className="mt-16 py-12 px-6 bg-muted/20 rounded-lg">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold mb-2">Dlaczego warto wybrać nasze ogłoszenia?</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              {seoDescription}
+            </p>
           </div>
         </div>
+          </div>
+        </div>
+
+
         {/* Sekcja statystyk */}
         <div className="mt-16 py-12 px-6 bg-muted/20 rounded-lg">
           <div className="text-center mb-8">

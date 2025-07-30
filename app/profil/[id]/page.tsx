@@ -29,12 +29,12 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   }
 
   // Fallback dane
-  const name = user?.name || "Użytkownik serwisu Gotpage";
+  const name = user?.name || "Użytkownik serwisu Gotpage. Wejdź i zobacz profil";
   const bio = user?.bio || "Szczegóły profilu użytkownika";
   const avatar = user?.avatar || "/placeholder-user.jpg";
 
-  const title = `${name} jest na Gotpage - zobacz profil`;
-  const description = bio.length > 160 ? bio.substring(0, 157) + "..." : bio;
+  const title = `${name} jest na Gotpage - zobacz profil użytownika i inne podobne profile`;
+  const description = bio.length > 160 ? bio.substring(0, 157) + "..." : bio + user?.name;
   const baseUrl = "https://gotpage.pl";
   const profileUrl = `${baseUrl}/profil/${id}`;
 
