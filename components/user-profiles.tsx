@@ -83,7 +83,7 @@ export function UserProfiles() {
           avatar: user.avatar || `/placeholder.svg?height=100&width=100&text=${user.name?.substring(0, 2) || "U"}`,
           location: user.location || "Polska",
           bio: user.description || user.bio || "Brak opisu",
-          rating: user.rating || user.stats?.rating || 4.5,
+          rating: user.rating || user.stats?.rating ,
           adCount: user.adCount || user.stats?.ads || 0,
           isFollowing: user.isFollowing || false,
         }))
@@ -177,7 +177,7 @@ export function UserProfiles() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
       {users.map((user) => (
         <div
           key={user.id}
@@ -191,13 +191,13 @@ export function UserProfiles() {
                 src={user.avatar || "/placeholder.svg"}
                 alt={user.name}
                 fill
-                className="object-cover"
+                className="object-cover rounded-full p-4 md:p-10"
                 itemProp="image"
               />
             </div>
             <div className="flex items-center gap-4">
 
-              <div className="p-6">
+              <div className="p-6 pt-0">
                 <h3 className="font-bold text-lg" itemProp="name">
                   {user.name}
                 </h3>
@@ -206,11 +206,15 @@ export function UserProfiles() {
                   <span itemProp="alternateName">@{user.id}</span>
                 </div>
                 <div className="flex items-center mt-1">
-                  <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                  <span className="text-sm font-medium" itemProp="reviewRating">
-                    {user.rating}
-                  </span>
-                  <span className="mx-2 text-muted-foreground">•</span>
+                  {user.rating &&(
+                    <>
+                    <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                    <span className="text-sm font-medium" itemProp="reviewRating">
+                      {user.rating}
+                    </span> 
+                    <span className="mx-2 text-muted-foreground">•</span>
+                  </>
+                  )}
                   <span className="text-sm text-muted-foreground inline-flex" itemProp="address">
                     <MapPin className="h-4 w-4 mr-1" />{user.location}
                   </span>
@@ -225,7 +229,10 @@ export function UserProfiles() {
               </div>
             )}
 
-            {userId != null && (<div className="flex gap-2 my-2 px-5">
+            
+          </div>
+          <div>
+          {userId != null && (<div className="flex align-bottom gap-2 my-2 px-5">
               <FollowButton
                 userId={user.id}
                 isFollowing={user.isFollowing}
@@ -234,12 +241,11 @@ export function UserProfiles() {
                 className="flex-1"
                 onFollowChange={(isFollowing) => handleFollowChange(user.id, isFollowing)}
               />
-              <Button variant="outline" size="sm" className="flex-1" onClick={() => handleMessage(user.id)}>
+              {/* <Button variant="outline" size="sm" className="flex-1" onClick={() => handleMessage(user.id)}>
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Wiadomość
-              </Button>
+              </Button> */}
             </div>)}
-          </div>
           <Link
             target="_blank"
             href={`/profil/${user.id}`}
@@ -247,6 +253,7 @@ export function UserProfiles() {
           >
             Zobacz profil
           </Link>
+        </div>
         </div>
       ))}
     </div>

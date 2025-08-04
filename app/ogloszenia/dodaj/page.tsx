@@ -19,10 +19,8 @@ import { Badge } from "@/components/ui/badge"
 import { motion } from "framer-motion"
 import slugify from "slugify"
 import { categorySpecificFields } from "@/lib/category-fields"
-import categories from '@/lib/categories'
+import categories from "@/lib/categories"
 
-// type Category = keyof typeof categorySpecificFields
-// type SubSubcategory<C extends Category> = keyof typeof categorySpecificFields[C]
 type Field = {
   name: string
   label: string
@@ -34,27 +32,18 @@ type Field = {
 
 // Poprawiona funkcja getFieldsForSubSubcategory
 const getFieldsForSubSubcategory = (category: string, subcategory: string, subSubcategory?: string) => {
-  console.log("Looking for fields:", { category, subcategory, subSubcategory })
-
   // Sprawdź czy istnieją pola specyficzne dla tej kombinacji kategorii
   if (categorySpecificFields[category]) {
     const categoryFields = categorySpecificFields[category]
-    console.log("Found category fields:", Object.keys(categoryFields))
-
     // Jeśli mamy sub-subcategorię, szukaj jej
     if (subSubcategory && categoryFields[subSubcategory]) {
-      console.log("Found sub-subcategory fields:", categoryFields[subSubcategory])
       return categoryFields[subSubcategory]
     }
-
     // Jeśli nie ma sub-subcategorii, szukaj subcategorii
     if (categoryFields[subcategory]) {
-      console.log("Found subcategory fields:", categoryFields[subcategory])
       return categoryFields[subcategory]
     }
   }
-
-  console.log("No fields found, returning empty array")
   // Jeśli nie ma specyficznych pól, zwróć puste pole
   return []
 }
@@ -196,7 +185,6 @@ export default function AddAdPage() {
     if (category && category.subsubcategories) {
       const subSubcats = (category.subsubcategories as Record<string, string[] | undefined>)[value] || []
       setSubSubcategories(subSubcats)
-
       // Jeśli nie ma sub-subcategorii, pobierz pola dla subcategorii
       if (subSubcats.length === 0) {
         const fields = getFieldsForSubSubcategory(selectedCategory, value)
@@ -212,14 +200,12 @@ export default function AddAdPage() {
     }
   }
 
-  const handleSubSubcategoryChange = (value: string) => {
+  const handleSubSubcategoryChange = async (value: string) => {
     setSelectedSubSubcategory(value)
     form.setValue("finalcategory", value)
-
     // Pobierz pola specyficzne dla tej sub-subcategorii
     const fields = getFieldsForSubSubcategory(selectedCategory, selectedSubcategory, value)
     setCategoryFields(fields)
-
     // Resetuj wartości poprzednich pól
     const prevFields = categoryFields
     prevFields.forEach((field: any) => {
@@ -229,20 +215,18 @@ export default function AddAdPage() {
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      if (selectedImages.length + e.target.files.length > 15) {
+      if (selectedImages.length + e.target.files.length > 25) {
         toast({
           title: "Limit zdjęć",
-          description: "Możesz dodać maksymalnie 15 zdjęć",
+          description: "Możesz dodać maksymalnie 25 zdjęć",
           variant: "destructive",
         })
         return
       }
 
       setIsUploadingImage(true)
-
       try {
         const files = Array.from(e.target.files)
-
         for (const file of files) {
           if (!file.type.startsWith("image/")) {
             toast({
@@ -302,27 +286,57 @@ export default function AddAdPage() {
     fetch(`/api/upload?url=${encodeURIComponent(imageUrl)}`, {
       method: "DELETE",
     })
-
     setSelectedImages((prev) => prev.filter((_, i) => i !== index))
     URL.revokeObjectURL(imageUrls[index])
     setImageUrls((prev) => prev.filter((_, i) => i !== index))
   }
 
+  const handleQuickSelect = (categoryName: string, subcategoryName: string, subsubcatName?: string) => {
+    const category = categories.find((c) => c.name === categoryName)
+    if (!category) return
+
+    setSelectedCategory(categoryName)
+    setSelectedSubcategory(subcategoryName)
+    setSelectedSubSubcategory(subsubcatName || "")
+    form.setValue("category", categoryName)
+    form.setValue("subcategory", subcategoryName)
+    form.setValue("finalcategory", subsubcatName || "")
+
+    // Ustaw subcategories
+    setSubcategories(category.subcategories || [])
+
+    // Ustaw subsubcategories (na podstawie wybranej subkategorii)
+    const subsubcats = (category.subsubcategories as Record<string, string[] | undefined>)[subcategoryName] || []
+    setSubSubcategories(subsubcats)
+
+    // POPRAWKA: Pobierz pola dla odpowiedniej kombinacji
+    let fields: any[] = []
+    if (subsubcatName) {
+      // Jeśli mamy subsubcategory, użyj jej
+      fields = getFieldsForSubSubcategory(categoryName, subcategoryName, subsubcatName)
+    } else if (subsubcats.length === 0) {
+      // Jeśli nie ma subsubcategories, użyj subcategory
+      fields = getFieldsForSubSubcategory(categoryName, subcategoryName)
+    }
+    // Jeśli są subsubcategories ale nie wybrano żadnej, nie ustawiaj pól
+
+    setCategoryFields(fields)
+  }
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLoading(true)
     if (selectedImages.length === 0) {
       toast({
         title: "Brak zdjęć",
         description: "Dodaj przynajmniej jedno zdjęcie",
         variant: "destructive",
       })
+      setIsLoading(false)
       return
     }
 
-    setIsLoading(true)
-
     try {
       const formData = new FormData()
-
       formData.append("title", values.title)
       formData.append("content", values.content)
       formData.append("category", values.category)
@@ -332,7 +346,7 @@ export default function AddAdPage() {
       formData.append("location", values.location)
       formData.append("adres", values.adres || "")
       formData.append("kod", values.kod || "")
-      formData.append("isPromoted", values.isPromoted.toString())
+      formData.append("isPromoted", "false")
 
       // Dodanie pól specyficznych dla sub-subcategorii
       categoryFields.forEach((field) => {
@@ -357,7 +371,6 @@ export default function AddAdPage() {
       }
 
       const data = await response.json()
-
       toast({
         title: "Sukces",
         description: "Ogłoszenie zostało dodane pomyślnie",
@@ -449,11 +462,7 @@ export default function AddAdPage() {
                   <Badge
                     className={`text-sm py-1.5 px-3 cursor-pointer ${w.color ? w.color : "hover:bg-foreground/40 bg-foreground/20"}`}
                     onClick={async () => {
-                      await handleCategoryChange(w.category)
-                      await handleSubcategoryChange(w.subcategory)
-                      if (w.subsubcat) {
-                        handleSubSubcategoryChange(w.subsubcat)
-                      }
+                      handleQuickSelect(w.category, w.subcategory, w.subsubcat)
                       setIsHelloPage(false)
                     }}
                   >
@@ -488,7 +497,6 @@ export default function AddAdPage() {
           <h1 className="text-3xl font-bold mb-2">Dodaj ogłoszenie</h1>
           <p className="text-muted-foreground">Wypełnij poniższy formularz, aby dodać nowe ogłoszenie</p>
         </div>
-
         <div className="max-w-2xl mx-auto">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -805,11 +813,11 @@ export default function AddAdPage() {
                         className="hidden"
                         onChange={handleImageChange}
                         multiple
-                        disabled={isUploadingImage || selectedImages.length >= 15}
+                        disabled={isUploadingImage || selectedImages.length >= 25}
                       />
                     </label>
                   </div>
-                  <FormDescription>Możesz dodać do 15 zdjęć. Maksymalny rozmiar: 10MB.</FormDescription>
+                  <FormDescription>Możesz dodać do 25 zdjęć. Maksymalny rozmiar zdjęcia: 10MB.</FormDescription>
                 </div>
               </div>
 

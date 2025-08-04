@@ -9,8 +9,11 @@ const getCachedCompanySearchMetadata = unstable_cache(
     const query = (searchParams?.q as string) || ""
     const city = (searchParams?.city as string) || ""
 
+    const decode = (str: string) => decodeURIComponent(str).replace(/--/g, '/')
+
+
     // Parse URL parameters
-    const category = slug[0] ? decodeURIComponent(slug[0]) : ""
+    const category = slug[0] ? decode(slug[0]) : ""
 
     // Build title
     let title = "Szukaj firm"

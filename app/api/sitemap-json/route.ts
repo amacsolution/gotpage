@@ -115,6 +115,8 @@ export async function GET() {
 
     const urls: { loc: string, lastmod: string }[] = [];
 
+    const sanitize = (str: string) => str.replace(/\//g, '--');
+
     // Statyczne
     const staticRoutes = [
         "/", "/ogloszenia", "/firmy", "/kontakt", "/o-serwisie", "/pomoc", "/bezpieczenstwo", "/regulamin",
@@ -143,27 +145,27 @@ export async function GET() {
 
     // Kategorie i miasta
     finalCategories.forEach((cat) => {
-        urls.push({ loc: `${baseUrl}/ogloszenia/szukaj/${encodeURIComponent(cat.name)}`, lastmod: now });
+        urls.push({ loc: `${baseUrl}/ogloszenia/szukaj/${encodeURIComponent(sanitize(cat.name))}`, lastmod: now });
         allLocations.forEach(city => {
             urls.push({ loc: `${baseUrl}/ogloszenia/miasto/${encodeURIComponent(city)}`, lastmod: now });
-            urls.push({ loc: `${baseUrl}/ogloszenia/szukaj/${encodeURIComponent(cat.name)}?location=${encodeURIComponent(city)}`, lastmod: now });
+            urls.push({ loc: `${baseUrl}/ogloszenia/szukaj/${encodeURIComponent(sanitize(cat.name))}?location=${encodeURIComponent(city)}`, lastmod: now });
 
             cat.subcategories?.forEach((sub: { name: string; subsubcategories?: string[] }) => {
-                urls.push({ loc: `${baseUrl}/ogloszenia/szukaj/${encodeURIComponent(cat.name)}/${encodeURIComponent(sub.name)}`, lastmod: now });
-                urls.push({ loc: `${baseUrl}/ogloszenia/szukaj/${encodeURIComponent(cat.name)}/${encodeURIComponent(sub.name)}?location=${encodeURIComponent(city)}`, lastmod: now });
+                urls.push({ loc: `${baseUrl}/ogloszenia/szukaj/${encodeURIComponent(sanitize(cat.name))}/${encodeURIComponent(sanitize(sub.name))}`, lastmod: now });
+                urls.push({ loc: `${baseUrl}/ogloszenia/szukaj/${encodeURIComponent(sanitize(cat.name))}/${encodeURIComponent(sanitize(sub.name))}?location=${encodeURIComponent(city)}`, lastmod: now });
 
                 sub.subsubcategories?.forEach(finalCat => {
-                    urls.push({ loc: `${baseUrl}/ogloszenia/szukaj/${encodeURIComponent(cat.name)}/${encodeURIComponent(sub.name)}/${encodeURIComponent(finalCat)}`, lastmod: now });
-                    urls.push({ loc: `${baseUrl}/ogloszenia/szukaj/${encodeURIComponent(cat.name)}/${encodeURIComponent(sub.name)}/${encodeURIComponent(finalCat)}?location=${encodeURIComponent(city)}`, lastmod: now });
+                    urls.push({ loc: `${baseUrl}/ogloszenia/szukaj/${encodeURIComponent(sanitize(cat.name))}/${encodeURIComponent(sanitize(sub.name))}/${encodeURIComponent(sanitize(finalCat))}`, lastmod: now });
+                    urls.push({ loc: `${baseUrl}/ogloszenia/szukaj/${encodeURIComponent(sanitize(cat.name))}/${encodeURIComponent(sanitize(sub.name))}/${encodeURIComponent(sanitize(finalCat))}?location=${encodeURIComponent(city)}`, lastmod: now });
                 });
             });
         });
     });
 
     businessCategories.forEach(cat => {
-        urls.push({ loc: `${baseUrl}/firmy/szukaj/${encodeURIComponent(cat.name)}`, lastmod: now });
+        urls.push({ loc: `${baseUrl}/firmy/szukaj/${encodeURIComponent(sanitize(cat.name))}`, lastmod: now });
         allLocations.forEach(city => {
-            urls.push({ loc: `${baseUrl}/firmy/szukaj/${encodeURIComponent(cat.name)}?location=${encodeURIComponent(city)}`, lastmod: now });
+            urls.push({ loc: `${baseUrl}/firmy/szukaj/${encodeURIComponent(sanitize(cat.name))}?location=${encodeURIComponent(city)}`, lastmod: now });
         });
     });
 

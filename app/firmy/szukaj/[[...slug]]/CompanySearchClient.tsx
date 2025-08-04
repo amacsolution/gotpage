@@ -133,6 +133,9 @@ export default function CompanySearchPageClient() {
 
   const loggedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("userData") || "null") : null
 
+  const decode = (str: string) => decodeURIComponent(str).replace(/--/g, '/')
+  
+
   // Parse URL parameters
   useEffect(() => {
     const slug = (params?.slug as string[]) || []
@@ -144,7 +147,7 @@ export default function CompanySearchPageClient() {
 
     // Parse URL pattern: /firmy/szukaj/[category]?city=[city]
     if (slug.length > 0) {
-      if (slug[0]) setCategory(decodeURIComponent(slug[0]))
+      if (slug[0]) setCategory(decode(slug[0]))
     }
   }, [params, searchParams])
 
@@ -214,11 +217,14 @@ export default function CompanySearchPageClient() {
     updateURL({ q: searchQuery })
   }
 
+  const sanitize = (str: string) => str.replace(/\//g, '--');
+
   // Update URL with new parameters
   const updateURL = (newParams: Record<string, string>) => {
     const urlParts = ["/firmy/szukaj"]
 
-    if (category) urlParts.push(encodeURIComponent(category))
+
+    if (category) urlParts.push(encodeURIComponent(sanitize(category)))
 
     const params = new URLSearchParams(searchParams?.toString())
 
@@ -240,7 +246,7 @@ export default function CompanySearchPageClient() {
   const applyAllFilters = () => {
     const urlParts = ["/firmy/szukaj"]
 
-    if (category) urlParts.push(encodeURIComponent(category))
+    if (category) urlParts.push(encodeURIComponent(sanitize(category)))
 
     const params = new URLSearchParams()
 
@@ -273,7 +279,7 @@ export default function CompanySearchPageClient() {
         const params = new URLSearchParams(searchParams?.toString())
         params.delete("city")
         const urlParts = ["/firmy/szukaj"]
-        if (category) urlParts.push(encodeURIComponent(category))
+        if (category) urlParts.push(encodeURIComponent(sanitize(category)))
         const queryString = params.toString()
         const finalUrl = queryString ? `${urlParts.join("/")}?${queryString}` : urlParts.join("/")
         router.push(finalUrl)
@@ -357,7 +363,7 @@ export default function CompanySearchPageClient() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Sidebar - Filters */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-6">
+            <Card className="sticky top-10">
               <CardHeader>
                 <CardTitle className="text-lg">Filtry</CardTitle>
               </CardHeader>
@@ -384,7 +390,7 @@ export default function CompanySearchPageClient() {
                           variant={category === cat ? "default" : "ghost"}
                           className="w-full justify-start text-left h-auto p-2"
                           onClick={() => {
-                            router.push(`/firmy/szukaj/${encodeURIComponent(cat)}${city ? `?city=${city}` : ""}`)
+                            router.push(`/firmy/szukaj/${encodeURIComponent(sanitize(cat))}${city ? `?city=${city}` : ""}`)
                           }}
                         >
                           <Building className="h-4 w-4 mr-2 flex-shrink-0" />
@@ -439,7 +445,17 @@ export default function CompanySearchPageClient() {
             {/* Header */}
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold">{category ? `${category} - Firmy ${city ? `w mieście ${city}` : ""}` : `Szukaj firm ${city ? `w mieście ${city}` : ""}`}</h1>
+                <h1 className="text-2xl font-bold">
+                  {category ? (
+                    <>
+                      {category} - firmy {city && `w mieście ${city}`}
+                    </>
+                  ) : (
+                    <>
+                      Szukaj firm {city && `w mieście ${city}`}
+                    </>
+                  )}
+                </h1>
                 {totalCompanies > 0 && (
                   <Badge variant="outline" className="text-muted-foreground">
                     {totalCompanies} {totalCompanies === 1 ? "firma" : totalCompanies < 5 ? "firmy" : "firm"}
@@ -490,7 +506,6 @@ export default function CompanySearchPageClient() {
                         <CompanyCard key={company.id} company={company} logged={loggedUser} />
                       ))}
                     </div>
-
                     {/* Load more button */}
                     {hasMore && (
                       <div className="flex justify-center mt-8">
@@ -524,6 +539,45 @@ export default function CompanySearchPageClient() {
                     </Button>
                   </div>
                 )}
+                                      <div className="mt-16 py-12 px-6 bg-muted/20 rounded-lg">
+                        <div className="text-center mb-8">
+                          <p className="text-muted-foreground max-w-3xl mx-auto text-md">
+                      {category ? (
+                        <>
+                          <h2 className="text-2xl mb-2 text-foreground">Szukasz sprawdzonych firm z branży <strong>{category.toLowerCase()}</strong>
+                          {city && <> działających w miejscowości <strong>{city}</strong></>}?</h2> Nasza baza to
+                          kompleksowy katalog przedsiębiorstw oferujących usługi, produkty oraz specjalistyczne
+                          rozwiązania z obszaru {category.toLowerCase()}. Dzięki intuicyjnemu systemowi wyszukiwania
+                          szybko znajdziesz wykonawcę spełniającego Twoje wymagania. 
+                          Sprawdź opinie klientów, zapoznaj się z opisem działalności, godzinami otwarcia i
+                          danymi kontaktowymi. Skorzystaj z bezpośredniego formularza kontaktowego lub zadzwoń
+                          do firmy bezpośrednio z poziomu strony. Wybierz jakość, lokalność i pewność współpracy.
+                        </>
+                      ) : city ? (
+                        <>
+                          <h2 className="text-2xl mb-2 text-foreground">Interesuje Cię lista firm działających na terenie <strong>{city}</strong>?</h2> Na tej stronie
+                          znajdziesz przedsiębiorstwa z różnych branż — od usług budowlanych i wykończeniowych, przez
+                          gastronomię i handel, aż po nowoczesne usługi informatyczne. 
+                          Korzystaj z filtrów, porównuj oferty i czytaj opinie innych klientów, aby podjąć
+                          świadomą decyzję. Nasza platforma łączy mieszkańców {city} z rzetelnymi wykonawcami,
+                          gotowymi sprostać nawet najbardziej wymagającym projektom.
+                        </>
+                      ) : (
+                        <>
+                          Gotpage to ogólnopolski katalog firm i usług, który pomoże Ci znaleźć zaufanych partnerów
+                          biznesowych w każdej branży i lokalizacji. Wybierz kategorię działalności lub miasto, aby
+                          uzyskać listę firm dopasowanych do Twoich potrzeb. 
+                          Niezależnie czy szukasz fachowca do remontu, księgowego, grafika, czy producenta mebli — 
+                          u nas wszystko masz w jednym miejscu. Przeglądaj szczegółowe profile firm, sprawdzaj opinie,
+                          kontaktuj się bezpośrednio i porównuj oferty. Z nami łatwiej podejmiesz decyzję i rozpoczniesz
+                          owocną współpracę.
+                        </>
+                      )}
+                          </p>
+                        </div>
+
+
+                      </div>
               </TabsContent>
 
               <TabsContent value="map" className="mt-0">

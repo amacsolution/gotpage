@@ -225,12 +225,18 @@ export default function CompaniesPageClient() {
       params.set("q", searchQuery)
     }
 
+    const sanitize = (str: string) => str.replace(/\//g, '--');
+
+    const decode = (str: string) => decodeURIComponent(str).replace(/--/g, '/')
+
+
+
     if (city && !category) {
       // Only city selected: navigate to /firmy/miasto directory
       url = `/firmy/miasto/${encodeURIComponent(city)}`
     } else if (category) {
       // Category selected: navigate to /firmy/szukaj directory
-      url = `/firmy/szukaj/${encodeURIComponent(category)}`
+      url = `/firmy/szukaj/${encodeURIComponent(sanitize(category))}`
       if (city) {
         params.set("city", city)
       }

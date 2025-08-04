@@ -404,9 +404,12 @@ export default function SearchPageClient() {
 
     // Parse URL pattern: /ogloszenia/szukaj/[category]/[subcategory?]/[finalcategory?]?city=[city]
     if (slug.length > 0) {
-      if (slug[0]) setCategory(decodeURIComponent(slug[0]))
-      if (slug[1]) setSubcategory(decodeURIComponent(slug[1]))
-      if (slug[2]) setFinalcategory(decodeURIComponent(slug[2]))
+
+      const decode = (str: string) => decodeURIComponent(str).replace(/--/g, '/')
+
+      if (slug[0]) setCategory(decode(slug[0]))
+      if (slug[1]) setSubcategory(decode(slug[1]))
+      if (slug[2]) setFinalcategory(decode(slug[2]))
     }
   }, [params, searchParams])
 
@@ -523,9 +526,12 @@ export default function SearchPageClient() {
   const updateURL = (newParams: Record<string, string>) => {
     const urlParts = ["/ogloszenia/szukaj"]
 
-    if (category) urlParts.push(encodeURIComponent(category))
-    if (subcategory) urlParts.push(encodeURIComponent(subcategory))
-    if (finalcategory) urlParts.push(encodeURIComponent(finalcategory))
+    const sanitize = (str: string) => str.replace(/\//g, '--');
+
+
+    if (category) urlParts.push(encodeURIComponent(sanitize(category)))
+    if (subcategory) urlParts.push(encodeURIComponent(sanitize(subcategory)))
+    if (finalcategory) urlParts.push(encodeURIComponent(sanitize(finalcategory)))
 
     const params = new URLSearchParams(searchParams?.toString())
 
@@ -546,10 +552,12 @@ export default function SearchPageClient() {
   // Apply all filters function
   const applyAllFilters = () => {
     const urlParts = ["/ogloszenia/szukaj"]
+    const sanitize = (str: string) => str.replace(/\//g, '--');
 
-    if (tempCategory) urlParts.push(encodeURIComponent(tempCategory))
-    if (tempSubcategory) urlParts.push(encodeURIComponent(tempSubcategory))
-    if (tempFinalcategory) urlParts.push(encodeURIComponent(tempFinalcategory))
+
+    if (tempCategory) urlParts.push(encodeURIComponent(sanitize(tempCategory)))
+    if (tempSubcategory) urlParts.push(encodeURIComponent(sanitize(tempSubcategory)))
+    if (tempFinalcategory) urlParts.push(encodeURIComponent(sanitize(tempFinalcategory)))
 
     const params = new URLSearchParams()
 
@@ -562,6 +570,8 @@ export default function SearchPageClient() {
 
     const queryString = params.toString()
     const finalUrl = queryString ? `${urlParts.join("/")}?${queryString}` : urlParts.join("/")
+
+    console.log(finalUrl)
 
     router.push(finalUrl)
   }

@@ -40,41 +40,51 @@ const findExistingFile = (paths: string[]): string | null => {
 export async function GET(request: Request, props: { params: Promise<{ path: string[] }> }) {
   const params = await props.params;
   const relativePath = params.path.join("/");
-
-  // Check if request is from localhost:3000
-  const host = request.headers.get("host");
-  if (host === "localhost:3000") {
-    // Proxy to gotpage.pl
-    const remoteUrl = `https://gotpage.pl/api/uploads/${relativePath}`;
-    const remoteRes = await fetch(remoteUrl);
-
-    if (!remoteRes.ok) {
-      return new Response("Plik nie istnieje na gotpage.pl", { status: 404 });
-    }
-
-    // Pass through content-type and body
-    const contentType = remoteRes.headers.get("content-type") || "application/octet-stream";
-    const body = await remoteRes.arrayBuffer();
-
-    return new Response(body, {
-      headers: {
-        "Content-Type": contentType,
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        "Pragma": "no-cache",
-        "Expires": "0",
-      },
-    });
-  }
-
-  // Local file logic (unchanged)
   const basePath = process.cwd();
   const searchPaths = getSearchPaths(basePath, relativePath);
   const filePath = findExistingFile(searchPaths);
 
   if (!filePath) {
-    return new Response("Plik nie istnieje", { status: 404 });
+    const host = request.headers.get("host");
+
+    if (host === "localhost:3000") {
+      const remoteUrl = `https://gotpage.pl/api/uploads/${relativePath}`;
+      const remoteRes = await fetch(remoteUrl);
+
+      if (remoteRes.ok) {
+        const contentType = remoteRes.headers.get("content-type") || "application/octet-stream";
+        const body = await remoteRes.arrayBuffer();
+        return new Response(body, {
+          headers: {
+            "Content-Type": contentType,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+          },
+        });
+      }
+    }
+
+    // Domyślny obraz – poprawnie jako plik
+    const fallbackPath = join(basePath, "public", "default.jpg");
+    try {
+      const defaultImageBuffer = await fs.readFile(fallbackPath);
+      return new Response(defaultImageBuffer, {
+        status: 203,
+        headers: {
+          "Content-Type": "image/jpeg",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0",
+        },
+      });
+    } catch (err) {
+      console.error("Nie udało się odczytać domyślnego obrazka:", err);
+      return new Response("Nie znaleziono pliku.", { status: 404 });
+    }
   }
 
+  // Plik znaleziony lokalnie
   try {
     const fileBuffer = await fs.readFile(filePath);
     const mimeType = getMimeType(extname(filePath).toLowerCase());

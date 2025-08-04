@@ -3,7 +3,7 @@ module.exports = {
   generateRobotsTxt: true,
   sitemapSize: 5000,
   generateIndexSitemap: true,
-  exclude: ['/checkout', '/checkout/success', '/admin/*'],
+  exclude: ['/checkout', '/checkout/success', '/admin/*', '/profil'],
   robotsTxtOptions: {
     policies: [
       {

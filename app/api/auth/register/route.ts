@@ -114,7 +114,7 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // Domyślny avatar
-    const avatar = `/placeholder-user.jpg?height=100&width=100&text=${encodeURIComponent(name.substring(0, 2).toUpperCase())}`
+    const avatar = `/placeholder-profile.svg?height=100&width=100&text=${encodeURIComponent(name.substring(0, 2).toUpperCase())}`
 
     let coordinates = null
 

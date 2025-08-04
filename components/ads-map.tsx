@@ -9,6 +9,7 @@ import { formatDistanceToNow } from "date-fns"
 import { pl } from "date-fns/locale"
 import slugify from "slugify"
 import { AdData } from "@/app/api/ogloszenia/route"
+import { categories } from '@/lib/categories-map'
 
 // Extend Leaflet types for markerClusterGroup
 declare global {
@@ -46,6 +47,10 @@ function UnmountMapOnReload({ map }: { map: L.Map | null }) {
 function MarkerClusterHandler({ ads }: { ads: any[] }) {
   const map = useMap()
   const clusterGroupRef = useRef<any>(null)
+
+  function getCategoryByName(name : string) {
+  return categories.find(cat => cat.name === name);
+}
 
   useEffect(() => {
     // Dynamiczne importowanie biblioteki leaflet.markercluster
@@ -165,11 +170,24 @@ function MarkerClusterHandler({ ads }: { ads: any[] }) {
         // Dodaj markery do grupy klastrów
         ads.forEach((ad) => {
           if (ad.coordinates && ad.coordinates[0] && ad.coordinates[1]) {
+
+            const category = getCategoryByName(ad.category);
+
+            const bgColor = category?.color ?? "bg-gray-200";
+            const textColor = category?.textColor ?? "text-gray-600";
+            const svgIcon = category?.icon ?? '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tag-icon lucide-tag"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg>';
+
+            const markerHtml = `
+              <div class="w-8 h-8 p-2 rounded-full flex items-center justify-center shadow-md ${bgColor} ${textColor}">
+                ${svgIcon}
+              </div>
+            `;
+
             // Utwórz niestandardowy marker
             const marker = L.marker([ad.coordinates[0], ad.coordinates[1]], {
               icon: L.divIcon({
                 className: "custom-marker",
-                html: `<div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shadow-md">${ad.category.charAt(0)}</div>`,
+                html: markerHtml,
                 iconSize: [32, 32],
                 iconAnchor: [16, 32],
                 popupAnchor: [0, -32],

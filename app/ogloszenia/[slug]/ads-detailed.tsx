@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Share2, Flag, MapPin, Phone, Mail, Calendar, Clock, Eye, ShieldCheck, Edit, Trash2 } from "lucide-react"
+import { Share2, Flag, MapPin, Phone, Mail, Calendar, Clock, Eye, ShieldCheck, Edit, Trash2, ArrowRight } from "lucide-react"
 import { PageLayout } from "@/components/page-layout"
 import { LikeButton } from "@/components/like-button"
 import { useToast } from "@/hooks/use-toast"
@@ -30,6 +30,7 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@radix-ui/react-dialog"
 import { DialogFooter, DialogHeader } from "@/components/ui/dialog"
 import { ImageOverlay } from "@/components/ads/imageoverlay"
+import { htmlToText } from "html-to-text"
 
 export default function AdDetailsClient({ id }: { id: string }) {
   const [ad, setAd] = useState<any>(null)
@@ -224,6 +225,10 @@ export default function AdDetailsClient({ id }: { id: string }) {
     setActiveImageIndex((prev) => (prev === ad.images.length - 1 ? 0 : prev + 1))
   }
 
+    const sanitize = (str: string) => str.replace(/\//g, '--');
+
+  
+
   if (isLoading) {
     return (
       <PageLayout>
@@ -316,21 +321,21 @@ export default function AdDetailsClient({ id }: { id: string }) {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href={`/ogloszenia/szukaj/${encodeURIComponent(ad.category)}`}>{ad.category}</BreadcrumbLink>
+                <BreadcrumbLink href={`/ogloszenia/szukaj/${encodeURIComponent(sanitize(ad.category))}`}>{ad.category}</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               {ad.category && ad.subcategory && (
                 <>
                   <BreadcrumbItem>
-                    <BreadcrumbLink href={`/ogloszenia/szukaj/${encodeURIComponent(ad.category)}/${encodeURIComponent(ad.subcategory)}`}>{ad.subcategory}</BreadcrumbLink>
+                    <BreadcrumbLink href={`/ogloszenia/szukaj/${encodeURIComponent(sanitize(ad.category))}/${encodeURIComponent(sanitize(ad.subcategory))}`}>{ad.subcategory}</BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator />
                 </>
               )}
-              {ad.category && ad.subcategory && ad.finalcategory && (
+              {ad.category && ad.subcategory && ad.final_category && (
                 <>
                   <BreadcrumbItem>
-                    <BreadcrumbLink href={`/ogloszenia/szukaj/${encodeURIComponent(ad.category)}/${encodeURIComponent(ad.subcategory)}/${encodeURIComponent(ad.finalcategory)}`}>{ad.finalcategory}</BreadcrumbLink>
+                    <BreadcrumbLink href={`/ogloszenia/szukaj/${encodeURIComponent(sanitize(ad.category))}/${encodeURIComponent(sanitize(ad.subcategory))}/${encodeURIComponent(sanitize(ad.final_category))}`}>{ad.final_category}</BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator />
                 </>
@@ -363,11 +368,11 @@ export default function AdDetailsClient({ id }: { id: string }) {
               )}
             </div>
             {ad.images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
+              <div className="flex gap-2 overflow-x-auto pb-2 flex-nowrap">
                 {ad.images.map((image: string, index: number) => (
                   <div
                     key={index}
-                    className={`relative w-24 h-24 rounded-md overflow-hidden cursor-pointer border-2 transition-all hover:scale-105 ${
+                    className={`relative min-w-[96px] aspect-square rounded-md overflow-hidden cursor-pointer border-2 transition-all hover:scale-105 ${
                       activeImageIndex === index ? "border-primary" : "border-transparent"
                     }`}
                     onClick={() => setActiveImageIndex(index)}
@@ -377,6 +382,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
                       alt={`${ad.title} - zdjęcie ${index + 1}`}
                       layout="fill"
                       className="object-cover"
+                      sizes="96px"
                       priority={index === 0}
                     />
                   </div>
@@ -391,11 +397,11 @@ export default function AdDetailsClient({ id }: { id: string }) {
               <Badge variant="secondary">{ad.category}</Badge>
               {ad.subcategory && <Badge variant="outline">{ad.subcategory}</Badge>}
               {ad.final_category && <Badge variant="outline">{ad.final_category}</Badge>}
-              {ad.promoted && (
+              {ad.promoted ? (
                 <Badge variant="outline" className="text-primary border-primary/30">
                   Promowane
                 </Badge>
-              )}
+              ) : ""}
               <span className="text-muted-foreground text-sm">
                 <Clock className="h-4 w-4 inline mr-1" />
                 {formatDistanceToNow(new Date(ad.created_at), {
@@ -466,6 +472,8 @@ export default function AdDetailsClient({ id }: { id: string }) {
                         Usuń
                       </Button>
                     </div>
+                  </>
+                )}
                     <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                       <DialogContent>
                         <DialogHeader>
@@ -484,8 +492,6 @@ export default function AdDetailsClient({ id }: { id: string }) {
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
-                  </>
-                )}
               </div>
               <Separator className="my-4" />
               <div className="flex flex-col gap-3">
@@ -536,7 +542,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
           </TabsList>
           <TabsContent value="description" className="mt-4">
             <Card className="p-4">
-              <div className="whitespace-pre-line">
+              <div className="whitespace-pre-line text-foreground [&_*]:text-foreground">
                 <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
               </div>
             </Card>
@@ -616,7 +622,12 @@ export default function AdDetailsClient({ id }: { id: string }) {
         </Tabs>
 
         <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Podobne ogłoszenia</h2>
+          <div className="flex flex-nowrap justify-between">
+            <h2 className="text-xl font-bold mb-4">Poznaj inne ogłoszenia w kategorii {ad.category}</h2>
+            <Link href={`/ogloszenia/szukaj/${sanitize(ad.category)}`} className="text-primary hover:underline flex items-center">
+              Zobacz więcej w kategorii {ad.category} <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </div>
           {isSimilarAdsLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {[1, 2, 3, 4].map((i) => (
@@ -663,6 +674,8 @@ export default function AdDetailsClient({ id }: { id: string }) {
             </div>
           )}
         </div>
+
+        
       </div>
 
       {ad && (
@@ -674,7 +687,7 @@ export default function AdDetailsClient({ id }: { id: string }) {
               "@type": "Product",
               name: ad.title,
               image: ad.images?.[0] || "/logo.png",
-              description: ad.description?.slice(0, 200),
+              description: htmlToText(ad.description || "", { wordwrap: false, selectors: [{ selector: 'a', options: { ignoreHref: true } }] }).slice(0,200),
               category: ad.category,
               offers: {
                 "@type": "Offer",

@@ -506,13 +506,16 @@ export default function AdsPage() {
       url = `ogloszenia/miasto/${encodeURIComponent(city)}`
     } else if (category) {
       // Category selected: navigate to /ogloszenia/szukaj directory
-      const urlParts = ["/ogloszenia/szukaj", encodeURIComponent(category)]
+
+      const sanitize = (str: string) => str.replace(/\//g, '--');
+
+      const urlParts = ["/ogloszenia/szukaj", encodeURIComponent(sanitize(category))]
 
       if (subcategory) {
-        urlParts.push(encodeURIComponent(subcategory))
+        urlParts.push(encodeURIComponent(sanitize(subcategory)))
 
         if (finalcategory) {
-          urlParts.push(encodeURIComponent(finalcategory))
+          urlParts.push(encodeURIComponent(sanitize(finalcategory)))
         }
       }
 

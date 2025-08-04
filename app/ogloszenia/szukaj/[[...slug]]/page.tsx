@@ -11,10 +11,11 @@ const getCachedMetadata = unstable_cache(
     const min = (searchParams?.min as string) || ""
     const max = (searchParams?.max as string) || ""
 
+     const decode = (str: string) => decodeURIComponent(str).replace(/--/g, '/')
     // Parse URL parameters
-    const category = slug[0] ? decodeURIComponent(slug[0]) : ""
-    const subcategory = slug[1] ? decodeURIComponent(slug[1]) : ""
-    const finalcategory = slug[2] ? decodeURIComponent(slug[2]) : ""
+    const category = slug[0] ? decode(slug[0]) : ""
+    const subcategory = slug[1] ? decode(slug[1]) : ""
+    const finalcategory = slug[2] ? decode(slug[2]) : ""
 
     // Build title
     let title = "Szukaj ogłoszeń"

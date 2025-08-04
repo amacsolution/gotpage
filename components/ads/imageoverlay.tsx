@@ -147,26 +147,40 @@ export function ImageOverlay({ images, activeIndex, isOpen, onClose, onPrevious,
   return (
     <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">
       {/* Header with controls */}
-      <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/50 to-transparent p-4">
+      <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/70 to-transparent p-4">
         <div className="flex items-center justify-between text-white">
-          <div className="flex items-center gap-4">
-            <h3 className="text-lg font-medium truncate max-w-md">
+          {/* Lewa część – tytuł */}
+          <div className="flex flex-col min-w-0">
+            <h3 className="text-lg font-medium truncate max-w-[70vw]">
               {title || `Zdjęcie ${activeIndex + 1} z ${images.length}`}
             </h3>
             <span className="text-sm text-white/70">
               {activeIndex + 1} / {images.length}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={handleDownload} className="text-white hover:bg-white/20">
+
+          {/* Prawa część – ikony */}
+          <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleDownload}
+              className="text-white hover:bg-white/20"
+            >
               <Download className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/20">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="text-white hover:bg-white/20"
+            >
               <X className="h-5 w-5" />
             </Button>
           </div>
         </div>
       </div>
+
 
       {/* Navigation buttons */}
       {images.length > 1 && (
@@ -272,13 +286,13 @@ export function ImageOverlay({ images, activeIndex, isOpen, onClose, onPrevious,
 
       {/* Thumbnail strip */}
       {images.length > 1 && (
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 bg-black/50 rounded-lg p-2 backdrop-blur-sm max-w-[90vw] overflow-x-auto">
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 bg-black/50 rounded-lg p-2 backdrop-blur-sm max-w-[90vw] overflow-x-scroll">
           <div className="flex gap-2">
             {images.map((image, index) => (
               <button
                 key={index}
-                className={`relative w-12 h-12 rounded overflow-hidden border-2 transition-all ${
-                  index === activeIndex ? "border-white scale-110" : "border-transparent hover:border-white/50"
+                className={`relative min-w-[96px] aspect-square rounded-md overflow-hidden cursor-pointer border-2 transition-all hover:scale-105 ${
+                  index === activeIndex ? "border-primary scale-110" : "border-transparent hover:border-white/50"
                 }`}
                 onClick={() => {
                   // This would need to be passed as a prop or handled by parent
@@ -298,10 +312,10 @@ export function ImageOverlay({ images, activeIndex, isOpen, onClose, onPrevious,
       )}
 
       {/* Help text */}
-      <div className="absolute top-20 left-4 z-10 text-white/70 text-sm space-y-1">
+      {/* <div className="absolute top-20 left-4 z-10 text-white/70 text-sm space-y-1">
         <div>Klawisze: ← → (nawigacja), +/- (zoom), 0 (reset), Esc (zamknij)</div>
         <div>Ctrl + scroll (zoom), przeciągnij (przesuwanie)</div>
-      </div>
+      </div> */}
     </div>
   )
 }

@@ -5,6 +5,7 @@ import path from "path"
 import { mkdir, writeFile } from "fs/promises"
 import { existsSync } from "fs"
 import { v4 as uuidv4 } from "uuid"
+import sharp from "sharp"
 
 export async function POST(request: Request) {
   try {
@@ -92,18 +93,20 @@ export async function POST(request: Request) {
           }
         }
 
-        // Generowanie unikalnej nazwy pliku
-        const fileName = `${uuidv4()}${path.extname(file.name)}`
+        // Generowanie unikalnej nazwy pliku .webp
+        const fileName = `${uuidv4()}.webp`
         const filePath = path.join(uploadDir, fileName)
 
         // Konwersja File na Buffer
         const arrayBuffer = await file.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
 
-        // Zapisz plik bezpośrednio
-        await writeFile(filePath, buffer)
+        // Konwertuj do .webp i zapisz
+        await sharp(buffer)
+          .webp({ quality: 80 })
+          .toFile(filePath)
 
-        // Zwróć URL do pliku
+        // URL do pliku
         const fileUrl = `/api/uploads/${type}/${fileName}`
 
         return NextResponse.json({ url: fileUrl })

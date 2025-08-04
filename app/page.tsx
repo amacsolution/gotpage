@@ -105,7 +105,7 @@ const categories = [
   {
     name: "RTV/AGD",
     icon: <Tv className="h-6 w-6" />,
-    href: "/ogloszenia/szukaj/RTV%2FAGD",
+    href: "/ogloszenia/szukaj/RTV--AGD",
     color: "bg-teal-100 dark:bg-teal-900",
     textColor: "text-teal-500 dark:text-teal-300",
   },
@@ -168,14 +168,14 @@ const categories = [
   {
     name: "Sport / Turystyka",
     icon: <Gamepad2 className="h-6 w-6" />,
-    href: "/ogloszenia/szukaj/Sport%2FTurystyka",
+    href: "/ogloszenia/szukaj/Sport--Turystyka",
     color: "bg-cyan-100 dark:bg-cyan-900",
     textColor: "text-cyan-500 dark:text-cyan-300",
   },
   {
     name: "Bilety / e-Bilety",
     icon: <Ticket className="h-6 w-6" />,
-    href: "/ogloszenia/szukaj/Bilety%2Fe-Bilety",
+    href: "/ogloszenia/szukaj/Bilety--e-Bilety",
     color: "bg-red-100 dark:bg-red-900",
     textColor: "text-red-500 dark:text-red-300",
   },
@@ -203,14 +203,14 @@ const categories = [
   {
     name: "Antyki / Kolekcje / Sztuka",
     icon: <Brush className="h-6 w-6" />,
-    href: "/ogloszenia/szukaj/Antyki%2FKolekcje%2FSztuka",
+    href: "/ogloszenia/szukaj/Antyki--Kolekcje--Sztuka",
     color: "bg-amber-100 dark:bg-amber-900",
     textColor: "text-amber-500 dark:text-amber-300",
   },
   {
     name: "Wycieczki / Podróże",
     icon: <PlaneTakeoff className="h-6 w-6" />,
-    href: "/ogloszenia/szukaj/Wycieczki%2FPodr%C3%B3%C5%BCe",
+    href: "/ogloszenia/szukaj/Wycieczki--Podr%C3%B3%C5%BCe",
     color: "bg-sky-100 dark:bg-sky-900",
     textColor: "text-sky-500 dark:text-sky-300",
   }
